@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../models/category_model.dart';
+import '../services/category_service.dart';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
@@ -8,172 +11,252 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
-  final List<String> incomeCategories = ['Gaji', 'Bonus'];
-  final List<String> expenseCategories = ['Makan', 'Transportasi'];
+  final CategoryService _categoryService = CategoryService();
+  String _searchQuery = '';
+  String _filterType = 'all';
 
-  final TextEditingController _controller = TextEditingController();
-  String _type = 'income';
-
-  void _showAddCategoryDialog() {
-    _controller.clear();
-    _type = 'income';
+  void _openCategoryForm({Category? category}) {
+    final TextEditingController _controller = TextEditingController(
+      text: category?.name ?? '',
+    );
+    String selectedType = category?.type ?? 'expense';
+    final isEdit = category != null;
 
     showDialog(
       context: context,
       builder: (context) {
+        String tempSelectedType = selectedType;
         return AlertDialog(
-          title: const Text('Tambah Kategori'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                value: _type,
-                decoration: const InputDecoration(labelText: 'Tipe'),
-                items: const [
-                  DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
-                  DropdownMenuItem(
-                    value: 'expense',
-                    child: Text('Pengeluaran'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Text(isEdit ? 'Edit Kategori' : 'Tambah Kategori'),
+          content: StatefulBuilder(
+            builder: (context, setStateDialog) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      labelText: 'Nama Kategori',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: RadioListTile<String>(
+                          value: 'income',
+                          groupValue: tempSelectedType,
+                          title: const Text('Pemasukan'),
+                          activeColor:
+                              Colors.lightBlue, // Set color for selected
+                          tileColor:
+                              tempSelectedType == 'income'
+                                  ? Colors.lightBlue
+                                  : null, // Optional: background highlight
+                          onChanged: (value) {
+                            setStateDialog(() => tempSelectedType = value!);
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        child: RadioListTile<String>(
+                          value: 'expense',
+                          groupValue: tempSelectedType,
+                          title: const Text('Pengeluaran'),
+                          onChanged: (value) {
+                            setStateDialog(() => tempSelectedType = value!);
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-                onChanged: (val) => setState(() => _type = val ?? 'income'),
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color.fromARGB(
+                  255,
+                  65,
+                  64,
+                  64,
+                ), // Change text color to red
               ),
-              TextField(
-                controller: _controller,
-                decoration: const InputDecoration(labelText: 'Nama Kategori'),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final name = _controller.text.trim();
+                if (name.isEmpty) return;
+
+                final userId = FirebaseAuth.instance.currentUser!.uid;
+                final newCategory = Category(
+                  id: category?.id ?? '',
+                  name: name,
+                  type: tempSelectedType,
+                  userId: userId,
+                );
+
+                if (isEdit) {
+                  await _categoryService.updateCategory(newCategory);
+                } else {
+                  await _categoryService.addCategory(newCategory);
+                }
+
+                Navigator.pop(context);
+              },
+              style: TextButton.styleFrom(
+                backgroundColor:
+                    Colors.lightBlue, // Set background color to blue
+                foregroundColor: Colors.white, // Change text color to red
+              ),
+              child: Text(isEdit ? 'Simpan' : 'Tambah'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteCategory(Category category) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Hapus Kategori'),
+            content: Text('Yakin ingin menghapus kategori "${category.name}"?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Batal'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Hapus'),
+                style: TextButton.styleFrom(
+                  backgroundColor:
+                      Colors.redAccent, // Set background color to blue
+                  foregroundColor: Colors.white, // Change text color to red
+                ),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _controller.clear();
-                Navigator.pop(context);
-              },
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final value = _controller.text.trim();
-                if (value.isNotEmpty) {
-                  setState(() {
-                    if (_type == 'income') {
-                      incomeCategories.add(value);
-                    } else {
-                      expenseCategories.add(value);
-                    }
-                  });
-                }
-                _controller.clear();
-                Navigator.pop(context);
-              },
-              child: const Text('Tambah'),
-            ),
-          ],
-        );
-      },
     );
-  }
-
-  void _showEditCategoryDialog(String oldValue, String type) {
-    _controller.text = oldValue;
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Kategori'),
-          content: TextField(
-            controller: _controller,
-            decoration: const InputDecoration(labelText: 'Nama Baru'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _controller.clear();
-                Navigator.pop(context);
-              },
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final newValue = _controller.text.trim();
-                if (newValue.isNotEmpty) {
-                  setState(() {
-                    if (type == 'income') {
-                      final index = incomeCategories.indexOf(oldValue);
-                      if (index != -1) incomeCategories[index] = newValue;
-                    } else {
-                      final index = expenseCategories.indexOf(oldValue);
-                      if (index != -1) expenseCategories[index] = newValue;
-                    }
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Kategori "$oldValue" diubah menjadi "$newValue"',
-                      ),
-                    ),
-                  );
-                }
-                _controller.clear();
-                Navigator.pop(context);
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildCategoryList(String title, List<String> items, Color color) {
-    final type = title == 'Pemasukan' ? 'income' : 'expense';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        ...items.map(
-          (e) => Card(
-            child: ListTile(
-              leading: Icon(Icons.label, color: color),
-              title: Text(e),
-              trailing: IconButton(
-                icon: const Icon(Icons.edit, color: Colors.grey),
-                onPressed: () => _showEditCategoryDialog(e, type),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
+    if (confirm == true) {
+      await _categoryService.deleteCategory(category.id);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kategori'),
-        backgroundColor: Colors.indigo,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            _buildCategoryList('Pemasukan', incomeCategories, Colors.green),
-            _buildCategoryList('Pengeluaran', expenseCategories, Colors.red),
-          ],
-        ),
+      appBar: AppBar(title: const Text('Kategori')),
+      body: Column(
+        children: [
+          // Gabungkan search dan filter dalam satu baris
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12.0,
+              vertical: 4.0,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    onChanged: (value) => setState(() => _searchQuery = value),
+                    decoration: InputDecoration(
+                      hintText: 'Cari kategori...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 0,
+                        horizontal: 12,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                DropdownButton<String>(
+                  value: _filterType,
+                  items: const [
+                    DropdownMenuItem(value: 'all', child: Text('Semua')),
+                    DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
+                    DropdownMenuItem(
+                      value: 'expense',
+                      child: Text('Pengeluaran'),
+                    ),
+                  ],
+                  onChanged: (val) => setState(() => _filterType = val!),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<List<Category>>(
+              stream: _categoryService.getCategoryStream(
+                query: _searchQuery,
+                type: _filterType,
+              ),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final categories = snapshot.data ?? [];
+                if (categories.isEmpty) {
+                  return const Center(child: Text('Belum ada kategori'));
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: categories.length,
+                  itemBuilder: (ctx, i) {
+                    final c = categories[i];
+                    return Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        title: Text(c.name),
+                        subtitle: Text(
+                          c.type == 'income' ? 'Pemasukan' : 'Pengeluaran',
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, size: 20),
+                              onPressed: () => _openCategoryForm(category: c),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, size: 20),
+                              onPressed: () => _deleteCategory(c),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddCategoryDialog,
-        backgroundColor: Colors.indigo,
+        onPressed: () => _openCategoryForm(),
         child: const Icon(Icons.add),
+        backgroundColor: Colors.lightBlue,
+        foregroundColor: Colors.white,
       ),
     );
   }

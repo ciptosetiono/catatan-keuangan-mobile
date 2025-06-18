@@ -31,6 +31,10 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             primarySwatch: Colors.lightBlue,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor:
+                  Colors.lightBlue, // Ini menentukan primary, secondary, dll
+            ),
             appBarTheme: const AppBarTheme(
               backgroundColor: Colors.lightBlue, // 👈 Global AppBar color
               foregroundColor: Colors.white, // 👈 Icon & text color
@@ -39,6 +43,33 @@ class MyApp extends StatelessWidget {
             scaffoldBackgroundColor: Colors.white,
             fontFamily: 'Roboto',
             visualDensity: VisualDensity.adaptivePlatformDensity,
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.lightBlue, // Button background color
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+            outlinedButtonTheme: OutlinedButtonThemeData(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.lightBlue,
+                side: BorderSide(color: Colors.lightBlue),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: TextStyle(fontSize: 16),
+              ),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.lightBlue,
+                textStyle: TextStyle(fontSize: 16),
+              ),
+            ),
           ),
           home:
               snapshot.connectionState == ConnectionState.waiting

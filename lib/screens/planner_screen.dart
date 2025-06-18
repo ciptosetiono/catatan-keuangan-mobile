@@ -9,10 +9,7 @@ class PlannerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Rencana Belanja'),
-        backgroundColor: Colors.indigo,
-      ),
+      appBar: AppBar(title: const Text('Rencana Belanja')),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: PlannerService().getPlanners(),
         builder: (context, snapshot) {

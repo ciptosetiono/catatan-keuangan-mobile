@@ -32,9 +32,6 @@ class _AddPlannerScreenState extends State<AddPlannerScreen> {
       final date = _selectedDate;
       final note = _noteCtrl.text.trim();
 
-      // TODO: simpan ke Firestore
-      print('Planner saved: $title, $amount, $date, $note');
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Planner berhasil ditambahkan')),
       );
