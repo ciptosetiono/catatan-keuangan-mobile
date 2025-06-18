@@ -6,10 +6,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 
 import 'screens/home_screen.dart';
-import 'screens/transaction_screen.dart';
-import 'screens/planner_screen.dart';
-import 'screens/report_screen.dart';
-import 'screens/setting_screen.dart';
+import 'screens/transactions/transaction_screen.dart';
+import 'screens/planners/planner_screen.dart';
+import 'screens/reports/report_screen.dart';
+import 'screens/settings/setting_screen.dart';
 import 'screens/login_screen.dart';
 
 void main() async {
@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                textStyle: TextStyle(fontSize: 16),
               ),
             ),
             outlinedButtonTheme: OutlinedButtonThemeData(

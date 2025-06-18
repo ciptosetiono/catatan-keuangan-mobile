@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../models/category_model.dart';
-import '../services/category_service.dart';
+import '../../models/category_model.dart';
+import '../../services/category_service.dart';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
@@ -16,6 +16,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
   String _filterType = 'all';
 
   void _openCategoryForm({Category? category}) {
+    // ignore: no_leading_underscores_for_local_identifiers
     final TextEditingController _controller = TextEditingController(
       text: category?.name ?? '',
     );
@@ -110,6 +111,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   await _categoryService.addCategory(newCategory);
                 }
 
+                // ignore: use_build_context_synchronously
                 Navigator.pop(context);
               },
               style: TextButton.styleFrom(
@@ -139,6 +141,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
+                // ignore: sort_child_properties_last
                 child: const Text('Hapus'),
                 style: TextButton.styleFrom(
                   backgroundColor:
@@ -254,6 +257,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openCategoryForm(),
+        // ignore: sort_child_properties_last
         child: const Icon(Icons.add),
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,

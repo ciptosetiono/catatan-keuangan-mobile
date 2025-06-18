@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import '../services/planner_service.dart';
+import '../../services/planner_service.dart';
 
 class PlannerScreen extends StatelessWidget {
   const PlannerScreen({super.key});

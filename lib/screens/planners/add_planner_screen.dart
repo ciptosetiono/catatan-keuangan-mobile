@@ -27,10 +27,7 @@ class _AddPlannerScreenState extends State<AddPlannerScreen> {
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
-      final title = _titleCtrl.text.trim();
-      final amount = double.tryParse(_amountCtrl.text) ?? 0;
       final date = _selectedDate;
-      final note = _noteCtrl.text.trim();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Planner berhasil ditambahkan')),

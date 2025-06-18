@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/auth_service.dart';
+import '../../services/auth_service.dart';
 import 'category_screen.dart';
+import 'wallet_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -61,6 +62,24 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Kartu menu kategori
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.account_balance_wallet),
+              title: const Text('Pengaturan Wallet'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AccountScreen()),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 12),
           Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),

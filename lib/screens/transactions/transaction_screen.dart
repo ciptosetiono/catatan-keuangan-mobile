@@ -1,7 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import '../services/transaction_service.dart';
+import '../../services/transaction_service.dart';
 import 'add_transaction_screen.dart';
 
 class TransactionScreen extends StatefulWidget {
