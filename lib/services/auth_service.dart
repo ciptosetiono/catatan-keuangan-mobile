@@ -26,7 +26,6 @@ class AuthService {
 
       return userCredential.user;
     } catch (e) {
-      print('Login error: $e');
       return null;
     }
   }

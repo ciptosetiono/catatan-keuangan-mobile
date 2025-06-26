@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'firebase_options.dart';
 
 import 'screens/home_screen.dart';
@@ -27,48 +28,32 @@ class MyApp extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         return MaterialApp(
-          title: 'Personal Finance App',
+          title: 'My Money Book',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
-            primarySwatch: Colors.lightBlue,
             colorScheme: ColorScheme.fromSeed(
-              seedColor:
-                  Colors.lightBlue, // Ini menentukan primary, secondary, dll
+              seedColor: Colors.lightBlue,
+              brightness: Brightness.light,
             ),
+            useMaterial3: true,
             appBarTheme: const AppBarTheme(
-              backgroundColor: Colors.lightBlue, // 👈 Global AppBar color
-              foregroundColor: Colors.white, // 👈 Icon & text color
               elevation: 0,
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              centerTitle: false,
             ),
-            scaffoldBackgroundColor: Colors.white,
-            fontFamily: 'Roboto',
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.lightBlue, // Button background color
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                textStyle: TextStyle(fontSize: 16),
-              ),
+            textTheme: const TextTheme(
+              bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              labelLarge: TextStyle(fontSize: 14, color: Colors.grey),
             ),
-            outlinedButtonTheme: OutlinedButtonThemeData(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.lightBlue,
-                side: BorderSide(color: Colors.lightBlue),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                textStyle: TextStyle(fontSize: 16),
-              ),
+            scaffoldBackgroundColor: const Color(0xFFF5F6FA),
+            floatingActionButtonTheme: const FloatingActionButtonThemeData(
+              backgroundColor: Colors.lightBlue,
+              foregroundColor: Colors.white,
             ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.lightBlue,
-                textStyle: TextStyle(fontSize: 16),
-              ),
+            inputDecorationTheme: const InputDecorationTheme(
+              border: OutlineInputBorder(),
             ),
           ),
           home:
@@ -104,11 +89,31 @@ class _MainPageState extends State<MainPage> {
   ];
 
   final List<BottomNavigationBarItem> _items = const [
-    BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-    BottomNavigationBarItem(icon: Icon(Icons.swap_horiz), label: 'Transaksi'),
-    BottomNavigationBarItem(icon: Icon(Icons.event_note), label: 'Planner'),
-    BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Report'),
-    BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.home_outlined),
+      activeIcon: Icon(Icons.home),
+      label: 'Home',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.swap_horiz_outlined),
+      activeIcon: Icon(Icons.swap_horiz),
+      label: 'Transaksi',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.account_balance_wallet_outlined),
+      activeIcon: Icon(Icons.account_balance_wallet),
+      label: 'Anggaran',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.bar_chart_outlined),
+      activeIcon: Icon(Icons.bar_chart),
+      label: 'Report',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.settings_outlined),
+      activeIcon: Icon(Icons.settings),
+      label: 'Setting',
+    ),
   ];
 
   void _onTabTapped(int index) {
@@ -124,9 +129,10 @@ class _MainPageState extends State<MainPage> {
         onTap: _onTabTapped,
         items: _items,
         selectedItemColor: Colors.lightBlue,
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: Colors.grey.shade600,
         type: BottomNavigationBarType.fixed,
         showUnselectedLabels: true,
+        elevation: 10,
       ),
     );
   }

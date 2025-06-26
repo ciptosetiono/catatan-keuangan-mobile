@@ -27,8 +27,6 @@ class _AddPlannerScreenState extends State<AddPlannerScreen> {
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
-      final date = _selectedDate;
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Planner berhasil ditambahkan')),
       );

@@ -19,29 +19,23 @@ class CategoryService {
 
     baseQuery = baseQuery.orderBy('name');
 
-    return baseQuery
-        .snapshots()
-        .handleError((e) {
-          print('🔥 Firestore stream error: $e');
-        })
-        .map((snapshot) {
-          var docs = snapshot.docs;
+    return baseQuery.snapshots().handleError((e) {}).map((snapshot) {
+      var docs = snapshot.docs;
 
-          // Filter by name (client-side)
-          if (query != null && query.trim().isNotEmpty) {
-            final q = query.toLowerCase();
-            docs =
-                docs.where((doc) {
-                  final name = (doc['name'] as String?)?.toLowerCase() ?? '';
-                  return name.contains(q);
-                }).toList();
-          }
+      // Filter by name (client-side)
+      if (query != null && query.trim().isNotEmpty) {
+        final q = query.toLowerCase();
+        docs =
+            docs.where((doc) {
+              final name = (doc['name'] as String?)?.toLowerCase() ?? '';
+              return name.contains(q);
+            }).toList();
+      }
 
-          print(docs);
-          return docs.map((doc) {
-            return Category.fromMap(doc.id, doc.data());
-          }).toList();
-        });
+      return docs.map((doc) {
+        return Category.fromMap(doc.id, doc.data());
+      }).toList();
+    });
   }
 
   /// Menambahkan kategori baru
@@ -49,7 +43,6 @@ class CategoryService {
     try {
       await categoriesRef.add(category.toMap());
     } catch (e) {
-      print('❌ Error adding category: $e');
       rethrow;
     }
   }
@@ -59,7 +52,6 @@ class CategoryService {
     try {
       await categoriesRef.doc(category.id).update(category.toMap());
     } catch (e) {
-      print('❌ Error updating category: $e');
       rethrow;
     }
   }
@@ -69,7 +61,6 @@ class CategoryService {
     try {
       await categoriesRef.doc(id).delete();
     } catch (e) {
-      print('❌ Error deleting category: $e');
       rethrow;
     }
   }

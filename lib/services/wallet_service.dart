@@ -14,9 +14,7 @@ class WalletService {
         .where('userId', isEqualTo: uid)
         .orderBy('name')
         .snapshots()
-        .handleError((e) {
-          print('Error fetching wallets: $e');
-        })
+        .handleError((e) {})
         .map((snapshot) {
           return snapshot.docs
               .map(
@@ -28,9 +26,7 @@ class WalletService {
   }
 
   Future<void> addWallet(Wallet wallet) async {
-    print('Adding wallet: ${wallet.name}');
     await walletsRef.add(wallet.toMap());
-    print('✅ Wallet ditambahkan');
   }
 
   Future<void> updateWallet(Wallet wallet) async {

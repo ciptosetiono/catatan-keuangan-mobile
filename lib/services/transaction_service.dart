@@ -8,19 +8,21 @@ class TransactionService {
 
   /// Tambah transaksi baru ke Firestore
   Future<void> addTransaction({
+    required String walletId,
     required String title,
     required double amount,
     required String type, // 'income' atau 'expense'
-    required String category,
+    required String categoryId,
     required DateTime date,
   }) async {
     if (userId == null) return;
     await _db.collection('transactions').add({
       'userId': userId,
+      'walletId': walletId,
       'title': title,
       'amount': amount,
       'type': type,
-      'category': category,
+      'categoryId': categoryId,
       'date': Timestamp.fromDate(date),
       'createdAt': FieldValue.serverTimestamp(),
     });
@@ -30,6 +32,10 @@ class TransactionService {
   Stream<QuerySnapshot<Map<String, dynamic>>> getTransactions({
     DateTime? fromDate,
     DateTime? toDate,
+    String? type,
+    String? title,
+    String? account,
+    String? category,
   }) {
     Query<Map<String, dynamic>> query = _db
         .collection('transactions')
