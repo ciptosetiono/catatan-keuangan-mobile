@@ -51,7 +51,7 @@ class AccountFilterDropdown extends StatelessWidget {
                       ),
                       ...items.map(
                         (wallet) => DropdownMenuItem<String>(
-                          value: wallet.name,
+                          value: wallet.id,
                           child: Text(wallet.name),
                         ),
                       ),

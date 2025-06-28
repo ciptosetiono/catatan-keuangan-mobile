@@ -36,15 +36,39 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
     _titleController.text = _title ?? '';
   }
 
+  void _resetFilters() {
+    setState(() {
+      _type = null;
+      _category = null;
+      _title = null;
+      _titleController.clear();
+    });
+    Navigator.pop(context);
+    widget.onFilterApplied(type: null, category: null, title: null);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Filter Tambahan'),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      titlePadding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
+      contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('Filter Tambahan'),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
+            tooltip: 'Tutup',
+          ),
+        ],
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Type selector
             Row(
               children: [
                 Expanded(
@@ -71,6 +95,8 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
               ],
             ),
             const SizedBox(height: 16),
+
+            // Category dropdown
             StreamBuilder<List<Category>>(
               stream: CategoryService().getCategoryStream(type: _type),
               builder: (context, snapshot) {
@@ -83,7 +109,7 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
                       items
                           .map(
                             (e) => DropdownMenuItem(
-                              value: e.name,
+                              value: e.id,
                               child: Text(e.name),
                             ),
                           )
@@ -93,6 +119,8 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
               },
             ),
             const SizedBox(height: 16),
+
+            // Title input
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(labelText: 'Judul'),
@@ -104,12 +132,7 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context); // cancel
-          },
-          child: const Text('Batal'),
-        ),
+        TextButton(onPressed: _resetFilters, child: const Text('Reset')),
         ElevatedButton(
           onPressed: () {
             Navigator.pop(context);

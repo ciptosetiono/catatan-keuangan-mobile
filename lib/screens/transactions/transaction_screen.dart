@@ -69,8 +69,8 @@ class _TransactionScreenState extends State<TransactionScreen> {
       fromDate: _from,
       toDate: _to,
       type: _typeFilter,
-      account: _accountFilter,
-      category: _categoryFilter,
+      walletId: _accountFilter,
+      categoryId: _categoryFilter,
       title: _titleFilter,
     );
   }
@@ -198,6 +198,13 @@ class _TransactionScreenState extends State<TransactionScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            print('❌ Error dari snapshot: ${snapshot.error}');
+            return Text(
+              'Terjadi kesalahan, tidak dapat mengambil data transaksi',
+            );
           }
 
           final data = snapshot.data?.docs ?? [];
