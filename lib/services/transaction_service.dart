@@ -29,7 +29,7 @@ class TransactionService {
   }
 
   /// Ambil transaksi dengan filter tanggal optional
-  Stream<QuerySnapshot<Map<String, dynamic>>> getTransactions({
+  Stream<QuerySnapshot<Map<String, dynamic>>> getTransactionsStream({
     DateTime? fromDate,
     DateTime? toDate,
     String? type,
@@ -39,7 +39,8 @@ class TransactionService {
   }) {
     Query<Map<String, dynamic>> query = _db
         .collection('transactions')
-        .where('userId', isEqualTo: userId);
+        .where('userId', isEqualTo: userId)
+        .orderBy('date', descending: true);
 
     if (fromDate != null) {
       query = query.where(
@@ -47,16 +48,19 @@ class TransactionService {
         isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate),
       );
     }
+
     if (toDate != null) {
       query = query.where('date', isLessThan: Timestamp.fromDate(toDate));
     }
+
     if (type != null && type.isNotEmpty) {
       query = query.where('type', isEqualTo: type);
     }
+
     if (walletId != null && walletId.isNotEmpty) {
-      print('Filtering by account: $walletId');
       query = query.where('walletId', isEqualTo: walletId);
     }
+
     if (categoryId != null && categoryId.isNotEmpty) {
       query = query.where('categoryId', isEqualTo: categoryId);
     }
@@ -65,7 +69,56 @@ class TransactionService {
       query = query.where('title', isEqualTo: title);
     }
 
-    return query.orderBy('date', descending: true).snapshots();
+    return query.snapshots();
+  }
+
+  Future<QuerySnapshot<Map<String, dynamic>>> getTransactionsPaginated({
+    required int limit,
+    DocumentSnapshot? startAfter,
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? type,
+    String? title,
+    String? walletId,
+    String? categoryId,
+  }) {
+    Query<Map<String, dynamic>> query = _db
+        .collection('transactions')
+        .where('userId', isEqualTo: userId)
+        .orderBy('date', descending: true);
+
+    if (fromDate != null) {
+      query = query.where(
+        'date',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate),
+      );
+    }
+
+    if (toDate != null) {
+      query = query.where('date', isLessThan: Timestamp.fromDate(toDate));
+    }
+
+    if (type != null && type.isNotEmpty) {
+      query = query.where('type', isEqualTo: type);
+    }
+
+    if (walletId != null && walletId.isNotEmpty) {
+      query = query.where('walletId', isEqualTo: walletId);
+    }
+
+    if (categoryId != null && categoryId.isNotEmpty) {
+      query = query.where('categoryId', isEqualTo: categoryId);
+    }
+
+    if (title != null && title.isNotEmpty) {
+      query = query.where('title', isEqualTo: title);
+    }
+
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+
+    return query.limit(limit).get();
   }
 
   Future<void> addTransactionFromMap(Map<String, dynamic> data) async {
