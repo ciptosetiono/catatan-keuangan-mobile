@@ -194,7 +194,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: _submit,
-                  icon: const Icon(Icons.save),
                   label: const Text('Simpan Transaksi'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),

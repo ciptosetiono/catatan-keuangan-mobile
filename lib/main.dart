@@ -3,19 +3,26 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 
 import 'screens/home_screen.dart';
 import 'screens/transactions/transaction_screen.dart';
-import 'screens/planners/planner_screen.dart';
+import 'screens/budgets/budget_screen.dart';
 import 'screens/reports/report_screen.dart';
 import 'screens/settings/setting_screen.dart';
 import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+  );
+
   runApp(const MyApp());
 }
 
@@ -83,7 +90,7 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> _screens = const [
     HomeScreen(),
     TransactionScreen(),
-    PlannerScreen(),
+    BudgetScreen(),
     ReportScreen(),
     SettingsScreen(),
   ];
@@ -104,11 +111,13 @@ class _MainPageState extends State<MainPage> {
       activeIcon: Icon(Icons.account_balance_wallet),
       label: 'Anggaran',
     ),
+    /*
     BottomNavigationBarItem(
       icon: Icon(Icons.bar_chart_outlined),
       activeIcon: Icon(Icons.bar_chart),
       label: 'Report',
     ),
+    */
     BottomNavigationBarItem(
       icon: Icon(Icons.settings_outlined),
       activeIcon: Icon(Icons.settings),

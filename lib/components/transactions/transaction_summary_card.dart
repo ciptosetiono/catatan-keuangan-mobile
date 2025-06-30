@@ -35,7 +35,7 @@ class TransactionSummaryCard extends StatelessWidget {
               color: Colors.red,
             ),
             _buildSummaryItem(
-              label: 'Saldo',
+              label: 'Balance',
               value: balance,
               color: Colors.blue,
             ),

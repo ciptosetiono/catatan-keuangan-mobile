@@ -2,11 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 
-import '../../../components/filters/account_filter_dropdown.dart';
-import '../../../components/filters/date_filter_dropdown.dart';
-import '../../../components/filters/unified_filter_dialog.dart';
+import '../../components/transactions/account_filter_dropdown.dart';
+import '../../components/transactions/date_filter_dropdown.dart';
+import '../../components/transactions/unified_filter_dialog.dart';
 import '../../../components/transactions/transaction_action_dialog.dart';
 import '../../../components/transactions/transaction_delete_dialog.dart';
 import '../../../components/transactions/transaction_list_item.dart';

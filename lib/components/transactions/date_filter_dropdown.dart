@@ -89,8 +89,6 @@ class DateFilterDropdown extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Row(
         children: [
-          const Icon(Icons.date_range, color: Colors.black),
-          const SizedBox(width: 8),
           Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<DateFilterOption>(
@@ -127,6 +125,8 @@ class DateFilterDropdown extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(width: 8),
+          const Icon(Icons.date_range, color: Colors.black),
         ],
       ),
     );

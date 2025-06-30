@@ -138,4 +138,29 @@ class TransactionService {
   Future<void> deleteTransaction(String id) async {
     await _db.collection('transactions').doc(id).delete();
   }
+
+  Future<double> getTotalSpentByCategory(
+    String category,
+    DateTime month,
+  ) async {
+    final from = DateTime(month.year, month.month);
+    final to = DateTime(month.year, month.month + 1);
+
+    final query =
+        await _db
+            .collection('transactions')
+            .where('userId', isEqualTo: userId)
+            .where('date', isGreaterThanOrEqualTo: from)
+            .where('date', isLessThan: to)
+            .where('type', isEqualTo: 'expense')
+            .where('category', isEqualTo: category)
+            .get();
+
+    final total = query.docs.fold<double>(
+      0.0,
+      (sum, doc) => sum + (doc['amount'] as num).toDouble(),
+    );
+
+    return total;
+  }
 }
