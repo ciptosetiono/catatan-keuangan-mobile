@@ -30,7 +30,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          title: Text(isEdit ? 'Edit Kategori' : 'Tambah Kategori'),
+          title: Text(isEdit ? 'Edit Category' : 'Add Category'),
           content: StatefulBuilder(
             builder: (context, setStateDialog) {
               return Column(
@@ -39,7 +39,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   TextField(
                     controller: _controller,
                     decoration: const InputDecoration(
-                      labelText: 'Nama Kategori',
+                      labelText: 'Category Name',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -50,7 +50,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         child: RadioListTile<String>(
                           value: 'income',
                           groupValue: tempSelectedType,
-                          title: const Text('Pemasukan'),
+                          title: const Text('Income'),
                           activeColor: Colors.lightBlue,
                           tileColor:
                               tempSelectedType == 'income'
@@ -65,7 +65,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         child: RadioListTile<String>(
                           value: 'expense',
                           groupValue: tempSelectedType,
-                          title: const Text('Pengeluaran'),
+                          title: const Text('Expense'),
                           onChanged: (value) {
                             setStateDialog(() => tempSelectedType = value!);
                           },
@@ -83,7 +83,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               style: TextButton.styleFrom(
                 foregroundColor: const Color.fromARGB(255, 65, 64, 64),
               ),
-              child: const Text('Batal'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -110,7 +110,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 backgroundColor: Colors.lightBlue,
                 foregroundColor: Colors.white,
               ),
-              child: Text(isEdit ? 'Simpan' : 'Tambah'),
+              child: Text(isEdit ? 'Save' : 'Add'),
             ),
           ],
         );
@@ -123,16 +123,18 @@ class _CategoryScreenState extends State<CategoryScreen> {
       context: context,
       builder:
           (ctx) => AlertDialog(
-            title: const Text('Hapus Kategori'),
-            content: Text('Yakin ingin menghapus kategori "${category.name}"?'),
+            title: const Text('Delete Categori'),
+            content: Text(
+              'Are you sure to delete category "${category.name}"?',
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Batal'),
+                child: const Text('Cancel'),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Hapus'),
+                child: const Text('Delete'),
                 style: TextButton.styleFrom(
                   backgroundColor: Colors.redAccent,
                   foregroundColor: Colors.white,
@@ -150,7 +152,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kategori'),
+        title: const Text('Category'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -177,7 +179,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                 (value) => setState(() => _searchQuery = value),
                             style: const TextStyle(color: Colors.black),
                             decoration: const InputDecoration(
-                              hintText: 'Cari kategori...',
+                              hintText: 'search category...',
                               hintStyle: TextStyle(color: Colors.black54),
                               border: InputBorder.none,
                               isDense: true,
@@ -217,15 +219,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               items: const [
                                 DropdownMenuItem(
                                   value: 'all',
-                                  child: Text('Semua'),
+                                  child: Text('All Types'),
                                 ),
                                 DropdownMenuItem(
                                   value: 'income',
-                                  child: Text('Pemasukan'),
+                                  child: Text('Income'),
                                 ),
                                 DropdownMenuItem(
                                   value: 'expense',
-                                  child: Text('Pengeluaran'),
+                                  child: Text('Expense'),
                                 ),
                               ],
                               onChanged:
@@ -259,7 +261,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
                 final categories = snapshot.data ?? [];
                 if (categories.isEmpty) {
-                  return const Center(child: Text('Belum ada kategori'));
+                  return const Center(
+                    child: Text('There are no categories yet. Add one now!'),
+                  );
                 }
 
                 return ListView.builder(
@@ -274,7 +278,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       child: ListTile(
                         title: Text(c.name),
                         subtitle: Text(
-                          c.type == 'income' ? 'Pemasukan' : 'Pengeluaran',
+                          c.type == 'income' ? 'Income' : 'Expense',
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,

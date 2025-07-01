@@ -26,18 +26,18 @@ class _AccountScreenState extends State<AccountScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          title: Text(isEdit ? 'Edit Wallet' : 'Tambah Wallet'),
+          title: Text(isEdit ? 'Edit Wallet' : 'Add Wallet'),
           content: TextField(
             controller: _controller,
             decoration: const InputDecoration(
-              labelText: 'Nama Wallet',
+              labelText: 'Wallet Name',
               border: OutlineInputBorder(),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
+              child: const Text('Cancel'),
               style: TextButton.styleFrom(
                 foregroundColor: const Color.fromARGB(
                   255,
@@ -62,13 +62,12 @@ class _AccountScreenState extends State<AccountScreen> {
                 if (isEdit) {
                   await _walletService.updateWallet(newWallet);
                 } else {
-                  print('button Adding wallet cklik: ${newWallet.name}');
                   await _walletService.addWallet(newWallet);
                 }
 
                 Navigator.pop(context);
               },
-              child: Text(isEdit ? 'Simpan' : 'Tambah'),
+              child: Text(isEdit ? 'Save' : 'Add'),
             ),
           ],
         );
@@ -81,8 +80,8 @@ class _AccountScreenState extends State<AccountScreen> {
       context: context,
       builder:
           (ctx) => AlertDialog(
-            title: const Text('Hapus Wallet'),
-            content: Text('Yakin ingin menghapus wallet "${wallet.name}"?'),
+            title: const Text('Delete Wallet'),
+            content: Text('Are you sure to delete wallet "${wallet.name}"?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
@@ -94,11 +93,11 @@ class _AccountScreenState extends State<AccountScreen> {
                     64,
                   ), // Set your desired color here
                 ),
-                child: const Text('Batal'),
+                child: const Text('Cancel'),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Hapus'),
+                child: const Text('Delete'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red, // Set your desired color here
                 ),
@@ -126,7 +125,7 @@ class _AccountScreenState extends State<AccountScreen> {
           final accounts = snapshot.data ?? [];
           if (accounts.isEmpty) {
             return const Center(
-              child: Text('Belum ada wallet. tambahkan sekarang!'),
+              child: Text('THre are no wallets yet. Add one now!'),
             );
           }
 
