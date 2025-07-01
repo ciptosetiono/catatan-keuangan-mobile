@@ -28,33 +28,33 @@ class DateFilterDropdown extends StatelessWidget {
       case DateFilterOption.today:
         from = DateTime(now.year, now.month, now.day);
         to = from.add(const Duration(days: 1));
-        label = 'Hari Ini';
+        label = 'Today';
         break;
       case DateFilterOption.thisMonth:
         from = DateTime(now.year, now.month);
         to = DateTime(now.year, now.month + 1);
-        label = 'Bulan Ini';
+        label = 'This Month';
         break;
       case DateFilterOption.lastMonth:
         final lastMonth = DateTime(now.year, now.month - 1);
         from = DateTime(lastMonth.year, lastMonth.month);
         to = DateTime(now.year, now.month);
-        label = 'Bulan Lalu';
+        label = 'Last Month';
         break;
       case DateFilterOption.last30Days:
         from = now.subtract(const Duration(days: 30));
         to = now.add(const Duration(days: 1));
-        label = '30 Hari Terakhir';
+        label = 'Last 30 Days';
         break;
       case DateFilterOption.thisYear:
         from = DateTime(now.year);
         to = DateTime(now.year + 1);
-        label = 'Tahun Ini';
+        label = 'This Year';
         break;
       case DateFilterOption.all:
         from = null;
         to = null;
-        label = 'Semua';
+        label = 'All Time';
         break;
       case DateFilterOption.custom:
         final picked = await showDateRangePicker(
@@ -80,9 +80,9 @@ class DateFilterDropdown extends StatelessWidget {
               child: child!,
             );
           },
-          helpText: 'Pilih Rentang Tanggal', // Set the button text here
-          confirmText: 'Terapkan',
-          cancelText: 'Batal',
+          helpText: 'Custom Date', // Set the button text here
+          confirmText: 'Apply',
+          cancelText: 'Cancel',
         );
         if (picked != null) {
           from = picked.start;
@@ -130,12 +130,12 @@ class DateFilterDropdown extends StatelessWidget {
                                   .toString()
                                   .split('.')
                                   .last
-                                  .replaceAll('thisMonth', 'Bulan Ini')
-                                  .replaceAll('lastMonth', 'Bulan Lalu')
-                                  .replaceAll('last30Days', '30 Hari')
-                                  .replaceAll('thisYear', 'Tahun Ini')
-                                  .replaceAll('today', 'Hari Ini')
-                                  .replaceAll('all', 'Semua'),
+                                  .replaceAll('thisMonth', 'This Month')
+                                  .replaceAll('lastMonth', 'Last Month')
+                                  .replaceAll('last30Days', 'Last 30 Days')
+                                  .replaceAll('thisYear', 'This Year')
+                                  .replaceAll('today', 'Today')
+                                  .replaceAll('all', 'All Time'),
                         ),
                       );
                     }).toList(),

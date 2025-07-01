@@ -30,7 +30,7 @@ class BudgetCategoryDropdown extends StatelessWidget {
             isExpanded: true,
             icon: const Icon(Icons.category),
             items: [
-              const DropdownMenuItem(value: '', child: Text('Semua Kategori')),
+              const DropdownMenuItem(value: '', child: Text('All Categories')),
               ...categories.map(
                 (c) => DropdownMenuItem(value: c.id, child: Text(c.name)),
               ),

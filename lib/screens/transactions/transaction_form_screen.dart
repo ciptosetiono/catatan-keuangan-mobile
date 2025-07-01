@@ -14,6 +14,8 @@ import '../../../models/category_model.dart';
 import '../../../models/wallet_model.dart';
 import '../../../services/wallet_service.dart';
 import '../../components/forms/currency_text_field.dart';
+import '../../../utils/currency_formatter.dart';
+import '../../../components/alerts/flash_message.dart';
 
 class TransactionFormScreen extends StatefulWidget {
   final String? transactionId;
@@ -69,21 +71,15 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategoryId == null || _selectedWalletId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pilih kategori dan akun terlebih dahulu'),
-        ),
+        const SnackBar(content: Text('Choose category and wallet first')),
       );
       return;
     }
 
     final title = _titleController.text.trim();
-    final rawAmount =
-        _amountController.text
-            .replaceAll('.', '')
-            .replaceAll(',', '')
-            .replaceAll('Rp', '')
-            .trim();
-    final amount = double.tryParse(rawAmount) ?? 0;
+    // Remove all non-digit and non-decimal separator characters
+    final amount = CurrencyFormatter().decodeAmount(_amountController.text);
+
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
     final trx = {
@@ -98,15 +94,34 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
     if (widget.transactionId != null) {
       await TransactionService().updateTransaction(widget.transactionId!, trx);
-    } else {
-      await TransactionService().addTransaction(
-        title: title,
-        amount: amount,
-        type: _type,
-        categoryId: _selectedCategoryId!,
-        walletId: _selectedWalletId!,
-        date: _selectedDate,
+      ScaffoldMessenger.of(context).showSnackBar(
+        FlashMessage(
+          color: Colors.green,
+          message: 'Transaction updated successfully',
+        ),
       );
+    } else {
+      try {
+        await TransactionService().addTransaction(
+          title: title,
+          amount: amount,
+          type: _type,
+          categoryId: _selectedCategoryId!,
+          walletId: _selectedWalletId!,
+          date: _selectedDate,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          FlashMessage(
+            color: Colors.green,
+            message: 'Transaction added successfully',
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          FlashMessage(color: Colors.red, message: 'Transaction action failed'),
+        );
+        return;
+      }
     }
 
     Navigator.pop(context);
@@ -118,102 +133,117 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Edit Transaksi' : 'Tambah Transaksi'),
+        title: Text(isEdit ? 'Edit Transaction' : 'Add Transaction'),
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TransactionTypeSelector(
-                selected: _type,
-                onChanged: (val) {
-                  setState(() {
-                    _type = val;
-                    _selectedCategoryId = null;
-                    _loadInitialData();
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
+      body:
+          _categories.isEmpty || _wallets.isEmpty
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      TransactionTypeSelector(
+                        selected: _type,
+                        onChanged: (val) {
+                          setState(() {
+                            _type = val;
+                            _selectedCategoryId = null;
+                            _loadInitialData();
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
 
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Judul',
-                  border: OutlineInputBorder(),
-                ),
-                validator:
-                    (val) =>
-                        val == null || val.trim().isEmpty
-                            ? 'Judul wajib diisi'
-                            : null,
-              ),
-              const SizedBox(height: 16),
+                      CurrencyTextField(
+                        controller: _amountController,
+                        label: 'Amount',
+                        validator:
+                            (val) =>
+                                val == null || val.trim().isEmpty
+                                    ? 'Amount is required'
+                                    : null,
+                      ),
 
-              CurrencyTextField(
-                controller: _amountController,
-                label: 'Jumlah',
-                validator:
-                    (val) =>
-                        val == null || val.trim().isEmpty
-                            ? 'Jumlah wajib diisi'
-                            : null,
-              ),
+                      const SizedBox(height: 16),
 
-              const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value:
+                            _categories.any(
+                                  (cat) => cat.id == _selectedCategoryId,
+                                )
+                                ? _selectedCategoryId
+                                : null,
+                        decoration: const InputDecoration(
+                          labelText: 'Category',
+                          border: OutlineInputBorder(),
+                        ),
+                        items:
+                            _categories
+                                .map(
+                                  (cat) => DropdownMenuItem(
+                                    value: cat.id,
+                                    child: Text(cat.name),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged:
+                            (val) => setState(() => _selectedCategoryId = val),
+                      ),
+                      const SizedBox(height: 16),
 
-              DropdownButtonFormField<String>(
-                value: _selectedCategoryId,
-                decoration: const InputDecoration(
-                  labelText: 'Kategori',
-                  border: OutlineInputBorder(),
-                ),
-                items:
-                    _categories
-                        .map(
-                          (cat) => DropdownMenuItem(
-                            value: cat.id,
-                            child: Text(cat.name),
+                      WalletDropdown(
+                        value:
+                            _wallets.any(
+                                  (wallet) => wallet.id == _selectedWalletId,
+                                )
+                                ? _selectedWalletId
+                                : null,
+
+                        onChanged:
+                            (val) => setState(() => _selectedWalletId = val),
+                      ),
+                      const SizedBox(height: 16),
+
+                      DatePickerField(
+                        selectedDate: _selectedDate,
+                        onDatePicked:
+                            (picked) => setState(() => _selectedDate = picked),
+                      ),
+                      const SizedBox(height: 32),
+                      TextFormField(
+                        controller: _titleController,
+                        decoration: const InputDecoration(
+                          labelText: 'Note',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator:
+                            (val) =>
+                                val == null || val.trim().isEmpty
+                                    ? 'Note is required'
+                                    : null,
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _submit,
+                          label: const Text('Save Transaction'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: Colors.lightBlue,
+                            foregroundColor: Colors.white,
+                            textStyle: const TextStyle(fontSize: 16),
                           ),
-                        )
-                        .toList(),
-                onChanged: (val) => setState(() => _selectedCategoryId = val),
-              ),
-              const SizedBox(height: 16),
-
-              WalletDropdown(
-                value: _selectedWalletId,
-                onChanged: (val) => setState(() => _selectedWalletId = val),
-              ),
-              const SizedBox(height: 16),
-
-              DatePickerField(
-                selectedDate: _selectedDate,
-                onDatePicked:
-                    (picked) => setState(() => _selectedDate = picked),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _submit,
-                  label: const Text('Simpan Transaksi'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Colors.lightBlue,
-                    foregroundColor: Colors.white,
-                    textStyle: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

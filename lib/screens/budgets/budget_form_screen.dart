@@ -7,6 +7,7 @@ import '../../services/budget_service.dart';
 import '../../services/category_service.dart';
 import '../../components/forms/currency_text_field.dart';
 import '../../components/forms/month_picker_field.dart';
+import '../../../utils/currency_formatter.dart';
 
 class BudgetFormScreen extends StatefulWidget {
   final Budget? budget;
@@ -50,13 +51,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
       _errorText = null;
     });
 
-    final rawAmount =
-        _amountController.text
-            .replaceAll('.', '')
-            .replaceAll(',', '')
-            .replaceAll('Rp', '')
-            .trim();
-    final amount = double.tryParse(rawAmount) ?? 0;
+    final amount = CurrencyFormatter().decodeAmount(_amountController.text);
 
     final userId = FirebaseAuth.instance.currentUser?.uid ?? 'demoUser';
     final budget = Budget(

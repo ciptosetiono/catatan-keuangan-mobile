@@ -39,13 +39,13 @@ class AccountFilterDropdown extends StatelessWidget {
                     dropdownColor: Colors.white,
                     style: const TextStyle(color: Colors.black),
                     hint: const Text(
-                      'Akun',
+                      'Wallet',
                       style: TextStyle(color: Colors.black),
                     ),
                     items: [
                       const DropdownMenuItem<String>(
                         value: null,
-                        child: Text('Semua Akun'),
+                        child: Text('All Walets'),
                       ),
                       ...items.map(
                         (wallet) => DropdownMenuItem<String>(

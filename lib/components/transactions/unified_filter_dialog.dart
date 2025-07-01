@@ -56,11 +56,11 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('Filter Tambahan'),
+          const Text('Custom Filter'),
           IconButton(
             icon: const Icon(Icons.close),
             onPressed: () => Navigator.pop(context),
-            tooltip: 'Tutup',
+            tooltip: 'Close',
           ),
         ],
       ),
@@ -73,7 +73,7 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
               children: [
                 Expanded(
                   child: ChoiceChip(
-                    label: const Text('Pemasukan'),
+                    label: const Text('Income'),
                     selected: _type == 'income',
                     selectedColor: Colors.green.shade100,
                     onSelected:
@@ -84,7 +84,7 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: ChoiceChip(
-                    label: const Text('Pengeluaran'),
+                    label: const Text('Expense'),
                     selected: _type == 'expense',
                     selectedColor: Colors.red.shade100,
                     onSelected:
@@ -103,7 +103,7 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
                 final items = snapshot.data ?? [];
                 return DropdownButtonFormField<String>(
                   value: _category,
-                  decoration: const InputDecoration(labelText: 'Kategori'),
+                  decoration: const InputDecoration(labelText: 'Category'),
                   isExpanded: true,
                   items:
                       items
@@ -123,7 +123,7 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
             // Title input
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Judul'),
+              decoration: const InputDecoration(labelText: 'Note'),
               onChanged:
                   (val) =>
                       setState(() => _title = val.trim().isEmpty ? null : val),
@@ -142,7 +142,7 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
               title: _title,
             );
           },
-          child: const Text('Terapkan'),
+          child: const Text('Apply Filters'),
         ),
       ],
     );

@@ -5,6 +5,7 @@ import '../../../models/budget_model.dart';
 import '../../../models/category_model.dart';
 import '../../../services/budget_service.dart';
 import '../../../services/transaction_service.dart';
+import '../../../screens/budgets/budget_detail_screen.dart';
 import '../../../screens/budgets/budget_form_screen.dart';
 import 'budget_delete_dialog.dart';
 
@@ -29,7 +30,6 @@ class BudgetItem extends StatelessWidget {
       ),
       builder: (context, snapshot) {
         final used = snapshot.data ?? 0.0;
-        final remaining = budget.amount - used;
         final percent = (used / budget.amount).clamp(0.0, 1.0);
 
         return InkWell(
@@ -48,7 +48,14 @@ class BudgetItem extends StatelessWidget {
               ],
             );
 
-            if (selected == 'edit') {
+            if (selected == 'detail') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BudgetDetailScreen(budget: budget),
+                ),
+              );
+            } else if (selected == 'edit') {
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -86,7 +93,7 @@ class BudgetItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Digunakan: ${NumberFormat.currency(locale: 'id', symbol: 'Rp').format(used)} / ${NumberFormat.currency(locale: 'id', symbol: 'Rp').format(budget.amount)}',
+                    'Used: ${NumberFormat.currency().format(used)} / ${NumberFormat.currency().format(budget.amount)}',
                     style: TextStyle(
                       fontSize: 12,
                       color:

@@ -10,13 +10,12 @@ import 'firebase_options.dart';
 import 'screens/home_screen.dart';
 import 'screens/transactions/transaction_screen.dart';
 import 'screens/budgets/budget_screen.dart';
-import 'screens/reports/report_screen.dart';
 import 'screens/settings/setting_screen.dart';
 import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('id_ID', null);
+  //await initializeDateFormatting('id_ID', null);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,

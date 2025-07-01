@@ -33,7 +33,7 @@ class TransactionModel {
       type: data['type'] ?? 'expense',
       date: (data['date'] as Timestamp).toDate(),
       userId: data['userId'] ?? '',
-      walletId: data['account'], // stored as string in Firestore
+      walletId: data['walletId'], // stored as string in Firestore
       categoryId: data['categoryId'],
       note: data['note'],
     );
@@ -46,7 +46,7 @@ class TransactionModel {
       'type': type,
       'date': Timestamp.fromDate(date),
       'userId': userId,
-      'account': walletId,
+      'walletId': walletId,
       'categoryId': categoryId,
       'note': note,
     };

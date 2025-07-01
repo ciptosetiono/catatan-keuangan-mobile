@@ -25,12 +25,12 @@ class TransactionSummaryCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _buildSummaryItem(
-              label: 'Pemasukan',
+              label: 'Income',
               value: income,
               color: Colors.green,
             ),
             _buildSummaryItem(
-              label: 'Pengeluaran',
+              label: 'Expense',
               value: expense,
               color: Colors.red,
             ),

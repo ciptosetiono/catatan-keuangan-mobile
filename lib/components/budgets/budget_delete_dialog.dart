@@ -5,12 +5,12 @@ Future<bool> showBudgetDeleteDialog(BuildContext context) async {
     context: context,
     builder:
         (ctx) => AlertDialog(
-          title: const Text('Hapus Anggaran'),
-          content: const Text('Yakin ingin menghapus anggaran ini ?'),
+          title: const Text('Delete Budget'),
+          content: const Text('Are you sure you want to delete this budget?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Batal'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -18,7 +18,7 @@ Future<bool> showBudgetDeleteDialog(BuildContext context) async {
                 foregroundColor: Colors.white,
               ),
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Hapus'),
+              child: const Text('Delete'),
             ),
           ],
         ),

@@ -19,7 +19,7 @@ Future<String?> showTransactionActionDialog(BuildContext context) {
             ),
             SimpleDialogOption(
               onPressed: () => Navigator.pop(ctx, 'delete'),
-              child: const Text('Hapus'),
+              child: const Text('Delete'),
             ),
           ],
         ),

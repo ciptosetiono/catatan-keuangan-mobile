@@ -25,6 +25,19 @@ class WalletService {
         });
   }
 
+  Future<Wallet> getWalletById(String id) async {
+    try {
+      final doc = await walletsRef.doc(id).get();
+      if (doc.exists) {
+        return Wallet.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+      } else {
+        throw Exception('Wallet not found');
+      }
+    } catch (error) {
+      throw Exception('Error fetching wallet: $error');
+    }
+  }
+
   Future<void> addWallet(Wallet wallet) async {
     await walletsRef.add(wallet.toMap());
   }

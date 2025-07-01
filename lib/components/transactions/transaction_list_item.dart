@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/transaction_model.dart';
 
 class TransactionListItem extends StatelessWidget {
@@ -39,6 +38,7 @@ class TransactionListItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(DateFormat('dd MMM yyyy').format(date)),
+                /*
                 if (transaction.walletId != null ||
                     transaction.categoryId != null)
                   Text(
@@ -47,6 +47,7 @@ class TransactionListItem extends StatelessWidget {
                     '${transaction.categoryId ?? ''}',
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
+                  */
               ],
             ),
             trailing: Text(

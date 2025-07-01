@@ -38,6 +38,19 @@ class CategoryService {
     });
   }
 
+  Future<Category> getCategoryById(String id) async {
+    try {
+      final doc = await categoriesRef.doc(id).get();
+      if (doc.exists) {
+        return Category.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+      } else {
+        throw Exception('Wallet not found');
+      }
+    } catch (error) {
+      throw Exception('Error fetching wallet: $error');
+    }
+  }
+
   /// Menambahkan kategori baru
   Future<void> addCategory(Category category) async {
     try {

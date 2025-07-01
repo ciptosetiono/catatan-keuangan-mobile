@@ -5,12 +5,14 @@ Future<bool> showTransactionDeleteDialog(BuildContext context) async {
     context: context,
     builder:
         (ctx) => AlertDialog(
-          title: const Text('Hapus Transaksi'),
-          content: const Text('Yakin ingin menghapus transaksi ini?'),
+          title: const Text('Delete Transaction'),
+          content: const Text(
+            'Are You Sure You Want To Delete This Transaction?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Batal'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx, true),
@@ -18,7 +20,7 @@ Future<bool> showTransactionDeleteDialog(BuildContext context) async {
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Hapus'),
+              child: const Text('Delete'),
             ),
           ],
         ),

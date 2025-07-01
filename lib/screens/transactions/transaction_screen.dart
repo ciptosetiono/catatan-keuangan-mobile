@@ -107,7 +107,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       _selectedDateFilter = option;
       _from = from;
       _to = to;
-      _dateFilterLabel = label ?? 'Bulan Ini';
+      _dateFilterLabel = label ?? 'This Month';
     });
     _loadTransactions(reset: true);
   }
@@ -150,8 +150,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder:
-              (_) => TransactionDetailScreen(transactionId: _transaction.id),
+          builder: (_) => TransactionDetailScreen(transaction: _transaction),
         ),
       );
     } else if (selected == 'edit') {
@@ -178,7 +177,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transaksi'),
+        title: const Text('Transactions'),
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
         bottom: PreferredSize(

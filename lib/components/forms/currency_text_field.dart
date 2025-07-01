@@ -11,7 +11,10 @@ class CurrencyTextField extends StatefulWidget {
     required this.controller,
     required this.label,
     this.validator,
+    this.locale,
   }) : super(key: key);
+
+  final String? locale;
 
   @override
   State<CurrencyTextField> createState() => _CurrencyTextFieldState();
@@ -19,7 +22,7 @@ class CurrencyTextField extends StatefulWidget {
 
 class _CurrencyTextFieldState extends State<CurrencyTextField> {
   final formatter = NumberFormat.currency(
-    locale: 'id_ID',
+    //locale: 'id_ID',
     symbol: '',
     decimalDigits: 0,
   );
@@ -62,7 +65,7 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
       decoration: InputDecoration(
         labelText: widget.label,
         border: const OutlineInputBorder(),
-        prefixText: 'Rp ',
+        //prefixText: 'Rp ',
       ),
       validator: widget.validator,
     );

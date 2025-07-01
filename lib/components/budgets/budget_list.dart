@@ -32,7 +32,7 @@ class BudgetList extends StatelessWidget {
 
         if (snapshot.hasError) {
           return const Center(
-            child: Text("Terjadi kesalahan saat memuat data."),
+            child: Text("Oops, something wrong! Please try again later."),
           );
         }
 
@@ -44,7 +44,9 @@ class BudgetList extends StatelessWidget {
         );
 
         if (budgets.isEmpty) {
-          return const Center(child: Text("Belum ada anggaran."));
+          return const Center(
+            child: Text("No budgets found for this selected month."),
+          );
         }
 
         return FutureBuilder<double>(
@@ -78,7 +80,7 @@ class BudgetList extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Total Anggaran',
+                                'Total Budget',
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 4),
@@ -94,7 +96,7 @@ class BudgetList extends StatelessWidget {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                'Total Pengeluaran: ${NumberFormat.currency(locale: 'id', symbol: 'Rp').format(totalUsed)}',
+                                'Total Expense: ${NumberFormat.currency().format(totalUsed)}',
                               ),
                               const SizedBox(height: 4),
                               LinearProgressIndicator(
@@ -105,7 +107,7 @@ class BudgetList extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Sisa: ${NumberFormat.currency(locale: 'id', symbol: 'Rp').format(remaining)}',
+                                'Sisa: ${NumberFormat.currency().format(remaining)}',
                               ),
                             ],
                           ),
