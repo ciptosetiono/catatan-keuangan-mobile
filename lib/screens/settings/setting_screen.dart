@@ -68,7 +68,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             child: ListTile(
               leading: const Icon(Icons.account_balance_wallet),
-              title: const Text('Pengaturan Wallet'),
+              title: const Text('Wallet'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.push(
@@ -86,7 +86,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             child: ListTile(
               leading: const Icon(Icons.category),
-              title: const Text('Pengaturan Kategori'),
+              title: const Text('Kategori'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.push(

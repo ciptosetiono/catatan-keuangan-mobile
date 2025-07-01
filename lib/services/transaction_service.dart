@@ -163,4 +163,39 @@ class TransactionService {
 
     return total;
   }
+
+  Future<double> getTotalSpentByMonth(DateTime month) async {
+    final from = DateTime(month.year, month.month);
+    final to = DateTime(month.year, month.month + 1);
+    print('Calculating total spent month $month');
+    print('Calculating total spent from $from to $to');
+
+    try {
+      final query =
+          await _db
+              .collection('transactions')
+              .where('userId', isEqualTo: userId)
+              .where('date', isGreaterThanOrEqualTo: from)
+              .where('date', isLessThan: to)
+              .where('type', isEqualTo: 'expense')
+              .get();
+
+      print(
+        query.docs.length > 0
+            ? 'Found ${query.docs.length} transactions'
+            : 'No transactions found for this month',
+      );
+
+      final total = query.docs.fold<double>(
+        0.0,
+        (sum, doc) => sum + (doc['amount'] as num).toDouble(),
+      );
+
+      return total;
+    } catch (e, stack) {
+      print('Error fetching transactions: $e');
+      print(stack);
+      return 0.0;
+    }
+  }
 }

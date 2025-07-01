@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         return MaterialApp(
-          title: 'My Money Book',
+          title: 'My Money Note',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
@@ -45,8 +45,8 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
             appBarTheme: const AppBarTheme(
               elevation: 0,
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
+              backgroundColor: Colors.lightBlue,
+              foregroundColor: Colors.white,
               centerTitle: false,
             ),
             textTheme: const TextTheme(
@@ -91,7 +91,6 @@ class _MainPageState extends State<MainPage> {
     HomeScreen(),
     TransactionScreen(),
     BudgetScreen(),
-    ReportScreen(),
     SettingsScreen(),
   ];
 
@@ -111,13 +110,6 @@ class _MainPageState extends State<MainPage> {
       activeIcon: Icon(Icons.account_balance_wallet),
       label: 'Anggaran',
     ),
-    /*
-    BottomNavigationBarItem(
-      icon: Icon(Icons.bar_chart_outlined),
-      activeIcon: Icon(Icons.bar_chart),
-      label: 'Report',
-    ),
-    */
     BottomNavigationBarItem(
       icon: Icon(Icons.settings_outlined),
       activeIcon: Icon(Icons.settings),

@@ -8,6 +8,8 @@ import '../../../components/forms/date_picker_field.dart';
 
 import '../../../services/transaction_service.dart';
 import '../../../services/category_service.dart';
+
+import '../../models/transaction_model.dart';
 import '../../../models/category_model.dart';
 import '../../../models/wallet_model.dart';
 import '../../../services/wallet_service.dart';
@@ -15,7 +17,7 @@ import '../../components/forms/currency_text_field.dart';
 
 class TransactionFormScreen extends StatefulWidget {
   final String? transactionId;
-  final Map<String, dynamic>? existingData;
+  final TransactionModel? existingData;
 
   const TransactionFormScreen({Key? key, this.transactionId, this.existingData})
     : super(key: key);
@@ -44,12 +46,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
     if (widget.existingData != null) {
       final data = widget.existingData!;
-      _titleController.text = data['title'] ?? '';
-      _amountController.text = data['amount'].toString();
-      _type = data['type'] ?? 'expense';
-      _selectedCategoryId = data['categoryId'];
-      _selectedWalletId = data['walletId'];
-      _selectedDate = (data['date'] as Timestamp).toDate();
+      _titleController.text = data.title ?? '';
+      _amountController.text = data.amount.toString();
+      _type = data.type ?? 'expense';
+      _selectedCategoryId = data.categoryId;
+      _selectedWalletId = data.walletId;
+      _selectedDate = data.date;
     }
   }
 
@@ -75,8 +77,13 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     }
 
     final title = _titleController.text.trim();
-    final amount =
-        double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0;
+    final rawAmount =
+        _amountController.text
+            .replaceAll('.', '')
+            .replaceAll(',', '')
+            .replaceAll('Rp', '')
+            .trim();
+    final amount = double.tryParse(rawAmount) ?? 0;
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
     final trx = {

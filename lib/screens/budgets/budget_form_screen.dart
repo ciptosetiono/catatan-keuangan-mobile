@@ -31,7 +31,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
 
     if (widget.budget != null) {
       _selectedCategoryId = widget.budget!.categoryId;
-      _amountController.text = widget.budget!.toString();
+      _amountController.text = widget.budget!.amount.toString();
       _selectedMonth = widget.budget!.month;
     }
   }
@@ -50,8 +50,13 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
       _errorText = null;
     });
 
-    final amount =
-        double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0;
+    final rawAmount =
+        _amountController.text
+            .replaceAll('.', '')
+            .replaceAll(',', '')
+            .replaceAll('Rp', '')
+            .trim();
+    final amount = double.tryParse(rawAmount) ?? 0;
 
     final userId = FirebaseAuth.instance.currentUser?.uid ?? 'demoUser';
     final budget = Budget(
@@ -61,6 +66,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
       month: DateTime(_selectedMonth.year, _selectedMonth.month),
       userId: userId,
     );
+    print('Saving budget: $budget');
 
     if (widget.budget == null) {
       final exists = await BudgetService().checkDuplicateBudget(

@@ -61,6 +61,28 @@ class DateFilterDropdown extends StatelessWidget {
           context: context,
           firstDate: DateTime(2020),
           lastDate: now.add(const Duration(days: 365)),
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                dialogBackgroundColor: Colors.white,
+                colorScheme: ColorScheme.light(
+                  primary: Theme.of(context).primaryColor,
+                  onPrimary: Colors.white,
+                  surface: Colors.white,
+                  onSurface: Colors.black,
+                ),
+                textButtonTheme: TextButtonThemeData(
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+              child: child!,
+            );
+          },
+          helpText: 'Pilih Rentang Tanggal', // Set the button text here
+          confirmText: 'Terapkan',
+          cancelText: 'Batal',
         );
         if (picked != null) {
           from = picked.start;

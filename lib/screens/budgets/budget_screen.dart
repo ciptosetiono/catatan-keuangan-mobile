@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
 
-import '../../models/budget_model.dart';
 import '../../models/category_model.dart';
-import '../../services/budget_service.dart';
 import '../../services/category_service.dart';
 import 'budget_form_screen.dart';
 import '../../components/budgets/budget_list.dart';
-import '../../components/budgets/budget_item.dart';
 import '../../components/budgets/budget_month_dropdown.dart';
 import '../../components/budgets/budget_category_dropdown.dart';
 
@@ -52,15 +48,20 @@ class _BudgetScreenState extends State<BudgetScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
-                BudgetMonthDropdown(
-                  selectedMonth: _selectedMonth,
-                  onChanged: (val) => setState(() => _selectedMonth = val),
+                Expanded(
+                  child: BudgetMonthDropdown(
+                    selectedMonth: _selectedMonth,
+                    onChanged: (val) => setState(() => _selectedMonth = val),
+                  ),
                 ),
-                const SizedBox(width: 12),
-                BudgetCategoryDropdown(
-                  selectedCategoryId: _selectedCategoryId,
-                  categories: _categories,
-                  onChanged: (val) => setState(() => _selectedCategoryId = val),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: BudgetCategoryDropdown(
+                    selectedCategoryId: _selectedCategoryId,
+                    categories: _categories,
+                    onChanged:
+                        (val) => setState(() => _selectedCategoryId = val),
+                  ),
                 ),
               ],
             ),

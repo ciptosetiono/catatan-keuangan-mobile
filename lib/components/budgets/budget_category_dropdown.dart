@@ -17,6 +17,8 @@ class BudgetCategoryDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
+        height: 40,
+        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           color: Colors.white,

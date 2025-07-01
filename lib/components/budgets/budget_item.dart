@@ -63,7 +63,10 @@ class BudgetItem extends StatelessWidget {
             }
           },
           child: Card(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: ListTile(
               title: Text(
                 category.name,
@@ -74,6 +77,7 @@ class BudgetItem extends StatelessWidget {
                 children: [
                   const SizedBox(height: 4),
                   LinearProgressIndicator(
+                    minHeight: 8,
                     value: percent,
                     backgroundColor: Colors.grey.shade300,
                     valueColor: AlwaysStoppedAnimation<Color>(

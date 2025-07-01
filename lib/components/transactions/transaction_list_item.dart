@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../models/transaction_model.dart';
 
 class TransactionListItem extends StatelessWidget {
-  final DocumentSnapshot<Map<String, dynamic>> transaction;
+  final TransactionModel transaction;
   final VoidCallback onTap;
 
   const TransactionListItem({
@@ -14,9 +15,8 @@ class TransactionListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = transaction.data()!;
-    final isIncome = data['type'] == 'income';
-    final date = (data['date'] as Timestamp).toDate();
+    final isIncome = transaction.type == 'income';
+    final date = transaction.date;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -32,18 +32,19 @@ class TransactionListItem extends StatelessWidget {
               color: isIncome ? Colors.green : Colors.red,
             ),
             title: Text(
-              data['title'] ?? '',
+              transaction.title,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(DateFormat('dd MMM yyyy').format(date)),
-                if (data['account'] != null || data['category'] != null)
+                if (transaction.walletId != null ||
+                    transaction.categoryId != null)
                   Text(
-                    '${data['account'] ?? ''}'
-                    '${data['account'] != null && data['category'] != null ? ' · ' : ''}'
-                    '${data['category'] ?? ''}',
+                    '${transaction.walletId ?? ''}'
+                    '${transaction.walletId != null && transaction.categoryId != null ? ' · ' : ''}'
+                    '${transaction.categoryId ?? ''}',
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
               ],
@@ -52,7 +53,7 @@ class TransactionListItem extends StatelessWidget {
               NumberFormat.currency(
                 locale: 'id',
                 symbol: 'Rp',
-              ).format(data['amount']),
+              ).format(transaction.amount),
               style: TextStyle(
                 color: isIncome ? Colors.green : Colors.red,
                 fontWeight: FontWeight.bold,

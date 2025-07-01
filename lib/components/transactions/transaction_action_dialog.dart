@@ -10,6 +10,10 @@ Future<String?> showTransactionActionDialog(BuildContext context) {
           ),
           children: [
             SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, 'detail'),
+              child: const Text('Detail'),
+            ),
+            SimpleDialogOption(
               onPressed: () => Navigator.pop(ctx, 'edit'),
               child: const Text('Edit'),
             ),

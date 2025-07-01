@@ -14,6 +14,10 @@ Future<bool> showTransactionDeleteDialog(BuildContext context) async {
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
               child: const Text('Hapus'),
             ),
           ],

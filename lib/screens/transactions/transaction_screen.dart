@@ -12,7 +12,10 @@ import '../../../components/transactions/transaction_list_item.dart';
 import '../../../components/transactions/transaction_summary_card.dart';
 
 import '../../constants/date_filter_option.dart';
+
+import '../../models/transaction_model.dart';
 import '../../services/transaction_service.dart';
+import 'transaction_detail_screen.dart';
 import 'transaction_form_screen.dart';
 
 class TransactionScreen extends StatefulWidget {
@@ -33,7 +36,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
   String? _categoryFilter;
   String? _titleFilter;
 
-  List<DocumentSnapshot<Map<String, dynamic>>> _transactions = [];
+  List<TransactionModel> _transactions = [];
   bool _isLoading = false;
   bool _hasMore = true;
   DocumentSnapshot? _lastDocument;
@@ -81,7 +84,10 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
     if (snapshot.docs.isNotEmpty) {
       _lastDocument = snapshot.docs.last;
-      _transactions.addAll(snapshot.docs);
+      _transactions =
+          snapshot.docs
+              .map((doc) => TransactionModel.fromFirestore(doc))
+              .toList();
     }
 
     if (snapshot.docs.length < 20) {
@@ -119,11 +125,10 @@ class _TransactionScreenState extends State<TransactionScreen> {
     num income = 0;
     num expense = 0;
 
-    for (var doc in _transactions) {
-      final data = doc.data();
-      if (data == null) continue;
-      final amount = data['amount'] ?? 0;
-      final type = data['type'];
+    for (var _transaction in _transactions) {
+      if (_transaction == null) continue;
+      final amount = _transaction.amount ?? 0;
+      final type = _transaction.type;
 
       if (type == 'income') {
         income += amount;
@@ -137,25 +142,33 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
   Future<void> _handleTransactionTap(
     BuildContext context,
-    DocumentSnapshot<Map<String, dynamic>> doc,
+    TransactionModel _transaction,
   ) async {
     final selected = await showTransactionActionDialog(context);
 
-    if (selected == 'edit') {
+    if (selected == 'detail') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) => TransactionDetailScreen(transactionId: _transaction.id),
+        ),
+      );
+    } else if (selected == 'edit') {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder:
               (_) => TransactionFormScreen(
-                transactionId: doc.id,
-                existingData: doc.data(),
+                transactionId: _transaction.id,
+                existingData: _transaction,
               ),
         ),
       );
     } else if (selected == 'delete') {
       final confirm = await showTransactionDeleteDialog(context);
       if (confirm) {
-        await TransactionService().deleteTransaction(doc.id);
+        await TransactionService().deleteTransaction(_transaction.id);
         _loadTransactions(reset: true);
       }
     }
@@ -234,10 +247,10 @@ class _TransactionScreenState extends State<TransactionScreen> {
               itemCount: _transactions.length + (_hasMore ? 1 : 0),
               itemBuilder: (ctx, i) {
                 if (i < _transactions.length) {
-                  final doc = _transactions[i];
+                  final transaction = _transactions[i];
                   return TransactionListItem(
-                    transaction: doc,
-                    onTap: () => _handleTransactionTap(context, doc),
+                    transaction: transaction,
+                    onTap: () => _handleTransactionTap(context, transaction),
                   );
                 } else {
                   return const Padding(

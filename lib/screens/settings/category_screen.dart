@@ -16,7 +16,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
   String _filterType = 'all';
 
   void _openCategoryForm({Category? category}) {
-    // ignore: no_leading_underscores_for_local_identifiers
     final TextEditingController _controller = TextEditingController(
       text: category?.name ?? '',
     );
@@ -52,12 +51,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           value: 'income',
                           groupValue: tempSelectedType,
                           title: const Text('Pemasukan'),
-                          activeColor:
-                              Colors.lightBlue, // Set color for selected
+                          activeColor: Colors.lightBlue,
                           tileColor:
                               tempSelectedType == 'income'
                                   ? Colors.lightBlue
-                                  : null, // Optional: background highlight
+                                  : null,
                           onChanged: (value) {
                             setStateDialog(() => tempSelectedType = value!);
                           },
@@ -83,12 +81,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
             TextButton(
               onPressed: () => Navigator.pop(context),
               style: TextButton.styleFrom(
-                foregroundColor: const Color.fromARGB(
-                  255,
-                  65,
-                  64,
-                  64,
-                ), // Change text color to red
+                foregroundColor: const Color.fromARGB(255, 65, 64, 64),
               ),
               child: const Text('Batal'),
             ),
@@ -111,13 +104,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   await _categoryService.addCategory(newCategory);
                 }
 
-                // ignore: use_build_context_synchronously
                 Navigator.pop(context);
               },
               style: TextButton.styleFrom(
-                backgroundColor:
-                    Colors.lightBlue, // Set background color to blue
-                foregroundColor: Colors.white, // Change text color to red
+                backgroundColor: Colors.lightBlue,
+                foregroundColor: Colors.white,
               ),
               child: Text(isEdit ? 'Simpan' : 'Tambah'),
             ),
@@ -141,12 +132,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                // ignore: sort_child_properties_last
                 child: const Text('Hapus'),
                 style: TextButton.styleFrom(
-                  backgroundColor:
-                      Colors.redAccent, // Set background color to blue
-                  foregroundColor: Colors.white, // Change text color to red
+                  backgroundColor: Colors.redAccent,
+                  foregroundColor: Colors.white,
                 ),
               ),
             ],
@@ -160,49 +149,103 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Kategori')),
-      body: Column(
-        children: [
-          // Gabungkan search dan filter dalam satu baris
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12.0,
-              vertical: 4.0,
-            ),
+      appBar: AppBar(
+        title: const Text('Kategori'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    onChanged: (value) => setState(() => _searchQuery = value),
-                    decoration: InputDecoration(
-                      hintText: 'Cari kategori...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 0,
-                        horizontal: 12,
-                      ),
+                  child: Container(
+                    height: 40,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search, color: Colors.black),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            onChanged:
+                                (value) => setState(() => _searchQuery = value),
+                            style: const TextStyle(color: Colors.black),
+                            decoration: const InputDecoration(
+                              hintText: 'Cari kategori...',
+                              hintStyle: TextStyle(color: Colors.black54),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                DropdownButton<String>(
-                  value: _filterType,
-                  items: const [
-                    DropdownMenuItem(value: 'all', child: Text('Semua')),
-                    DropdownMenuItem(value: 'income', child: Text('Pemasukan')),
-                    DropdownMenuItem(
-                      value: 'expense',
-                      child: Text('Pengeluaran'),
+                Expanded(
+                  child: Container(
+                    height: 40,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ],
-                  onChanged: (val) => setState(() => _filterType = val!),
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _filterType,
+                              isExpanded: true,
+                              icon: const SizedBox.shrink(),
+                              dropdownColor: Colors.white,
+                              style: const TextStyle(color: Colors.black),
+                              hint: const Text(
+                                'Filter',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'all',
+                                  child: Text('Semua'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'income',
+                                  child: Text('Pemasukan'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'expense',
+                                  child: Text('Pengeluaran'),
+                                ),
+                              ],
+                              onChanged:
+                                  (val) => setState(() => _filterType = val!),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.filter_alt, color: Colors.black),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+      body: Column(
+        children: [
           Expanded(
             child: StreamBuilder<List<Category>>(
               stream: _categoryService.getCategoryStream(
@@ -257,7 +300,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openCategoryForm(),
-        // ignore: sort_child_properties_last
         child: const Icon(Icons.add),
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
