@@ -86,8 +86,7 @@ class BudgetList extends StatelessWidget {
                               const SizedBox(height: 4),
                               Text(
                                 NumberFormat.currency(
-                                  locale: 'id',
-                                  symbol: 'Rp',
+                                  symbol: '',
                                 ).format(totalBudget),
                                 style: const TextStyle(
                                   fontSize: 20,

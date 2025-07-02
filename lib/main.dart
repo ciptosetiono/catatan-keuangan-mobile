@@ -15,14 +15,22 @@ import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  //await initializeDateFormatting('id_ID', null);
+  await _initializeDateFormatting();
+  await _initializeFirebase();
+  runApp(const MyApp());
+}
+
+Future<void> _initializeDateFormatting() async {
+  final locale = WidgetsBinding.instance.platformDispatcher.locale.toString();
+  await initializeDateFormatting(locale, null);
+}
+
+Future<void> _initializeFirebase() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
     cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
-
-  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -102,17 +110,22 @@ class _MainPageState extends State<MainPage> {
     BottomNavigationBarItem(
       icon: Icon(Icons.swap_horiz_outlined),
       activeIcon: Icon(Icons.swap_horiz),
-      label: 'Transaksi',
+      label: 'Transactions',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.pie_chart_outline),
+      activeIcon: Icon(Icons.pie_chart),
+      label: 'Budgets',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.account_balance_wallet_outlined),
       activeIcon: Icon(Icons.account_balance_wallet),
-      label: 'Anggaran',
+      label: 'Wallets',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.settings_outlined),
       activeIcon: Icon(Icons.settings),
-      label: 'Setting',
+      label: 'Settings',
     ),
   ];
 

@@ -93,7 +93,7 @@ class BudgetItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Used: ${NumberFormat.currency().format(used)} / ${NumberFormat.currency().format(budget.amount)}',
+                    'Used: ${NumberFormat.currency(symbol: '').format(used)} / ${NumberFormat.currency(symbol: '').format(budget.amount)}',
                     style: TextStyle(
                       fontSize: 12,
                       color:

@@ -1,9 +1,12 @@
 // lib/services/transaction_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../models/transaction_model.dart';
 
 class TransactionService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final CollectionReference transactionsRef = FirebaseFirestore.instance
+      .collection('transactions');
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
   /// Tambah transaksi baru ke Firestore
@@ -16,7 +19,7 @@ class TransactionService {
     required DateTime date,
   }) async {
     if (userId == null) return;
-    await _db.collection('transactions').add({
+    await transactionsRef.add({
       'userId': userId,
       'walletId': walletId,
       'title': title,
@@ -121,22 +124,32 @@ class TransactionService {
     return query.limit(limit).get();
   }
 
+  Future<TransactionModel> getTransactionById(String id) async {
+    try {
+      final doc = await transactionsRef.doc(id).get();
+      if (doc.exists) {
+        return TransactionModel.fromFirestore(doc);
+      } else {
+        throw Exception('Transaction not found');
+      }
+    } catch (error) {
+      throw Exception('Error fetching transaction: $error');
+    }
+  }
+
   Future<void> addTransactionFromMap(Map<String, dynamic> data) async {
     // misalnya tambahkan createdAt di sini kalau perlu
     data['createdAt'] = DateTime.now();
-    await FirebaseFirestore.instance.collection('transactions').add(data);
+    await transactionsRef.add(data);
   }
 
   Future<void> updateTransaction(String id, Map<String, dynamic> data) async {
-    await FirebaseFirestore.instance
-        .collection('transactions')
-        .doc(id)
-        .update(data);
+    await transactionsRef.doc(id).update(data);
   }
 
   /// Hapus transaksi berdasarkan document ID
   Future<void> deleteTransaction(String id) async {
-    await _db.collection('transactions').doc(id).delete();
+    await transactionsRef.doc(id).delete();
   }
 
   Future<double> getTotalSpentByCategory(
@@ -147,8 +160,7 @@ class TransactionService {
     final to = DateTime(month.year, month.month + 1);
 
     final query =
-        await _db
-            .collection('transactions')
+        await transactionsRef
             .where('userId', isEqualTo: userId)
             .where('date', isGreaterThanOrEqualTo: from)
             .where('date', isLessThan: to)
@@ -194,7 +206,6 @@ class TransactionService {
       return total;
     } catch (e, stack) {
       print('Error fetching transactions: $e');
-      print(stack);
       return 0.0;
     }
   }

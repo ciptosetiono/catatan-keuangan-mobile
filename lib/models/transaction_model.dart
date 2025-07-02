@@ -8,7 +8,6 @@ class TransactionModel {
   final DateTime date;
   final String? walletId;
   final String? categoryId;
-  final String? note;
   final String userId;
 
   TransactionModel({
@@ -20,7 +19,6 @@ class TransactionModel {
     required this.userId,
     this.walletId,
     this.categoryId,
-    this.note,
   });
 
   factory TransactionModel.fromFirestore(DocumentSnapshot doc) {
@@ -35,7 +33,6 @@ class TransactionModel {
       userId: data['userId'] ?? '',
       walletId: data['walletId'], // stored as string in Firestore
       categoryId: data['categoryId'],
-      note: data['note'],
     );
   }
 
@@ -48,7 +45,6 @@ class TransactionModel {
       'userId': userId,
       'walletId': walletId,
       'categoryId': categoryId,
-      'note': note,
     };
   }
 }

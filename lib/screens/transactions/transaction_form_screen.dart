@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../components/forms/transaction_type_selector.dart';
 import '../../../components/forms/wallet_dropdown.dart';
@@ -48,9 +47,9 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
     if (widget.existingData != null) {
       final data = widget.existingData!;
-      _titleController.text = data.title ?? '';
+      _titleController.text = data.title;
       _amountController.text = data.amount.toString();
-      _type = data.type ?? 'expense';
+      _type = data.type;
       _selectedCategoryId = data.categoryId;
       _selectedWalletId = data.walletId;
       _selectedDate = data.date;
@@ -124,7 +123,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       }
     }
 
-    Navigator.pop(context);
+    Navigator.pop(context, true);
   }
 
   @override

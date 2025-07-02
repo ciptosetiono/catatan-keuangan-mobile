@@ -125,10 +125,9 @@ class _TransactionScreenState extends State<TransactionScreen> {
     num income = 0;
     num expense = 0;
 
-    for (var _transaction in _transactions) {
-      if (_transaction == null) continue;
-      final amount = _transaction.amount ?? 0;
-      final type = _transaction.type;
+    for (var transaction in _transactions) {
+      final amount = transaction.amount;
+      final type = transaction.type;
 
       if (type == 'income') {
         income += amount;
@@ -142,32 +141,40 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
   Future<void> _handleTransactionTap(
     BuildContext context,
-    TransactionModel _transaction,
+    TransactionModel transaction,
   ) async {
     final selected = await showTransactionActionDialog(context);
 
     if (selected == 'detail') {
-      Navigator.push(
+      final result = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => TransactionDetailScreen(transaction: _transaction),
+          builder: (_) => TransactionDetailScreen(transaction: transaction),
         ),
       );
+
+      if (result == true) {
+        _loadTransactions(reset: true); // Refresh list
+      }
     } else if (selected == 'edit') {
-      Navigator.push(
+      final result = await Navigator.push(
         context,
         MaterialPageRoute(
           builder:
               (_) => TransactionFormScreen(
-                transactionId: _transaction.id,
-                existingData: _transaction,
+                transactionId: transaction.id,
+                existingData: transaction,
               ),
         ),
       );
+
+      if (result == true) {
+        _loadTransactions(reset: true); // Refresh list
+      }
     } else if (selected == 'delete') {
       final confirm = await showTransactionDeleteDialog(context);
       if (confirm) {
-        await TransactionService().deleteTransaction(_transaction.id);
+        await TransactionService().deleteTransaction(transaction.id);
         _loadTransactions(reset: true);
       }
     }

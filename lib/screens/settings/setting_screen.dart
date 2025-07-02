@@ -12,7 +12,7 @@ class SettingsScreen extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pengaturan')),
+      appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         children: [
@@ -40,7 +40,7 @@ class SettingsScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            user.displayName ?? 'Tanpa Nama',
+                            user.displayName ?? '-',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -68,7 +68,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             child: ListTile(
               leading: const Icon(Icons.account_balance_wallet),
-              title: const Text('Wallet'),
+              title: const Text('Wallets'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.push(
@@ -86,7 +86,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             child: ListTile(
               leading: const Icon(Icons.category),
-              title: const Text('Kategori'),
+              title: const Text('Categories'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.push(
@@ -106,7 +106,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             child: ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Keluar', style: TextStyle(color: Colors.red)),
+              title: const Text('Exit', style: TextStyle(color: Colors.red)),
               onTap: () async {
                 await AuthService().signOut();
                 Navigator.pushReplacementNamed(context, '/');
