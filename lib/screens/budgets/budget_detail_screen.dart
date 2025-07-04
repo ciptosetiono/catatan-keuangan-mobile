@@ -121,12 +121,19 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
       );
 
       if (result == true) {
+        final updated = await BudgetService().getBudget(widget.budget.id);
+        setState(() {
+          _localBudget = updated;
+          _hasChanged = true;
+        });
+
         loadTransactions(); // Refresh list
       }
     } else if (selected == 'delete') {
       final confirm = await showTransactionDeleteDialog(context);
       if (confirm) {
-        await TransactionService().deleteTransaction(transaction.id);
+        await BudgetService().deleteBudget(widget.budget.id);
+
         loadTransactions();
       }
     }
@@ -183,14 +190,14 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                     value: 'edit',
                     child: ListTile(
                       leading: Icon(Icons.edit),
-                      title: Text('Edit'),
+                      title: Text('Edit Budget'),
                     ),
                   ),
                   const PopupMenuItem(
                     value: 'delete',
                     child: ListTile(
                       leading: Icon(Icons.delete),
-                      title: Text('Delete'),
+                      title: Text('Delete Budget'),
                     ),
                   ),
                 ],

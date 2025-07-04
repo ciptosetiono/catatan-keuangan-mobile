@@ -61,7 +61,6 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
       month: DateTime(_selectedMonth.year, _selectedMonth.month),
       userId: userId,
     );
-    print('Saving budget: $budget');
 
     if (widget.budget == null) {
       final exists = await BudgetService().checkDuplicateBudget(
@@ -84,7 +83,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
       setState(() {
         _isLoading = false;
       });
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } else {
       setState(() {
         _isLoading = false;
