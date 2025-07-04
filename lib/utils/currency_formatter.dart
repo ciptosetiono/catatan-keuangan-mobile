@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class CurrencyFormatter {
   // Helper function to parse currency string to double
   double decodeAmount(String input) {
@@ -27,5 +29,13 @@ class CurrencyFormatter {
     }
 
     return double.tryParse(normalized) ?? 0;
+  }
+
+  String encode(double amount) {
+    final NumberFormat formatCurrency = NumberFormat.currency(
+      decimalDigits: 0,
+      symbol: '',
+    );
+    return formatCurrency.format(amount);
   }
 }

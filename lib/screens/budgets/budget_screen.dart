@@ -1,12 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../models/category_model.dart';
 import '../../services/category_service.dart';
 import 'budget_form_screen.dart';
 import '../../components/budgets/budget_list.dart';
 import '../../components/budgets/budget_month_dropdown.dart';
-import '../../components/budgets/budget_category_dropdown.dart';
+import '../../components/budgets/budget_category_name_filter.dart';
 
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});
@@ -16,10 +16,11 @@ class BudgetScreen extends StatefulWidget {
 }
 
 class _BudgetScreenState extends State<BudgetScreen> {
-  final String userId = FirebaseAuth.instance.currentUser!.uid;
   DateTime _selectedMonth = DateTime.now();
-  String _selectedCategoryId = '';
+  String _categoryName = '';
+  Timer? _debounce;
   List<Category> _categories = [];
+  late final StreamSubscription _categorySubscription;
 
   @override
   void initState() {
@@ -28,18 +29,26 @@ class _BudgetScreenState extends State<BudgetScreen> {
   }
 
   void _loadCategories() {
-    CategoryService().getCategoryStream(type: 'expense').listen((cats) {
-      setState(() {
-        _categories = cats;
-      });
-    });
+    _categorySubscription = CategoryService()
+        .getCategoryStream(type: 'expense', query: _categoryName)
+        .listen((cats) {
+          setState(() {
+            _categories = cats;
+          });
+        });
+  }
+
+  @override
+  void dispose() {
+    _categorySubscription.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Anggaran'),
+        title: const Text('Budgets'),
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
         bottom: PreferredSize(
@@ -49,18 +58,25 @@ class _BudgetScreenState extends State<BudgetScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: BudgetMonthDropdown(
-                    selectedMonth: _selectedMonth,
-                    onChanged: (val) => setState(() => _selectedMonth = val),
+                  child: BudgetCategoryNameField(
+                    categoryName: _categoryName,
+                    onChanged: (val) {
+                      if (_debounce?.isActive ?? false) _debounce!.cancel();
+                      _debounce = Timer(const Duration(milliseconds: 500), () {
+                        _categorySubscription.cancel();
+                        setState(() {
+                          _categoryName = val;
+                          _loadCategories();
+                        });
+                      });
+                    },
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: BudgetCategoryDropdown(
-                    selectedCategoryId: _selectedCategoryId,
-                    categories: _categories,
-                    onChanged:
-                        (val) => setState(() => _selectedCategoryId = val),
+                  child: BudgetMonthDropdown(
+                    selectedMonth: _selectedMonth,
+                    onChanged: (val) => setState(() => _selectedMonth = val),
                   ),
                 ),
               ],
@@ -68,18 +84,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: BudgetList(
-              selectedMonth: _selectedMonth,
-              selectedCategoryId: _selectedCategoryId,
-              categories: _categories,
-              userId: userId,
-            ),
-          ),
-        ],
-      ),
+      body: BudgetList(selectedMonth: _selectedMonth, categories: _categories),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(

@@ -32,7 +32,7 @@ class TransactionService {
   }
 
   /// Ambil transaksi dengan filter tanggal optional
-  Stream<QuerySnapshot<Map<String, dynamic>>> getTransactionsStream({
+  Stream<List<TransactionModel>> getTransactionsStream({
     DateTime? fromDate,
     DateTime? toDate,
     String? type,
@@ -72,7 +72,10 @@ class TransactionService {
       query = query.where('title', isEqualTo: title);
     }
 
-    return query.snapshots();
+    return query.snapshots().map(
+      (snap) =>
+          snap.docs.map((doc) => TransactionModel.fromFirestore(doc)).toList(),
+    );
   }
 
   Future<QuerySnapshot<Map<String, dynamic>>> getTransactionsPaginated({
@@ -153,7 +156,7 @@ class TransactionService {
   }
 
   Future<double> getTotalSpentByCategory(
-    String category,
+    String categoryId,
     DateTime month,
   ) async {
     final from = DateTime(month.year, month.month);
@@ -165,7 +168,7 @@ class TransactionService {
             .where('date', isGreaterThanOrEqualTo: from)
             .where('date', isLessThan: to)
             .where('type', isEqualTo: 'expense')
-            .where('category', isEqualTo: category)
+            .where('categoryId', isEqualTo: categoryId)
             .get();
 
     final total = query.docs.fold<double>(
@@ -208,5 +211,49 @@ class TransactionService {
       print('Error fetching transactions: $e');
       return 0.0;
     }
+  }
+
+  Future<Map<String, double>> getTotalSpentByCategories({
+    required List<String> categoryIds,
+    required DateTime month,
+  }) async {
+    final from = DateTime(month.year, month.month, 1);
+    final to = DateTime(month.year, month.month + 1, 0);
+
+    // Batasi maksimal 10 kategori per batch (Firestore `whereIn` max 10 item)
+    final batches = <List<String>>[];
+    for (var i = 0; i < categoryIds.length; i += 10) {
+      batches.add(
+        categoryIds.sublist(
+          i,
+          (i + 10 > categoryIds.length) ? categoryIds.length : i + 10,
+        ),
+      );
+    }
+
+    final Map<String, double> totals = {};
+
+    for (final batch in batches) {
+      final snapshot =
+          await transactionsRef
+              .where('userId', isEqualTo: userId)
+              .where('date', isGreaterThanOrEqualTo: from)
+              .where('date', isLessThan: to)
+              .where('type', isEqualTo: 'expense')
+              .where('categoryId', whereIn: batch)
+              .get();
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        if (data != null) {
+          final map = data as Map<String, dynamic>;
+          final categoryId = map['categoryId'];
+          final amount = (map['amount'] ?? 0).toDouble();
+          totals[categoryId] = (totals[categoryId] ?? 0) + amount;
+        }
+      }
+    }
+
+    return totals;
   }
 }

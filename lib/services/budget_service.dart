@@ -18,14 +18,25 @@ class BudgetService {
     await _ref.doc(id).delete();
   }
 
-  Stream<List<Budget>> getBudgets(DateTime month, String? categoryId) {
-    final start = DateTime(month.year, month.month);
-    final end = DateTime(month.year, month.month + 1);
+  Future<Budget?> getBudget(String id) async {
+    final doc = await _ref.doc(id).get();
+    if (doc.exists) {
+      return Budget.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+    }
+    return null;
+  }
 
-    Query query = _ref
-        .where('userId', isEqualTo: userId)
-        .where('month', isGreaterThanOrEqualTo: start)
-        .where('month', isLessThan: end);
+  Stream<List<Budget>> getBudgets({DateTime? month, String? categoryId}) {
+    Query query = _ref.where('userId', isEqualTo: userId);
+
+    if (month != null) {
+      print('fetching budgets month: $month');
+      final start = DateTime(month.year, month.month);
+      final end = DateTime(month.year, month.month + 1);
+      query = query
+          .where('month', isGreaterThanOrEqualTo: start)
+          .where('month', isLessThan: end);
+    }
 
     if (categoryId != null && categoryId.isNotEmpty) {
       query = query.where('categoryId', isEqualTo: categoryId);

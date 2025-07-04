@@ -9,22 +9,20 @@ import 'budget_item.dart';
 
 class BudgetList extends StatelessWidget {
   final DateTime selectedMonth;
-  final String selectedCategoryId;
   final List<Category> categories;
-  final String userId;
 
   const BudgetList({
     super.key,
     required this.selectedMonth,
-    required this.selectedCategoryId,
     required this.categories,
-    required this.userId,
   });
 
   @override
   Widget build(BuildContext context) {
+    final currency = NumberFormat.currency();
+
     return StreamBuilder<List<Budget>>(
-      stream: BudgetService().getBudgets(selectedMonth, selectedCategoryId),
+      stream: BudgetService().getBudgets(month: selectedMonth),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -32,36 +30,60 @@ class BudgetList extends StatelessWidget {
 
         if (snapshot.hasError) {
           return const Center(
-            child: Text("Oops, something wrong! Please try again later."),
+            child: Text("Oops, something went wrong! Please try again later."),
           );
         }
 
-        final budgets = snapshot.data ?? [];
+        final allBudgets = snapshot.data ?? [];
 
-        final totalBudget = budgets.fold<double>(
-          0.0,
-          (sum, b) => sum + b.amount,
-        );
+        print('budget length $allBudgets');
 
-        if (budgets.isEmpty) {
+        // Filter budgets based on filtered categories
+        final categoryIds = categories.map((c) => c.id).toSet();
+        final filteredBudgets =
+            allBudgets
+                .where((b) => categoryIds.contains(b.categoryId))
+                .toList();
+
+        if (filteredBudgets.isEmpty) {
           return const Center(
-            child: Text("No budgets found for this selected month."),
+            child: Text("No budgets match your selected category."),
           );
         }
 
-        return FutureBuilder<double>(
-          future: TransactionService().getTotalSpentByMonth(selectedMonth),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+        final filteredCategoryIds =
+            filteredBudgets.map((b) => b.categoryId).toSet().toList();
+
+        return FutureBuilder<Map<String, double>>(
+          future: TransactionService().getTotalSpentByCategories(
+            categoryIds: filteredCategoryIds,
+            month: selectedMonth,
+          ),
+          builder: (context, trxSnapshot) {
+            if (trxSnapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
 
-            final totalUsed = snapshot.data ?? 0;
+            final usedMap = trxSnapshot.data ?? {};
+
+            final totalBudget = filteredBudgets.fold<double>(
+              0.0,
+              (sum, b) => sum + b.amount,
+            );
+
+            final totalUsed = usedMap.values.fold<double>(
+              0.0,
+              (sum, used) => sum + used,
+            );
+
             final remaining = totalBudget - totalUsed;
             final percentUsed =
                 totalBudget == 0
                     ? 0.0
                     : (totalUsed / totalBudget).clamp(0.0, 1.0);
+
+            // Map categoryId to Category for fast lookup
+            final categoryMap = {for (var c in categories) c.id: c};
 
             return Column(
               children: [
@@ -70,73 +92,61 @@ class BudgetList extends StatelessWidget {
                     horizontal: 16,
                     vertical: 8,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Total Budget',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                NumberFormat.currency(
-                                  symbol: '',
-                                ).format(totalBudget),
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Total Expense: ${NumberFormat.currency().format(totalUsed)}',
-                              ),
-                              const SizedBox(height: 4),
-                              LinearProgressIndicator(
-                                value: percentUsed,
-                                backgroundColor: Colors.grey[300],
-                                color: Colors.redAccent,
-                                minHeight: 8,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Sisa: ${NumberFormat.currency().format(remaining)}',
-                              ),
-                            ],
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Total Budget',
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                        ),
+                          const SizedBox(height: 4),
+                          Text(
+                            currency.format(totalBudget),
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text('Total Expense: ${currency.format(totalUsed)}'),
+                          const SizedBox(height: 4),
+                          LinearProgressIndicator(
+                            value: percentUsed,
+                            backgroundColor: Colors.grey[300],
+                            color: Colors.redAccent,
+                            minHeight: 8,
+                          ),
+                          const SizedBox(height: 4),
+                          Text('Sisa: ${currency.format(remaining)}'),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 4),
-                Flexible(
-                  // Ganti Expanded -> Flexible
+                Expanded(
                   child: ListView.builder(
-                    itemCount: budgets.length,
+                    itemCount: filteredBudgets.length,
                     itemBuilder: (context, index) {
-                      final budget = budgets[index];
-                      final category = categories.firstWhere(
-                        (c) => c.id == budget.categoryId,
-                        orElse:
-                            () => Category(
-                              id: budget.categoryId,
-                              name: budget.categoryId,
-                              type: 'expense',
-                              userId: userId,
-                            ),
-                      );
+                      final budget = filteredBudgets[index];
+                      final category =
+                          categoryMap[budget.categoryId] ??
+                          Category(
+                            id: budget.categoryId,
+                            name: budget.categoryId,
+                            type: 'expense',
+                            userId: budget.userId,
+                          );
+                      final usedAmount = usedMap[budget.categoryId] ?? 0.0;
 
                       return BudgetItem(
                         budget: budget,
                         category: category,
                         selectedMonth: selectedMonth,
+                        usedAmount: usedAmount,
                       );
                     },
                   ),
