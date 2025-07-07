@@ -20,8 +20,11 @@ class TransactionFormScreen extends StatefulWidget {
   final String? transactionId;
   final TransactionModel? existingData;
 
-  const TransactionFormScreen({Key? key, this.transactionId, this.existingData})
-    : super(key: key);
+  const TransactionFormScreen({
+    super.key,
+    this.transactionId,
+    this.existingData,
+  });
 
   @override
   State<TransactionFormScreen> createState() => _TransactionFormScreenState();
@@ -93,6 +96,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
     if (widget.transactionId != null) {
       await TransactionService().updateTransaction(widget.transactionId!, trx);
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         FlashMessage(
           color: Colors.green,
@@ -109,6 +113,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           walletId: _selectedWalletId!,
           date: _selectedDate,
         );
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
@@ -116,6 +121,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           ),
         );
       } catch (e) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(color: Colors.red, message: 'Transaction action failed'),
         );
@@ -123,6 +129,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       }
     }
 
+    // ignore: use_build_context_synchronously
     Navigator.pop(context, true);
   }
 

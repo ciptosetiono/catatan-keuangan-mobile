@@ -10,12 +10,12 @@ class UnifiedFilterDialog extends StatefulWidget {
   onFilterApplied;
 
   const UnifiedFilterDialog({
-    Key? key,
+    super.key,
     required this.typeFilter,
     required this.categoryFilter,
     required this.titleFilter,
     required this.onFilterApplied,
-  }) : super(key: key);
+  });
 
   @override
   State<UnifiedFilterDialog> createState() => _UnifiedFilterDialogState();

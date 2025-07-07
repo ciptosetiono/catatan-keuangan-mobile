@@ -16,6 +16,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
   String _filterType = 'all';
 
   void _openCategoryForm({Category? category}) {
+    // ignore: no_leading_underscores_for_local_identifiers
     final TextEditingController _controller = TextEditingController(
       text: category?.name ?? '',
     );
@@ -104,6 +105,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   await _categoryService.addCategory(newCategory);
                 }
 
+                // ignore: use_build_context_synchronously
                 Navigator.pop(context);
               },
               style: TextButton.styleFrom(
@@ -134,11 +136,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Delete'),
                 style: TextButton.styleFrom(
                   backgroundColor: Colors.redAccent,
                   foregroundColor: Colors.white,
                 ),
+                child: const Text('Delete'),
               ),
             ],
           ),
@@ -304,9 +306,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openCategoryForm(),
-        child: const Icon(Icons.add),
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
+        child: const Icon(Icons.add),
       ),
     );
   }

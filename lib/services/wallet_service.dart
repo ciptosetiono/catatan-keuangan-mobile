@@ -7,21 +7,18 @@ class WalletService {
     'wallets',
   );
 
-  Stream<List<Wallet>> getWalletStream() {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
+  final userId = FirebaseAuth.instance.currentUser!.uid;
 
+  Stream<List<Wallet>> getWalletStream() {
     return walletsRef
-        .where('userId', isEqualTo: uid)
+        .where('userId', isEqualTo: userId)
         .orderBy('name')
         .snapshots()
         .handleError((e) {})
         .map((snapshot) {
-          return snapshot.docs
-              .map(
-                (doc) =>
-                    Wallet.fromMap(doc.id, doc.data() as Map<String, dynamic>),
-              )
-              .toList();
+          return snapshot.docs.map((doc) {
+            return Wallet.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+          }).toList();
         });
   }
 
@@ -48,5 +45,16 @@ class WalletService {
 
   Future<void> deleteWallet(String id) async {
     await walletsRef.doc(id).delete();
+  }
+
+  Future<int> getTotalBalance() async {
+    final snapshot = await walletsRef.where('userId', isEqualTo: userId).get();
+
+    int total = 0;
+    for (var doc in snapshot.docs) {
+      total += (doc['current_balance'] ?? 0) as int;
+    }
+
+    return total;
   }
 }

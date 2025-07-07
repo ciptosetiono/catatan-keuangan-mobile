@@ -52,6 +52,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
 
     final isIncome = _localTransaction?.type == 'income';
 
+    // ignore: deprecated_member_use
     return WillPopScope(
       onWillPop: () async {
         Navigator.pop(context, _hasChanged); // kirim true jika ada perubahan
@@ -86,7 +87,6 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                     });
                     await loadNames();
                   }
-                  // TODO: Navigate to edit screen
                 } else if (value == 'delete') {
                   final confirm = await showTransactionDeleteDialog(context);
                   if (confirm) {

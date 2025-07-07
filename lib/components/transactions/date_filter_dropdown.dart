@@ -13,10 +13,10 @@ class DateFilterDropdown extends StatelessWidget {
   onFilterApplied;
 
   const DateFilterDropdown({
-    Key? key,
+    super.key,
     required this.selected,
     required this.onFilterApplied,
-  }) : super(key: key);
+  });
 
   void _handleChange(BuildContext context, DateFilterOption option) async {
     final now = DateTime.now();
@@ -64,7 +64,6 @@ class DateFilterDropdown extends StatelessWidget {
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
-                dialogBackgroundColor: Colors.white,
                 colorScheme: ColorScheme.light(
                   primary: Theme.of(context).primaryColor,
                   onPrimary: Colors.white,
@@ -76,6 +75,7 @@ class DateFilterDropdown extends StatelessWidget {
                     foregroundColor: Theme.of(context).primaryColor,
                   ),
                 ),
+                dialogTheme: DialogThemeData(backgroundColor: Colors.white),
               ),
               child: child!,
             );

@@ -30,7 +30,6 @@ class BudgetService {
     Query query = _ref.where('userId', isEqualTo: userId);
 
     if (month != null) {
-      print('fetching budgets month: $month');
       final start = DateTime(month.year, month.month);
       final end = DateTime(month.year, month.month + 1);
       query = query
@@ -56,8 +55,6 @@ class BudgetService {
                   .toList(),
         )
         .handleError((error) {
-          // Handle or log the error as needed
-          print('Error fetching budgets: $error');
           return <Budget>[];
         });
   }

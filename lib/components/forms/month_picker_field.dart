@@ -8,10 +8,10 @@ class MonthPickerField extends StatelessWidget {
   final void Function(DateTime) onMonthPicked;
 
   const MonthPickerField({
-    Key? key,
+    super.key,
     required this.selectedMonth,
     required this.onMonthPicked,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

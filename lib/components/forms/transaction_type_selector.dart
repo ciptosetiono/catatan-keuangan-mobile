@@ -5,10 +5,10 @@ class TransactionTypeSelector extends StatelessWidget {
   final void Function(String) onChanged;
 
   const TransactionTypeSelector({
-    Key? key,
+    super.key,
     required this.selected,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +25,7 @@ class TransactionTypeSelector extends StatelessWidget {
                 child: ChoiceChip(
                   label: Text(label),
                   selected: isSelected,
+                  // ignore: deprecated_member_use
                   selectedColor: color.withOpacity(0.2),
                   onSelected: (_) => onChanged(type),
                   labelStyle: TextStyle(

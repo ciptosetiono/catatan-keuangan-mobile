@@ -6,11 +6,11 @@ class TransactionDetailTile extends StatelessWidget {
   final String value;
 
   const TransactionDetailTile({
-    Key? key,
+    super.key,
     required this.label,
     required this.icon,
     required this.value,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

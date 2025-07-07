@@ -36,8 +36,6 @@ class BudgetList extends StatelessWidget {
 
         final allBudgets = snapshot.data ?? [];
 
-        print('budget length $allBudgets');
-
         // Filter budgets based on filtered categories
         final categoryIds = categories.map((c) => c.id).toSet();
         final filteredBudgets =

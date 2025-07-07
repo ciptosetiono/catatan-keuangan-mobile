@@ -8,10 +8,10 @@ class AccountFilterDropdown extends StatelessWidget {
   final void Function(String?) onChanged;
 
   const AccountFilterDropdown({
-    Key? key,
+    super.key,
     required this.value,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

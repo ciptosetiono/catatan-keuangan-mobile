@@ -1,13 +1,17 @@
 // lib/services/transaction_service.dart
+// ignore_for_file: avoid_types_as_parameter_names
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/transaction_model.dart';
+import 'wallet_service.dart';
 
 class TransactionService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final CollectionReference transactionsRef = FirebaseFirestore.instance
       .collection('transactions');
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
+  final WalletService _walletService = WalletService();
 
   /// Tambah transaksi baru ke Firestore
   Future<void> addTransaction({
@@ -29,6 +33,16 @@ class TransactionService {
       'date': Timestamp.fromDate(date),
       'createdAt': FieldValue.serverTimestamp(),
     });
+
+    final wallet = await _walletService.getWalletById(walletId);
+    final newBalance =
+        type == 'income'
+            ? wallet.currentBalance + amount
+            : wallet.currentBalance - amount;
+
+    await _walletService.updateWallet(
+      wallet.copyWith(currentBalance: newBalance),
+    );
   }
 
   /// Ambil transaksi dengan filter tanggal optional
@@ -127,6 +141,36 @@ class TransactionService {
     return query.limit(limit).get();
   }
 
+  Future<void> updateTransaction(String id, Map<String, dynamic> data) async {
+    await transactionsRef.doc(id).update(data);
+  }
+
+  /// Hapus transaksi berdasarkan document ID
+  Future<void> deleteTransaction(String id) async {
+    final doc = await transactionsRef.doc(id).get();
+
+    if (!doc.exists) return;
+    TransactionModel transaction = TransactionModel.fromFirestore(doc);
+
+    final String walletId = transaction.walletId;
+    final amount = transaction.amount.toDouble();
+    final type = transaction.type;
+
+    // Hapus transaksi
+    await transactionsRef.doc(id).delete();
+
+    // Update saldo wallet
+    final wallet = await _walletService.getWalletById(walletId);
+    final updatedBalance =
+        type == 'income'
+            ? wallet.currentBalance - amount
+            : wallet.currentBalance + amount;
+
+    await _walletService.updateWallet(
+      wallet.copyWith(currentBalance: updatedBalance),
+    );
+  }
+
   Future<TransactionModel> getTransactionById(String id) async {
     try {
       final doc = await transactionsRef.doc(id).get();
@@ -138,21 +182,6 @@ class TransactionService {
     } catch (error) {
       throw Exception('Error fetching transaction: $error');
     }
-  }
-
-  Future<void> addTransactionFromMap(Map<String, dynamic> data) async {
-    // misalnya tambahkan createdAt di sini kalau perlu
-    data['createdAt'] = DateTime.now();
-    await transactionsRef.add(data);
-  }
-
-  Future<void> updateTransaction(String id, Map<String, dynamic> data) async {
-    await transactionsRef.doc(id).update(data);
-  }
-
-  /// Hapus transaksi berdasarkan document ID
-  Future<void> deleteTransaction(String id) async {
-    await transactionsRef.doc(id).delete();
   }
 
   Future<double> getTotalSpentByCategory(
@@ -182,9 +211,6 @@ class TransactionService {
   Future<double> getTotalSpentByMonth(DateTime month) async {
     final from = DateTime(month.year, month.month);
     final to = DateTime(month.year, month.month + 1);
-    print('Calculating total spent month $month');
-    print('Calculating total spent from $from to $to');
-
     try {
       final query =
           await _db
@@ -195,20 +221,14 @@ class TransactionService {
               .where('type', isEqualTo: 'expense')
               .get();
 
-      print(
-        query.docs.length > 0
-            ? 'Found ${query.docs.length} transactions'
-            : 'No transactions found for this month',
-      );
-
       final total = query.docs.fold<double>(
         0.0,
         (sum, doc) => sum + (doc['amount'] as num).toDouble(),
       );
 
       return total;
+      // ignore: unused_catch_stack
     } catch (e, stack) {
-      print('Error fetching transactions: $e');
       return 0.0;
     }
   }

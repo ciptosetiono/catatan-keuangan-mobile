@@ -6,7 +6,7 @@ class TransactionModel {
   final double amount;
   final String type; // 'income' or 'expense'
   final DateTime date;
-  final String? walletId;
+  final String walletId;
   final String? categoryId;
   final String userId;
 
@@ -17,7 +17,7 @@ class TransactionModel {
     required this.type,
     required this.date,
     required this.userId,
-    this.walletId,
+    required this.walletId,
     this.categoryId,
   });
 

@@ -7,12 +7,12 @@ class CurrencyTextField extends StatefulWidget {
   final String? Function(String?)? validator;
 
   const CurrencyTextField({
-    Key? key,
+    super.key,
     required this.controller,
     required this.label,
     this.validator,
     this.locale,
-  }) : super(key: key);
+  });
 
   final String? locale;
 

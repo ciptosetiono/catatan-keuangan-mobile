@@ -28,6 +28,7 @@ class TransactionScreen extends StatefulWidget {
 class _TransactionScreenState extends State<TransactionScreen> {
   DateTime? _from;
   DateTime? _to;
+  // ignore: unused_field
   String _dateFilterLabel = 'Bulan Ini';
   DateFilterOption _selectedDateFilter = DateFilterOption.thisMonth;
 

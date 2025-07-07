@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/auth_service.dart';
 import 'category_screen.dart';
-import 'wallet_screen.dart';
+import '../wallets/wallet_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+class SettingScreen extends StatelessWidget {
+  const SettingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +73,7 @@ class SettingsScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const AccountScreen()),
+                  MaterialPageRoute(builder: (_) => const WalletScreen()),
                 );
               },
             ),
@@ -109,6 +109,7 @@ class SettingsScreen extends StatelessWidget {
               title: const Text('Exit', style: TextStyle(color: Colors.red)),
               onTap: () async {
                 await AuthService().signOut();
+                // ignore: use_build_context_synchronously
                 Navigator.pushReplacementNamed(context, '/');
               },
             ),

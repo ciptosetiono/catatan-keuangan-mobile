@@ -6,10 +6,10 @@ class DatePickerField extends StatelessWidget {
   final void Function(DateTime) onDatePicked;
 
   const DatePickerField({
-    Key? key,
+    super.key,
     required this.selectedDate,
     required this.onDatePicked,
-  }) : super(key: key);
+  });
 
   Future<void> _pickDate(BuildContext context) async {
     final picked = await showDatePicker(

@@ -7,8 +7,11 @@ class WalletDropdown extends StatelessWidget {
   final String? value;
   final Function(String?) onChanged;
 
-  const WalletDropdown({Key? key, required this.value, required this.onChanged})
-    : super(key: key);
+  const WalletDropdown({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {

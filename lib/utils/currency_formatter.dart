@@ -31,7 +31,7 @@ class CurrencyFormatter {
     return double.tryParse(normalized) ?? 0;
   }
 
-  String encode(double amount) {
+  String encode(num amount) {
     final NumberFormat formatCurrency = NumberFormat.currency(
       decimalDigits: 0,
       symbol: '',

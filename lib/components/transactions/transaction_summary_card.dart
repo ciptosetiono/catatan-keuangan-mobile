@@ -7,11 +7,11 @@ class TransactionSummaryCard extends StatelessWidget {
   final num balance;
 
   const TransactionSummaryCard({
-    Key? key,
+    super.key,
     required this.income,
     required this.expense,
     required this.balance,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -7,11 +7,12 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 
+import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/transactions/transaction_screen.dart';
 import 'screens/budgets/budget_screen.dart';
+import 'screens/wallets/wallet_screen.dart';
 import 'screens/settings/setting_screen.dart';
-import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -98,7 +99,8 @@ class _MainPageState extends State<MainPage> {
     HomeScreen(),
     TransactionScreen(),
     BudgetScreen(),
-    SettingsScreen(),
+    WalletScreen(),
+    SettingScreen(),
   ];
 
   final List<BottomNavigationBarItem> _items = const [
@@ -118,14 +120,14 @@ class _MainPageState extends State<MainPage> {
       label: 'Budgets',
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.account_balance_wallet_outlined),
-      activeIcon: Icon(Icons.account_balance_wallet),
+      icon: Icon(Icons.wallet_outlined),
+      activeIcon: Icon(Icons.wallet),
       label: 'Wallets',
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.settings_outlined),
-      activeIcon: Icon(Icons.settings),
-      label: 'Settings',
+      icon: Icon(Icons.more_horiz_outlined),
+      activeIcon: Icon(Icons.more_horiz),
+      label: 'Other',
     ),
   ];
 

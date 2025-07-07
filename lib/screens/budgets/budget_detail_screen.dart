@@ -103,6 +103,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
 
     if (selected == 'detail') {
       await Navigator.push(
+        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
           builder: (_) => TransactionDetailScreen(transaction: transaction),
@@ -110,6 +111,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
       );
     } else if (selected == 'edit') {
       final result = await Navigator.push(
+        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
           builder:
@@ -130,6 +132,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
         loadTransactions(); // Refresh list
       }
     } else if (selected == 'delete') {
+      // ignore: use_build_context_synchronously
       final confirm = await showTransactionDeleteDialog(context);
       if (confirm) {
         await BudgetService().deleteBudget(widget.budget.id);
@@ -171,7 +174,6 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                   await loadCategoryName();
                   await loadTransactions();
                 }
-                // TODO: Navigate to edit screen
               } else if (value == 'delete') {
                 final confirm = await showTransactionDeleteDialog(context);
                 if (confirm) {
