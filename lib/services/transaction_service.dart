@@ -141,8 +141,57 @@ class TransactionService {
     return query.limit(limit).get();
   }
 
-  Future<void> updateTransaction(String id, Map<String, dynamic> data) async {
-    await transactionsRef.doc(id).update(data);
+  Future<void> updateTransaction(
+    String id,
+    Map<String, dynamic> newData,
+  ) async {
+    final doc = await transactionsRef.doc(id).get();
+
+    if (!doc.exists) return;
+    final oldTransaction = TransactionModel.fromFirestore(doc);
+
+    final oldWallet = await _walletService.getWalletById(
+      oldTransaction.walletId,
+    );
+
+    final oldAmount = oldTransaction.amount;
+    final oldType = oldTransaction.type;
+    final oldWalletId = oldTransaction.walletId;
+
+    final newAmount = (newData['amount'] ?? oldAmount).toDouble();
+    final newType = newData['type'] ?? oldType;
+    final newWalletId = newData['walletId'] ?? oldWalletId;
+
+    // 1. Kembalikan saldo dari transaksi lama
+    double rollbackAmount = oldType == 'income' ? -oldAmount : oldAmount;
+
+    // 2. Tambahkan saldo baru berdasarkan transaksi baru
+    double applyAmount = newType == 'income' ? newAmount : -newAmount;
+
+    // 3. Jika ganti wallet, update keduanya
+    if (oldWalletId != newWalletId) {
+      // Kembalikan saldo lama
+      final oldWalletNewBalance = oldWallet.currentBalance + rollbackAmount;
+      await _walletService.updateWallet(
+        oldWallet.copyWith(currentBalance: oldWalletNewBalance),
+      );
+
+      // Tambahkan saldo baru ke wallet baru
+      final newWallet = await _walletService.getWalletById(newWalletId);
+      final newWalletNewBalance = newWallet.currentBalance + applyAmount;
+      await _walletService.updateWallet(
+        newWallet.copyWith(currentBalance: newWalletNewBalance),
+      );
+    } else {
+      final updatedBalance =
+          oldWallet.currentBalance + rollbackAmount + applyAmount;
+      await _walletService.updateWallet(
+        oldWallet.copyWith(currentBalance: updatedBalance),
+      );
+    }
+
+    // 4. Update dokumen transaksi
+    await transactionsRef.doc(id).update(newData);
   }
 
   /// Hapus transaksi berdasarkan document ID
@@ -275,5 +324,25 @@ class TransactionService {
     }
 
     return totals;
+  }
+
+  Future<double> getTotalIncomeByMonth(DateTime month) async {
+    final from = DateTime(month.year, month.month);
+    final to = DateTime(month.year, month.month + 1);
+
+    final snapshot =
+        await transactionsRef
+            .where('userId', isEqualTo: userId)
+            .where('type', isEqualTo: 'income')
+            .where('date', isGreaterThanOrEqualTo: from)
+            .where('date', isLessThan: to)
+            .get();
+
+    final total = snapshot.docs.fold<double>(
+      0.0,
+      (sum, doc) => sum + (doc['amount'] as num).toDouble(),
+    );
+
+    return total;
   }
 }
