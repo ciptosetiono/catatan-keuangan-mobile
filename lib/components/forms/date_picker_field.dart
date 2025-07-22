@@ -17,7 +17,7 @@ class DatePickerField extends StatelessWidget {
       initialDate: selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
-      helpText: 'Pilih Tanggal Transaksi',
+      helpText: 'Choose Date',
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -45,7 +45,7 @@ class DatePickerField extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: InputDecorator(
         decoration: const InputDecoration(
-          labelText: 'Tanggal',
+          labelText: 'Date',
           border: OutlineInputBorder(),
         ),
         child: Row(

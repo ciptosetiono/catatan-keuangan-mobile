@@ -32,7 +32,6 @@ class CategoryService {
             }).toList();
       }
 
-      print(docs);
       return docs.map((doc) {
         return Category.fromMap(doc.id, doc.data());
       }).toList();

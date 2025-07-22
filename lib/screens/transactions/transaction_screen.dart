@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../components/transactions/account_filter_dropdown.dart';
+import '../../components/transactions/wallet_filter_dropdown.dart';
 import '../../components/transactions/date_filter_dropdown.dart';
 import '../../components/transactions/unified_filter_dialog.dart';
 import '../../../components/transactions/transaction_action_dialog.dart';
@@ -32,7 +32,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
   String _dateFilterLabel = 'Bulan Ini';
   DateFilterOption _selectedDateFilter = DateFilterOption.thisMonth;
 
-  String? _accountFilter;
+  String? _walletFilter;
   String? _typeFilter;
   String? _categoryFilter;
   String? _titleFilter;
@@ -78,7 +78,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       fromDate: _from,
       toDate: _to,
       type: _typeFilter,
-      walletId: _accountFilter,
+      walletId: _walletFilter,
       categoryId: _categoryFilter,
       title: _titleFilter,
     );
@@ -195,10 +195,10 @@ class _TransactionScreenState extends State<TransactionScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: AccountFilterDropdown(
-                    value: _accountFilter,
+                  child: WalletFilterDropdown(
+                    value: _walletFilter,
                     onChanged: (val) {
-                      setState(() => _accountFilter = val);
+                      setState(() => _walletFilter = val);
                       _loadTransactions(reset: true);
                     },
                   ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../components/forms/transaction_type_selector.dart';
 import '../../../components/forms/wallet_dropdown.dart';
@@ -81,9 +80,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     final title = _titleController.text.trim();
     // Remove all non-digit and non-decimal separator characters
     final amount = CurrencyFormatter().decodeAmount(_amountController.text);
-
-    final userId = FirebaseAuth.instance.currentUser!.uid;
-
     final trx = {
       'title': title,
       'amount': amount,
@@ -91,7 +87,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       'date': _selectedDate,
       'categoryId': _selectedCategoryId,
       'walletId': _selectedWalletId,
-      'userId': userId,
     };
 
     if (widget.transactionId != null) {
@@ -105,14 +100,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       );
     } else {
       try {
-        await TransactionService().addTransaction(
-          title: title,
-          amount: amount,
-          type: _type,
-          categoryId: _selectedCategoryId!,
-          walletId: _selectedWalletId!,
-          date: _selectedDate,
-        );
+        await TransactionService().addTransaction(trx);
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(

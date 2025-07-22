@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/auth_service.dart';
-import 'category_screen.dart';
+import '../categories/category_screen.dart';
 import '../wallets/wallet_screen.dart';
+import '../transfers/transfer_screen.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -74,6 +75,23 @@ class SettingScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const WalletScreen()),
+                );
+              },
+            ),
+          ),
+
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.compare_arrows_rounded),
+              title: const Text('Transfers'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const TransferScreen()),
                 );
               },
             ),

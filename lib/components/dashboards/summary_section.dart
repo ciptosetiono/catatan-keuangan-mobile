@@ -29,6 +29,9 @@ class _SummarySectionState extends State<SummarySection> {
     final now = DateTime.now();
     final income = await _transactionService.getTotalIncomeByMonth(now);
     final expense = await _transactionService.getTotalSpentByMonth(now);
+
+    if (!mounted) return;
+
     setState(() {
       _income = income;
       _expense = expense;
@@ -121,6 +124,7 @@ class _SummaryCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 16,
+            // ignore: deprecated_member_use
             backgroundColor: color.withOpacity(0.1),
             child: Icon(icon, color: color, size: 20),
           ),

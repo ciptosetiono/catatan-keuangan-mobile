@@ -39,65 +39,92 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       body: Stack(
         children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Spacer(),
-
-                  // ✅ Logo aplikasi
-                  Image.asset(
-                    'assets/app_logo.png', // pastikan file ini ada
-                    height: 100,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // ✅ Tagline aplikasi
-                  const Text(
-                    'Kelola Keuangan Pribadi Anda\nLebih Mudah & Terarah',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.black54),
-                  ),
-
-                  const Spacer(),
-                  ElevatedButton.icon(
-                    icon: Image.asset(
-                      'assets/google_logo.png',
-                      height: 24,
-                      width: 24,
-                    ),
-                    label: const Text(
-                      'Masuk dengan Google',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 73, 156, 224),
-                      foregroundColor: const Color.fromARGB(
-                        255,
-                        245,
-                        244,
-                        244,
-                      ), // Changed to gray
-                      minimumSize: const Size(double.infinity, 48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed:
-                        _isLoading ? null : () => _signInWithGoogle(context),
-                  ),
-                  const SizedBox(height: 24),
-                ],
+          // 🌈 Gradient background
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color.fromARGB(255, 40, 174, 236), Color(0xFFACB6E5)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
             ),
           ),
+
+          // 💳 Login Card
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: AnimatedOpacity(
+                opacity: _isLoading ? 0.4 : 1,
+                duration: const Duration(milliseconds: 500),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // ✅ App logo
+                    Image.asset('assets/app_logo.png', height: 120),
+                    const SizedBox(height: 24),
+
+                    // ✅ Headline
+                    Text(
+                      'Selamat Datang!',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // ✅ Subtext
+                    Text(
+                      'Kelola keuangan pribadi Anda\nlebih mudah & terarah',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: Colors.white70,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+
+                    // 🔘 Google Sign-In Button
+                    ElevatedButton.icon(
+                      icon: Image.asset(
+                        'assets/google_logo.png',
+                        height: 24,
+                        width: 24,
+                      ),
+                      label: const Text(
+                        'Hubungkan dengan Google',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black87,
+                        minimumSize: const Size(double.infinity, 50),
+                        elevation: 4,
+                        shadowColor: Colors.black45,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed:
+                          _isLoading ? null : () => _signInWithGoogle(context),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // 🔄 Loading overlay
           if (_isLoading)
             Container(
+              width: size.width,
+              height: size.height,
               color: Colors.black45,
               child: const Center(
                 child: CircularProgressIndicator(color: Colors.white),

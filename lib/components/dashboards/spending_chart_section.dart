@@ -23,6 +23,7 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
   final _transactionService = TransactionService();
 
   late final Future<List<_CategoryTotal>> _chartDataFuture;
+  // ignore: prefer_final_fields
   DateTime _selectedMonth = DateTime.now();
 
   @override
@@ -69,7 +70,6 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
-              print(snapshot.error);
               return Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
@@ -123,6 +123,7 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
                     leading: CircleAvatar(
                       backgroundColor: _getColor(
                         entry.category.name,
+                        // ignore: deprecated_member_use
                       ).withOpacity(0.3),
                     ),
                     title: Text(entry.category.name),
@@ -132,6 +133,7 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   );
+                  // ignore: unnecessary_to_list_in_spreads
                 }).toList(),
               ],
             );

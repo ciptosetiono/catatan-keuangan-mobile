@@ -13,33 +13,31 @@ class BudgetMonthDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        height: 40,
-        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<DateTime>(
-            value: DateTime(selectedMonth.year, selectedMonth.month),
-            isExpanded: true,
-            icon: const Icon(Icons.calendar_today),
-            items: List.generate(12, (i) {
-              final date = DateTime(DateTime.now().year, i + 1);
-              return DropdownMenuItem<DateTime>(
-                value: DateTime(date.year, date.month),
-                child: Text(DateFormat('MMM yyyy').format(date)),
-              );
-            }),
-            onChanged: (val) {
-              if (val != null) {
-                onChanged(val);
-              }
-            },
-          ),
+    return Container(
+      height: 40,
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<DateTime>(
+          value: DateTime(selectedMonth.year, selectedMonth.month),
+          isExpanded: true,
+          icon: const Icon(Icons.calendar_today),
+          items: List.generate(12, (i) {
+            final date = DateTime(DateTime.now().year, i + 1);
+            return DropdownMenuItem<DateTime>(
+              value: DateTime(date.year, date.month),
+              child: Text(DateFormat('MMM yyyy').format(date)),
+            );
+          }),
+          onChanged: (val) {
+            if (val != null) {
+              onChanged(val);
+            }
+          },
         ),
       ),
     );

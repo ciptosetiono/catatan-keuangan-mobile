@@ -52,12 +52,14 @@ class _BudgetScreenState extends State<BudgetScreen> {
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Padding(
+          preferredSize: const Size.fromHeight(70),
+          child: Container(
+            color: Colors.lightBlue,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
-                Expanded(
+                Flexible(
+                  flex: 1,
                   child: BudgetCategoryNameField(
                     categoryName: _categoryName,
                     onChanged: (val) {
@@ -73,7 +75,8 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Expanded(
+                Flexible(
+                  flex: 1,
                   child: BudgetMonthDropdown(
                     selectedMonth: _selectedMonth,
                     onChanged: (val) => setState(() => _selectedMonth = val),

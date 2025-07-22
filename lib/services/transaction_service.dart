@@ -3,6 +3,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rxdart/rxdart.dart';
 import '../models/transaction_model.dart';
 import 'wallet_service.dart';
 
@@ -13,39 +14,6 @@ class TransactionService {
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
   final WalletService _walletService = WalletService();
 
-  /// Tambah transaksi baru ke Firestore
-  Future<void> addTransaction({
-    required String walletId,
-    required String title,
-    required double amount,
-    required String type, // 'income' atau 'expense'
-    required String categoryId,
-    required DateTime date,
-  }) async {
-    if (userId == null) return;
-    await transactionsRef.add({
-      'userId': userId,
-      'walletId': walletId,
-      'title': title,
-      'amount': amount,
-      'type': type,
-      'categoryId': categoryId,
-      'date': Timestamp.fromDate(date),
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-
-    final wallet = await _walletService.getWalletById(walletId);
-    final newBalance =
-        type == 'income'
-            ? wallet.currentBalance + amount
-            : wallet.currentBalance - amount;
-
-    await _walletService.updateWallet(
-      wallet.copyWith(currentBalance: newBalance),
-    );
-  }
-
-  /// Ambil transaksi dengan filter tanggal optional
   Stream<List<TransactionModel>> getTransactionsStream({
     DateTime? fromDate,
     DateTime? toDate,
@@ -57,7 +25,8 @@ class TransactionService {
     Query<Map<String, dynamic>> query = _db
         .collection('transactions')
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true);
+        .orderBy('date', descending: true)
+        .where('type', whereIn: ['income', 'expense']);
 
     if (fromDate != null) {
       query = query.where(
@@ -105,8 +74,8 @@ class TransactionService {
     Query<Map<String, dynamic>> query = _db
         .collection('transactions')
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true);
-
+        .orderBy('date', descending: true)
+        .where('type', whereIn: ['income', 'expense']);
     if (fromDate != null) {
       query = query.where(
         'date',
@@ -141,6 +110,39 @@ class TransactionService {
     return query.limit(limit).get();
   }
 
+  Stream<List<TransactionModel>> getTransactionsByWallet(String walletId) {
+    return transactionsRef
+        .where('walletId', isEqualTo: walletId)
+        .where('userId', isEqualTo: userId)
+        .where('type', whereIn: ['income', 'expense'])
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs
+                  .map((doc) => TransactionModel.fromFirestore(doc))
+                  .toList(),
+        );
+  }
+
+  /// Tambah transaksi baru ke Firestore
+  Future<void> addTransaction(Map<String, dynamic> newTransaction) async {
+    if (userId == null) return;
+    await transactionsRef.add({...newTransaction, userId: userId});
+
+    final wallet = await _walletService.getWalletById(
+      newTransaction['walletId'],
+    );
+    final newBalance =
+        newTransaction['type'] == 'income'
+            ? wallet.currentBalance + newTransaction['amount']
+            : wallet.currentBalance - newTransaction['amount'];
+
+    await _walletService.updateWallet(
+      wallet.copyWith(currentBalance: newBalance.toDouble()),
+    );
+  }
+
   Future<void> updateTransaction(
     String id,
     Map<String, dynamic> newData,
@@ -151,7 +153,7 @@ class TransactionService {
     final oldTransaction = TransactionModel.fromFirestore(doc);
 
     final oldWallet = await _walletService.getWalletById(
-      oldTransaction.walletId,
+      oldTransaction.walletId!,
     );
 
     final oldAmount = oldTransaction.amount;
@@ -201,7 +203,7 @@ class TransactionService {
     if (!doc.exists) return;
     TransactionModel transaction = TransactionModel.fromFirestore(doc);
 
-    final String walletId = transaction.walletId;
+    final String walletId = transaction.walletId!;
     final amount = transaction.amount.toDouble();
     final type = transaction.type;
 
@@ -344,5 +346,72 @@ class TransactionService {
     );
 
     return total;
+  }
+
+  // Stream khusus untuk data transfer
+  Stream<List<TransactionModel>> getTransfers({
+    String? fromWalletId,
+    String? toWalletId,
+    DateTime? fromDate,
+    DateTime? toDate,
+  }) {
+    // Siapkan range tanggal jika ada
+    final Timestamp? startTimestamp =
+        fromDate != null ? Timestamp.fromDate(fromDate) : null;
+    final Timestamp? endTimestamp =
+        toDate != null ? Timestamp.fromDate(toDate) : null;
+
+    // Query untuk fromWalletId
+    Query fromQuery = transactionsRef
+        .where('userId', isEqualTo: userId)
+        .where('type', isEqualTo: 'transfer');
+
+    if (fromWalletId != null) {
+      fromQuery = fromQuery.where('fromWalletId', isEqualTo: fromWalletId);
+    }
+
+    if (startTimestamp != null && endTimestamp != null) {
+      fromQuery = fromQuery
+          .where('date', isGreaterThanOrEqualTo: startTimestamp)
+          .where('date', isLessThanOrEqualTo: endTimestamp);
+    }
+
+    // Query untuk toWalletId
+    Query toQuery = transactionsRef
+        .where('userId', isEqualTo: userId)
+        .where('type', isEqualTo: 'transfer');
+
+    if (toWalletId != null) {
+      toQuery = toQuery.where('toWalletId', isEqualTo: toWalletId);
+    }
+
+    if (startTimestamp != null && endTimestamp != null) {
+      toQuery = toQuery
+          .where('date', isGreaterThanOrEqualTo: startTimestamp)
+          .where('date', isLessThanOrEqualTo: endTimestamp);
+    }
+
+    return Rx.combineLatest2(fromQuery.snapshots(), toQuery.snapshots(), (
+      QuerySnapshot fromSnap,
+      QuerySnapshot toSnap,
+    ) {
+      final allDocsMap = <String, DocumentSnapshot>{};
+
+      for (final doc in fromSnap.docs) {
+        allDocsMap[doc.id] = doc;
+      }
+      for (final doc in toSnap.docs) {
+        allDocsMap[doc.id] =
+            doc; // Akan overwrite duplikat dengan doc.id yang sama
+      }
+
+      final allDocs = allDocsMap.values.toList();
+      allDocs.sort((a, b) {
+        final dateA = (a['date'] as Timestamp).toDate();
+        final dateB = (b['date'] as Timestamp).toDate();
+        return dateB.compareTo(dateA); // descending
+      });
+      return allDocs.map((doc) => TransactionModel.fromFirestore(doc)).toList();
+    });
   }
 }

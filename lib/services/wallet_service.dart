@@ -57,4 +57,14 @@ class WalletService {
 
     return total;
   }
+
+  Future<void> increaseBalance(String walletId, int amount) async {
+    final ref = walletsRef.doc(walletId);
+    await ref.update({'currentBalance': FieldValue.increment(amount)});
+  }
+
+  Future<void> decreaseBalance(String walletId, int amount) async {
+    final ref = walletsRef.doc(walletId);
+    await ref.update({'currentBalance': FieldValue.increment(-amount)});
+  }
 }

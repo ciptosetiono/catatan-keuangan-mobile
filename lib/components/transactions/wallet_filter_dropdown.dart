@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import '../../../models/wallet_model.dart';
 import '../../../services/wallet_service.dart';
 
-class AccountFilterDropdown extends StatelessWidget {
+class WalletFilterDropdown extends StatelessWidget {
   final String? value;
+  final String? placeholder;
   final void Function(String?) onChanged;
 
-  const AccountFilterDropdown({
+  const WalletFilterDropdown({
     super.key,
     required this.value,
+    this.placeholder,
     required this.onChanged,
   });
 
@@ -43,9 +45,9 @@ class AccountFilterDropdown extends StatelessWidget {
                       style: TextStyle(color: Colors.black),
                     ),
                     items: [
-                      const DropdownMenuItem<String>(
+                      DropdownMenuItem<String>(
                         value: null,
-                        child: Text('All Walets'),
+                        child: Text(placeholder ?? 'Select Wallet'),
                       ),
                       ...items.map(
                         (wallet) => DropdownMenuItem<String>(

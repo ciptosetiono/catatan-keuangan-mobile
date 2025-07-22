@@ -5,24 +5,32 @@ import '../components/dashboards/wallets_balance_section.dart';
 import '../components/dashboards/summary_section.dart';
 import '../components/dashboards/spending_chart_section.dart';
 import '../components/dashboards/recent_transactions_section.dart';
+import '../screens/wallets/wallet_screen.dart';
+import '../screens/categories/category_screen.dart';
+import '../screens/transactions/transaction_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   void _goToWallets(BuildContext context) {
-    Navigator.pushNamed(context, '/wallets');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const WalletScreen()),
+    );
   }
 
   void _goToSpendingChart(BuildContext context) {
-    Navigator.pushNamed(context, '/categoryReport');
-  }
-
-  void _goToSummaryReport(BuildContext context) {
-    Navigator.pushNamed(context, '/summaryReport');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CategoryScreen()),
+    );
   }
 
   void _goToTransactions(BuildContext context) {
-    Navigator.pushNamed(context, '/transactions');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const TransactionScreen()),
+    );
   }
 
   @override
@@ -40,7 +48,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             WalletsBalanceSection(onSeeAll: () => _goToWallets(context)),
             const SizedBox(height: 24),
-            SummarySection(onSeeAll: () => _goToSummaryReport(context)),
+            SummarySection(onSeeAll: () => _goToTransactions(context)),
             const SizedBox(height: 24),
             SpendingChartSection(onSeeAll: () => _goToSpendingChart(context)),
             const SizedBox(height: 24),

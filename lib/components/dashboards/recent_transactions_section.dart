@@ -58,6 +58,7 @@ class RecentTransactionsSection extends StatelessWidget {
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: CircleAvatar(
+                        // ignore: deprecated_member_use
                         backgroundColor: color.withOpacity(0.1),
                         child: Icon(icon, color: color),
                       ),
