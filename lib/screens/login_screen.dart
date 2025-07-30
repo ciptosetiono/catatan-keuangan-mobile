@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(
         // ignore: use_build_context_synchronously
         context,
-      ).showSnackBar(SnackBar(content: Text('Login gagal: $e')));
+      ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
     }
   }
 
@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // ✅ Headline
                     Text(
-                      'Selamat Datang!',
+                      'Welcome!',
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // ✅ Subtext
                     Text(
-                      'Kelola keuangan pribadi Anda\nlebih mudah & terarah',
+                      'Money Managements made simple',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: Colors.white70,
@@ -98,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: 24,
                       ),
                       label: const Text(
-                        'Hubungkan dengan Google',
+                        'Connect With Google',
                         style: TextStyle(fontSize: 16),
                       ),
                       style: ElevatedButton.styleFrom(

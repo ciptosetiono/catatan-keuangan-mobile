@@ -18,7 +18,7 @@ class CategoryDropdown extends StatelessWidget {
     return DropdownButtonFormField<String>(
       value: selectedId,
       decoration: const InputDecoration(
-        labelText: 'Kategori',
+        labelText: 'Select Category',
         border: OutlineInputBorder(),
       ),
       items:

@@ -128,15 +128,19 @@ class TransactionService {
   /// Tambah transaksi baru ke Firestore
   Future<void> addTransaction(Map<String, dynamic> newTransaction) async {
     if (userId == null) return;
-    await transactionsRef.add({...newTransaction, userId: userId});
 
-    final wallet = await _walletService.getWalletById(
-      newTransaction['walletId'],
-    );
+    final cleanedTransaction = Map<String, dynamic>.from(newTransaction);
+    cleanedTransaction['userId'] = userId;
+
+    await transactionsRef.add(cleanedTransaction);
+
+    final walletId = cleanedTransaction['walletId'] as String;
+    final wallet = await _walletService.getWalletById(walletId);
+
     final newBalance =
-        newTransaction['type'] == 'income'
-            ? wallet.currentBalance + newTransaction['amount']
-            : wallet.currentBalance - newTransaction['amount'];
+        cleanedTransaction['type'] == 'income'
+            ? wallet.currentBalance + cleanedTransaction['amount']
+            : wallet.currentBalance - cleanedTransaction['amount'];
 
     await _walletService.updateWallet(
       wallet.copyWith(currentBalance: newBalance.toDouble()),

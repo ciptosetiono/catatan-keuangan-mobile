@@ -17,16 +17,26 @@ class DatePickerField extends StatelessWidget {
       initialDate: selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
-      helpText: 'Choose Date',
+      helpText: 'Pilih Tanggal',
       builder: (context, child) {
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
         return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Theme.of(context).colorScheme.primary,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black,
-            ),
+          data: theme.copyWith(
+            colorScheme:
+                isDark
+                    ? const ColorScheme.dark(
+                      primary: Colors.lightBlue,
+                      onPrimary: Colors.white,
+                      surface: Color(0xFF121212),
+                      onSurface: Colors.white,
+                    )
+                    : const ColorScheme.light(
+                      primary: Colors.lightBlue,
+                      onPrimary: Colors.white,
+                      surface: Colors.white,
+                      onSurface: Colors.black,
+                    ),
           ),
           child: child!,
         );
@@ -40,19 +50,26 @@ class DatePickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final formattedDate = DateFormat('dd MMM yyyy').format(selectedDate);
+    final theme = Theme.of(context);
+
     return InkWell(
       onTap: () => _pickDate(context),
       borderRadius: BorderRadius.circular(8),
       child: InputDecorator(
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           labelText: 'Date',
-          border: OutlineInputBorder(),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 14,
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(DateFormat('dd MMM yyyy').format(selectedDate)),
-            const Icon(Icons.calendar_today, size: 20),
+            Text(formattedDate, style: theme.textTheme.bodyLarge),
+            const Icon(Icons.calendar_month_outlined, size: 22),
           ],
         ),
       ),

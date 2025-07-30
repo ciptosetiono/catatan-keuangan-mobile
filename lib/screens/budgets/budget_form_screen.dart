@@ -69,7 +69,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
       );
       if (exists) {
         setState(() {
-          _errorText = 'Anggaran untuk kategori dan bulan ini sudah ada.';
+          _errorText = 'There is no nudget for this category in this month.';
           _isLoading = false;
         });
         return;
@@ -97,7 +97,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Edit Anggaran' : 'Tambah Anggaran'),
+        title: Text(isEdit ? 'Edit Budget' : 'Add Budget'),
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
       ),
@@ -135,11 +135,11 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
 
               CurrencyTextField(
                 controller: _amountController,
-                label: 'Jumlah',
+                label: 'Amount',
                 validator:
                     (val) =>
                         val == null || val.trim().isEmpty
-                            ? 'Jumlah wajib diisi'
+                            ? 'Amount is required'
                             : null,
               ),
               const SizedBox(height: 16),
@@ -176,7 +176,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                               strokeWidth: 2,
                             ),
                           )
-                          : Text(isEdit ? 'Update' : 'Simpan'),
+                          : Text(isEdit ? 'Update' : 'Save'),
                 ),
               ),
             ],

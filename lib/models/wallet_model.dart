@@ -34,7 +34,7 @@ class Wallet {
       id: id,
       userId: map['userId'] ?? '',
       name: map['name'] ?? '-',
-      startBalance: map['currentBalance'] ?? 0,
+      startBalance: map['startBalance'] ?? 0,
       currentBalance: map['currentBalance'] ?? 0,
       icon: map['icon'],
       color: map['color'],

@@ -98,12 +98,12 @@ class TransferService {
 
       // Kurangi saldo wallet asal
       tx.update(fromWalletRef, {
-        'balance': FieldValue.increment(-transfer.amount.toInt()),
+        'currentBalance': FieldValue.increment(-transfer.amount.toInt()),
       });
 
       // Tambah saldo wallet tujuan
       tx.update(toWalletRef, {
-        'balance': FieldValue.increment(transfer.amount.toInt()),
+        'currentBalance': FieldValue.increment(transfer.amount.toInt()),
       });
     });
   }
@@ -129,10 +129,10 @@ class TransferService {
     await _db.runTransaction((tx) async {
       // Rollback saldo dari data lama
       tx.update(oldFromRef, {
-        'balance': FieldValue.increment(oldData.amount.toInt()),
+        'currentBalance': FieldValue.increment(oldData.amount.toInt()),
       });
       tx.update(oldToRef, {
-        'balance': FieldValue.increment(-oldData.amount.toInt()),
+        'currentBalance': FieldValue.increment(-oldData.amount.toInt()),
       });
 
       // Update tranfer
@@ -140,10 +140,10 @@ class TransferService {
 
       // Terapkan saldo baru
       tx.update(newFromRef, {
-        'balance': FieldValue.increment(-newData.amount.toInt()),
+        'currentBalance': FieldValue.increment(-newData.amount.toInt()),
       });
       tx.update(newToRef, {
-        'balance': FieldValue.increment(newData.amount.toInt()),
+        'currentBalance': FieldValue.increment(newData.amount.toInt()),
       });
     });
   }
@@ -168,12 +168,12 @@ class TransferService {
 
       // Kembalikan saldo wallet asal
       tx.update(fromWalletRef, {
-        'balance': FieldValue.increment(transfer.amount.toInt()),
+        'currentBalance': FieldValue.increment(transfer.amount.toInt()),
       });
 
       // Kurangi saldo wallet tujuan
       tx.update(toWalletRef, {
-        'balance': FieldValue.increment(-transfer.amount.toInt()),
+        'currentBalance': FieldValue.increment(-transfer.amount.toInt()),
       });
     });
   }

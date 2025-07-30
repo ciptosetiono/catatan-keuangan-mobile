@@ -23,7 +23,7 @@ class WalletDropdown extends StatelessWidget {
         return DropdownButtonFormField<String>(
           value: value,
           decoration: const InputDecoration(
-            labelText: 'Akun',
+            labelText: 'Select Wallet',
             border: OutlineInputBorder(),
           ),
           items:

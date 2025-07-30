@@ -8,7 +8,7 @@ import '../../components/transactions/wallet_filter_dropdown.dart';
 import '../../components/transactions/date_filter_dropdown.dart';
 import '../../components/transfers/transfer_action_dialog.dart';
 import '../../components/transfers/transfer_delete_dialog.dart';
-
+import '../../utils/currency_formatter.dart';
 import '../../../models/transaction_model.dart';
 import '../../../models/wallet_model.dart';
 import '../../../services/transfer_service.dart';
@@ -47,6 +47,7 @@ class _TransferScreenState extends State<TransferScreen> {
   Future<void> _loadWallets() async {
     final walletsStream = _walletService.getWalletStream();
     final wallets = await walletsStream.first;
+    if (!mounted) return;
     setState(() {
       _wallets = wallets;
     });
@@ -59,7 +60,7 @@ class _TransferScreenState extends State<TransferScreen> {
           orElse:
               () => Wallet(
                 id: id,
-                name: 'Tidak diketahui',
+                name: 'unknown',
                 userId: '-',
                 startBalance: 0,
                 currentBalance: 0,
@@ -72,8 +73,8 @@ class _TransferScreenState extends State<TransferScreen> {
   Future<void> _confirmDelete(BuildContext context, TransactionModel tx) async {
     final confirm = await showConfirmDialog(
       context: context,
-      title: 'Hapus Transfer',
-      message: 'Apakah kamu yakin ingin menghapus transfer ini?',
+      title: 'Delete Transfer',
+      message: 'Are you sure to delete this wallet?',
     );
     if (confirm == true) {
       await _transferService.deleteTransfer(tx.id);
@@ -138,11 +139,13 @@ class _TransferScreenState extends State<TransferScreen> {
           builder: (_) => TransferFormScreen(transfer: transfer),
         ),
       );
+      setState(() {}); // Refresh the transfers list after editing
     } else if (selected == 'delete') {
       // ignore: use_build_context_synchronously
       final confirm = await showTransferDeleteDialog(context);
       if (confirm) {
         await TransferService().deleteTransfer(transfer.id);
+        setState(() {});
       }
     }
   }
@@ -202,15 +205,13 @@ class _TransferScreenState extends State<TransferScreen> {
           }
 
           if (snapshot.hasError) {
-            return const Center(
-              child: Text('Terjadi kesalahan saat memuat data.'),
-            );
+            return const Center(child: Text('Failed to load transfers data'));
           }
 
           final transfers = snapshot.data ?? [];
 
           if (transfers.isEmpty) {
-            return const Center(child: Text('Belum ada transfer.'));
+            return const Center(child: Text('There are no transfers yet.'));
           }
 
           return ListView.separated(
@@ -233,10 +234,7 @@ class _TransferScreenState extends State<TransferScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      NumberFormat.currency(
-                        locale: 'id_ID',
-                        symbol: 'Rp ',
-                      ).format(tx.amount),
+                      CurrencyFormatter().encode(tx.amount),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.teal,
@@ -256,7 +254,10 @@ class _TransferScreenState extends State<TransferScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const TransferFormScreen()),
-          );
+          ).then((_) {
+            // Refresh the transfers list after adding a new transfer
+            setState(() {});
+          });
         },
         child: const Icon(Icons.add),
       ),

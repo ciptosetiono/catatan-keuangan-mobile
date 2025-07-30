@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../models/budget_model.dart';
 import '../../models/category_model.dart';
 import '../../services/budget_service.dart';
 import '../../services/transaction_service.dart';
+
+import '../../utils/currency_formatter.dart';
 import 'budget_item.dart';
 
 class BudgetList extends StatelessWidget {
@@ -19,8 +20,6 @@ class BudgetList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currency = NumberFormat.currency();
-
     return StreamBuilder<List<Budget>>(
       stream: BudgetService().getBudgets(month: selectedMonth),
       builder: (context, snapshot) {
@@ -102,14 +101,16 @@ class BudgetList extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            currency.format(totalBudget),
+                            CurrencyFormatter().encode(totalBudget),
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Text('Total Expense: ${currency.format(totalUsed)}'),
+                          Text(
+                            'Total Expense: ${CurrencyFormatter().encode(totalUsed)}',
+                          ),
                           const SizedBox(height: 4),
                           LinearProgressIndicator(
                             value: percentUsed,
@@ -118,7 +119,9 @@ class BudgetList extends StatelessWidget {
                             minHeight: 8,
                           ),
                           const SizedBox(height: 4),
-                          Text('Sisa: ${currency.format(remaining)}'),
+                          Text(
+                            'Sisa: ${CurrencyFormatter().encode(remaining)}',
+                          ),
                         ],
                       ),
                     ),

@@ -43,20 +43,20 @@ class TransactionModel {
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'amount': amount,
-      'type': type,
-      'date': Timestamp.fromDate(date),
-      'userId': userId,
-      'walletId': walletId,
-      'categoryId': categoryId,
-      'fromWalletId': fromWalletId,
-      'toWalletId': toWalletId,
-    };
-  }
+ Map<String, dynamic> toMap() {
+  return {
+    'id': id,
+    'title': title,
+    'amount': amount,
+    'type': type,
+    'date': Timestamp.fromDate(date),
+    'userId': userId,
+    'walletId': walletId,
+    if (categoryId != null) 'categoryId': categoryId,
+    if (fromWalletId != null) 'fromWalletId': fromWalletId,
+    if (toWalletId != null) 'toWalletId': toWalletId,
+  };
+}
 
   TransactionModel copyWith({
     String? id,

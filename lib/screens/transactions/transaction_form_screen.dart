@@ -3,17 +3,19 @@ import 'package:flutter/material.dart';
 import '../../../components/forms/transaction_type_selector.dart';
 import '../../../components/forms/wallet_dropdown.dart';
 import '../../../components/forms/date_picker_field.dart';
+import '../../../components/alerts/flash_message.dart';
+import '../../../components/buttons/submit_button.dart';
+import '../../components/forms/currency_text_field.dart';
+
+import '../../../utils/currency_formatter.dart';
 
 import '../../../services/transaction_service.dart';
 import '../../../services/category_service.dart';
+import '../../../services/wallet_service.dart';
 
 import '../../models/transaction_model.dart';
 import '../../../models/category_model.dart';
 import '../../../models/wallet_model.dart';
-import '../../../services/wallet_service.dart';
-import '../../components/forms/currency_text_field.dart';
-import '../../../utils/currency_formatter.dart';
-import '../../../components/alerts/flash_message.dart';
 
 class TransactionFormScreen extends StatefulWidget {
   final String? transactionId;
@@ -42,6 +44,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   List<Category> _categories = [];
   List<Wallet> _wallets = [];
 
+  bool _isSubmitting = false;
+
   @override
   void initState() {
     super.initState();
@@ -50,7 +54,13 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     if (widget.existingData != null) {
       final data = widget.existingData!;
       _titleController.text = data.title;
-      _amountController.text = data.amount.toString();
+
+      final formattedAmount = CurrencyFormatter().encode(data.amount);
+      _amountController.value = TextEditingValue(
+        text: formattedAmount,
+        selection: TextSelection.collapsed(offset: formattedAmount.length),
+      );
+
       _type = data.type;
       _selectedCategoryId = data.categoryId;
       _selectedWalletId = data.walletId;
@@ -69,6 +79,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   }
 
   void _submit() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategoryId == null || _selectedWalletId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -76,6 +87,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       );
       return;
     }
+
+    setState(() => _isSubmitting = true);
 
     final title = _titleController.text.trim();
     // Remove all non-digit and non-decimal separator characters
@@ -89,36 +102,41 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       'walletId': _selectedWalletId,
     };
 
-    if (widget.transactionId != null) {
-      await TransactionService().updateTransaction(widget.transactionId!, trx);
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        FlashMessage(
-          color: Colors.green,
-          message: 'Transaction updated successfully',
-        ),
-      );
-    } else {
-      try {
+    try {
+      if (widget.transactionId != null) {
+        await TransactionService().updateTransaction(
+          widget.transactionId!,
+          trx,
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          FlashMessage(
+            color: Colors.green,
+            message: 'Transaction updated successfully',
+          ),
+        );
+      } else {
         await TransactionService().addTransaction(trx);
-        // ignore: use_build_context_synchronously
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
             message: 'Transaction added successfully',
           ),
         );
-      } catch (e) {
-        // ignore: use_build_context_synchronously
+      }
+
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      if (mounted) {
+        print('Error adding transaction: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(color: Colors.red, message: 'Transaction action failed'),
         );
-        return;
       }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false); // SELESAI LOADING
     }
-
-    // ignore: use_build_context_synchronously
-    Navigator.pop(context, true);
   }
 
   @override
@@ -172,7 +190,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                                 ? _selectedCategoryId
                                 : null,
                         decoration: const InputDecoration(
-                          labelText: 'Category',
+                          labelText: 'Select Category',
                           border: OutlineInputBorder(),
                         ),
                         items:
@@ -223,15 +241,11 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                       const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton.icon(
+                        child: SubmitButton(
+                          isSubmitting: _isSubmitting,
                           onPressed: _submit,
-                          label: const Text('Save Transaction'),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            backgroundColor: Colors.lightBlue,
-                            foregroundColor: Colors.white,
-                            textStyle: const TextStyle(fontSize: 16),
-                          ),
+                          label:
+                              isEdit ? 'Update Transaction' : 'Add Transaction',
                         ),
                       ),
                     ],

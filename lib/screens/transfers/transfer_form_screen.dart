@@ -13,6 +13,7 @@ import '../../utils/currency_input_formatter.dart';
 
 import '../../../components/forms/date_picker_field.dart';
 import '../../../components/alerts/flash_message.dart';
+import '../../../components/buttons/submit_button.dart';
 
 class TransferFormScreen extends StatefulWidget {
   final TransactionModel? transfer;
@@ -56,7 +57,13 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
 
   void _initEditData() async {
     final t = widget.transfer!;
-    _amountController.text = CurrencyFormatter().encode(t.amount);
+
+    final formattedAmount = CurrencyFormatter().encode(t.amount);
+    _amountController.value = TextEditingValue(
+      text: formattedAmount,
+      selection: TextSelection.collapsed(offset: formattedAmount.length),
+    );
+
     _noteController.text = t.title;
     _selectedDate = t.date;
 
@@ -87,7 +94,6 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
       if (!_formKey.currentState!.validate() ||
           _fromWallet == null ||
           _toWallet == null)
-        // ignore: curly_braces_in_flow_control_structures
         return;
 
       final amount = _parseAmount(_amountController.text);
@@ -112,8 +118,7 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
         return;
       }
 
-      // ignore: no_leading_underscores_for_local_identifiers
-      final _transfer = TransactionModel(
+      final transfer = TransactionModel(
         id: isEdit ? widget.transfer!.id : '',
         title: note,
         amount: amount.toDouble(),
@@ -127,30 +132,25 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
       );
 
       if (isEdit) {
-        await _transferService.updateTransfer(widget.transfer!, _transfer);
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            FlashMessage(
-              color: Colors.green,
-              message: 'Transfer updated successfully',
-            ),
-          );
-        }
+        await _transferService.updateTransfer(widget.transfer!, transfer);
       } else {
-        await _transferService.addTransfer(_transfer);
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            FlashMessage(
-              color: Colors.green,
-              message: 'Transfer added successfully',
-            ),
-          );
-        }
+        await _transferService.addTransfer(transfer);
       }
 
-      if (mounted) Navigator.pop(context);
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        FlashMessage(
+          color: Colors.green,
+          message:
+              isEdit
+                  ? 'Transfer updated successfully'
+                  : 'Transfer added successfully',
+        ),
+      );
+
+      // ⛔️ Harus setelah semua selesai dan sebelum return
+      Navigator.pop(context);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -256,16 +256,10 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
                             ),
                             child: const Text('Cancel'),
                           ),
-                          ElevatedButton.icon(
-                            onPressed: _isSubmitting ? null : _submit,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                            ),
-                            icon: Icon(Icons.send),
-                            label: Text(
-                              isEdit ? 'Update Transfer' : 'Transfer',
-                            ),
+                          SubmitButton(
+                            isSubmitting: _isSubmitting,
+                            onPressed: _isSubmitting ? () => {} : _submit,
+                            label: isEdit ? 'Update Transfer' : 'Add Transfer',
                           ),
                         ],
                       ),
