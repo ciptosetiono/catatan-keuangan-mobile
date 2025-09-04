@@ -153,10 +153,10 @@ class _WalletScreenState extends State<WalletScreen> {
       floatingActionButton: FloatingActionButton(
         heroTag: 'addWallet',
         onPressed: () => _navigateToForm(),
-        backgroundColor: Colors.blue,
         // ignore: sort_child_properties_last
         child: const Icon(Icons.add),
         tooltip: 'Add Wallet',
+        backgroundColor: Colors.green,
       ),
     );
   }

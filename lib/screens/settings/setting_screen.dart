@@ -15,7 +15,7 @@ class SettingScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
         children: [
           // Informasi user
           if (user != null)
@@ -27,7 +27,7 @@ class SettingScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: 16,
-                  horizontal: 20,
+                  horizontal: 12,
                 ),
                 child: Row(
                   children: [
@@ -79,7 +79,7 @@ class SettingScreen extends StatelessWidget {
               },
             ),
           ),
-
+          const SizedBox(height: 12),
           Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),

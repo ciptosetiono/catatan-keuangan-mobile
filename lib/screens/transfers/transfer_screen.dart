@@ -154,7 +154,7 @@ class _TransferScreenState extends State<TransferScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transfer'),
+        title: const Text('Transfers'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -260,6 +260,7 @@ class _TransferScreenState extends State<TransferScreen> {
           });
         },
         child: const Icon(Icons.add),
+        backgroundColor: Colors.green,
       ),
     );
   }

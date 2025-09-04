@@ -8,6 +8,7 @@ import '../../services/category_service.dart';
 import '../../components/forms/currency_text_field.dart';
 import '../../components/forms/month_picker_field.dart';
 import '../../../utils/currency_formatter.dart';
+import '../../components/buttons/submit_button.dart';
 
 class BudgetFormScreen extends StatefulWidget {
   final Budget? budget;
@@ -125,7 +126,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                             child: Text(c.name),
                           );
                         }).toList(),
-                    validator: (val) => val == null ? 'Pilih kategori' : null,
+                    validator: (val) => val == null ? 'Select Category' : null,
                     onChanged:
                         (val) => setState(() => _selectedCategoryId = val),
                   );
@@ -158,25 +159,10 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
               // Tombol simpan
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveBudget,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Colors.lightBlue,
-                    foregroundColor: Colors.white,
-                    textStyle: const TextStyle(fontSize: 16),
-                  ),
-                  child:
-                      _isLoading
-                          ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                          : Text(isEdit ? 'Update' : 'Save'),
+                child: SubmitButton(
+                  isSubmitting: _isLoading,
+                  onPressed: _saveBudget,
+                  label: isEdit ? 'Update' : 'Save',
                 ),
               ),
             ],

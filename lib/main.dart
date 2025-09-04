@@ -11,7 +11,6 @@ import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/transactions/transaction_screen.dart';
 import 'screens/budgets/budget_screen.dart';
-import 'screens/wallets/wallet_screen.dart';
 import 'screens/settings/setting_screen.dart';
 
 void main() async {
@@ -43,7 +42,7 @@ class MyApp extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         return MaterialApp(
-          title: 'My Money Note',
+          title: 'MoneyNote',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
@@ -99,7 +98,7 @@ class _MainPageState extends State<MainPage> {
     HomeScreen(),
     TransactionScreen(),
     BudgetScreen(),
-    WalletScreen(),
+    //WalletScreen(),
     SettingScreen(),
   ];
 
@@ -119,11 +118,13 @@ class _MainPageState extends State<MainPage> {
       activeIcon: Icon(Icons.pie_chart),
       label: 'Budgets',
     ),
+    /*
     BottomNavigationBarItem(
       icon: Icon(Icons.wallet_outlined),
       activeIcon: Icon(Icons.wallet),
       label: 'Wallets',
     ),
+    */
     BottomNavigationBarItem(
       icon: Icon(Icons.more_horiz_outlined),
       activeIcon: Icon(Icons.more_horiz),

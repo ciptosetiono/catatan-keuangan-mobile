@@ -96,6 +96,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           );
         },
         child: const Icon(Icons.add),
+        backgroundColor: Colors.green,
       ),
     );
   }

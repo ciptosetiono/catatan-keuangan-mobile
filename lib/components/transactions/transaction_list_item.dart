@@ -23,25 +23,29 @@ class TransactionListItem extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: InkWell(
         onTap: onTap,
-        child: ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: Icon(
-            isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-            color: isIncome ? Colors.green : Colors.red,
-          ),
-          title: Text(
-            transaction.title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [Text(DateFormat('dd MMM yyyy').format(date))],
-          ),
-          trailing: Text(
-            CurrencyFormatter().encode(transaction.amount),
-            style: TextStyle(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(
+              isIncome ? Icons.arrow_downward : Icons.arrow_upward,
               color: isIncome ? Colors.green : Colors.red,
-              fontWeight: FontWeight.bold,
+            ),
+            title: Text(
+              transaction.title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [Text(DateFormat('dd MMM yyyy').format(date))],
+            ),
+            trailing: Text(
+              CurrencyFormatter().encode(transaction.amount),
+              style: TextStyle(
+                fontSize: 12,
+                color: isIncome ? Colors.green : Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),

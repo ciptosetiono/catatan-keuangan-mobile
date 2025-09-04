@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../services/user_initializer.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -28,6 +29,8 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       await FirebaseAuth.instance.signInWithCredential(credential);
+
+      await initializeUserData();
     } catch (e) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(
@@ -49,7 +52,10 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color.fromARGB(255, 40, 174, 236), Color(0xFFACB6E5)],
+                colors: [
+                  Color.fromARGB(255, 40, 174, 236),
+                  Color.fromARGB(255, 7, 184, 37),
+                ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -67,12 +73,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // ✅ App logo
-                    Image.asset('assets/app_logo.png', height: 120),
-                    const SizedBox(height: 24),
-
+                    Image.asset(
+                      'assets/app_transparent_logo.png',
+                      height: 180,
+                      width: 180,
+                      fit: BoxFit.contain,
+                    ),
                     // ✅ Headline
                     Text(
-                      'Welcome!',
+                      'Welcome to Your Money Notes!',
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -82,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // ✅ Subtext
                     Text(
-                      'Money Managements made simple',
+                      'Track income and expenses, plan your budget, and stay on top of your money.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: Colors.white70,

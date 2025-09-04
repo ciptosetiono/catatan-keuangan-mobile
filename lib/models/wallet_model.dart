@@ -6,8 +6,8 @@ class Wallet {
   final String name;
   final num startBalance;
   final num currentBalance;
-  final String icon;
-  final String color;
+  final String? color;
+  final String? icon;
   final DateTime createdAt;
 
   Wallet({
@@ -16,8 +16,8 @@ class Wallet {
     required this.name,
     required this.startBalance,
     required this.currentBalance,
-    this.icon = '',
-    this.color = '',
+    this.icon,
+    this.color,
     required this.createdAt,
   });
 
@@ -38,7 +38,7 @@ class Wallet {
       currentBalance: map['currentBalance'] ?? 0,
       icon: map['icon'],
       color: map['color'],
-      createdAt: _parseTimestamp(map['createdAt']),
+      createdAt: (Map()['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 

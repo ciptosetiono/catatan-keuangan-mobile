@@ -20,11 +20,12 @@ import '../../../models/wallet_model.dart';
 class TransactionFormScreen extends StatefulWidget {
   final String? transactionId;
   final TransactionModel? existingData;
-
+  final VoidCallback? onSaved;
   const TransactionFormScreen({
     super.key,
     this.transactionId,
     this.existingData,
+    this.onSaved,
   });
 
   @override
@@ -117,7 +118,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         );
       } else {
         await TransactionService().addTransaction(trx);
-        if (!mounted) return;
+        // if (!mounted) return;
+
+        if (widget.onSaved != null) {
+          widget.onSaved!(); // trigger refresh di parent
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
@@ -126,10 +132,9 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         );
       }
 
-      if (mounted) Navigator.pop(context, true);
+      // if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (mounted) {
-        print('Error adding transaction: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(color: Colors.red, message: 'Transaction action failed'),
         );
@@ -169,19 +174,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-
-                      CurrencyTextField(
-                        controller: _amountController,
-                        label: 'Amount',
-                        validator:
-                            (val) =>
-                                val == null || val.trim().isEmpty
-                                    ? 'Amount is required'
-                                    : null,
-                      ),
-
-                      const SizedBox(height: 16),
-
                       DropdownButtonFormField<String>(
                         value:
                             _categories.any(
@@ -225,7 +217,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                         onDatePicked:
                             (picked) => setState(() => _selectedDate = picked),
                       ),
-                      const SizedBox(height: 32),
+
+                      const SizedBox(height: 16),
                       TextFormField(
                         controller: _titleController,
                         decoration: const InputDecoration(
@@ -239,13 +232,23 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                                     : null,
                       ),
                       const SizedBox(height: 16),
+                      CurrencyTextField(
+                        controller: _amountController,
+                        label: 'Amount',
+                        validator:
+                            (val) =>
+                                val == null || val.trim().isEmpty
+                                    ? 'Amount is required'
+                                    : null,
+                      ),
+
+                      const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,
                         child: SubmitButton(
                           isSubmitting: _isSubmitting,
                           onPressed: _submit,
-                          label:
-                              isEdit ? 'Update Transaction' : 'Add Transaction',
+                          label: isEdit ? 'Update' : 'Save',
                         ),
                       ),
                     ],

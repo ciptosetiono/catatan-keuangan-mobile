@@ -278,6 +278,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
           ).then((_) => _loadTransactions(reset: true));
         },
         child: const Icon(Icons.add),
+        backgroundColor: Colors.green,
       ),
     );
   }

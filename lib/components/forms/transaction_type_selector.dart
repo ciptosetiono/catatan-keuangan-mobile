@@ -17,7 +17,7 @@ class TransactionTypeSelector extends StatelessWidget {
           ['income', 'expense'].map((type) {
             final isSelected = selected == type;
             final color = type == 'income' ? Colors.green : Colors.red;
-            final label = type == 'income' ? 'Pemasukan' : 'Pengeluaran';
+            final label = type == 'income' ? 'Income' : 'Expense';
 
             return Expanded(
               child: Padding(

@@ -5,6 +5,7 @@ import '../../models/wallet_model.dart';
 import '../../services/wallet_service.dart';
 import '../../utils/currency_formatter.dart';
 import '../../utils/currency_input_formatter.dart';
+import '../../../components/buttons/submit_button.dart';
 
 class WalletFormScreen extends StatefulWidget {
   final Wallet? wallet;
@@ -20,7 +21,7 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
   final _nameController = TextEditingController();
   final _balanceController = TextEditingController();
   final _walletService = WalletService();
-
+  bool _isSubmitting = false;
   bool get isEdit => widget.wallet != null;
 
   @override
@@ -41,6 +42,8 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
   }
 
   Future<void> _submit() async {
+    if (_isSubmitting) return;
+
     if (!_formKey.currentState!.validate()) return;
 
     final name = _nameController.text.trim();
@@ -84,11 +87,15 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
       createdAt: widget.wallet?.createdAt ?? DateTime.now(),
     );
 
+    setState(() => _isSubmitting = true);
+
     if (isEdit) {
       await _walletService.updateWallet(wallet);
     } else {
       await _walletService.addWallet(wallet);
     }
+
+    setState(() => _isSubmitting = false);
 
     // ignore: use_build_context_synchronously
     Navigator.pop(context);
@@ -137,26 +144,13 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
                             : null,
               ),
               const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.grey[700],
-                    ),
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: _submit,
-                    icon: Icon(isEdit ? Icons.save : Icons.add),
-                    label: Text(isEdit ? 'Save Changes' : 'Add Wallet'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
-                ],
+              SizedBox(
+                width: double.infinity,
+                child: SubmitButton(
+                  isSubmitting: _isSubmitting,
+                  onPressed: _submit,
+                  label: isEdit ? 'Update' : 'Save',
+                ),
               ),
             ],
           ),

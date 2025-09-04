@@ -246,22 +246,13 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
                             (picked) => setState(() => _selectedDate = picked),
                       ),
                       const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.grey[700],
-                            ),
-                            child: const Text('Cancel'),
-                          ),
-                          SubmitButton(
-                            isSubmitting: _isSubmitting,
-                            onPressed: _isSubmitting ? () => {} : _submit,
-                            label: isEdit ? 'Update Transfer' : 'Add Transfer',
-                          ),
-                        ],
+                      SizedBox(
+                        width: double.infinity,
+                        child: SubmitButton(
+                          isSubmitting: _isSubmitting,
+                          onPressed: _submit,
+                          label: isEdit ? 'Update' : 'Save',
+                        ),
                       ),
                     ],
                   ),

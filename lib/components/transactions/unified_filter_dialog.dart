@@ -56,7 +56,7 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('Custom Filter'),
+          const Text('Search Transactions'),
           IconButton(
             icon: const Icon(Icons.close),
             onPressed: () => Navigator.pop(context),
@@ -142,7 +142,11 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
               title: _title,
             );
           },
-          child: const Text('Apply Filters'),
+          child: const Text('Apply'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.lightBlue,
+            foregroundColor: Colors.white,
+          ),
         ),
       ],
     );
