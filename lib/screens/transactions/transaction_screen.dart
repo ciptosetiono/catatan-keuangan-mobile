@@ -3,20 +3,20 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../components/transactions/wallet_filter_dropdown.dart';
-import '../../components/transactions/date_filter_dropdown.dart';
-import '../../components/transactions/unified_filter_dialog.dart';
-import '../../../components/transactions/transaction_action_dialog.dart';
-import '../../../components/transactions/transaction_delete_dialog.dart';
-import '../../../components/transactions/transaction_list_item.dart';
-import '../../../components/transactions/transaction_summary_card.dart';
+import 'package:money_note/components/transactions/wallet_filter_dropdown.dart';
+import 'package:money_note/components/transactions/date_filter_dropdown.dart';
+import 'package:money_note/components/transactions/unified_filter_dialog.dart';
+import 'package:money_note/components/transactions/transaction_action_dialog.dart';
+import 'package:money_note/components/transactions/transaction_delete_dialog.dart';
+import 'package:money_note/components/transactions/transaction_list_item.dart';
+import 'package:money_note/components/transactions/transaction_summary_card.dart';
 
-import '../../constants/date_filter_option.dart';
+import 'package:money_note/constants/date_filter_option.dart';
 
-import '../../models/transaction_model.dart';
-import '../../services/transaction_service.dart';
-import 'transaction_detail_screen.dart';
-import 'transaction_form_screen.dart';
+import 'package:money_note/models/transaction_model.dart';
+import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/screens/transactions/transaction_detail_screen.dart';
+import 'package:money_note/screens/transactions/transaction_form_screen.dart';
 
 class TransactionScreen extends StatefulWidget {
   const TransactionScreen({super.key});
@@ -189,9 +189,9 @@ class _TransactionScreenState extends State<TransactionScreen> {
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
+          preferredSize: const Size.fromHeight(48),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
             child: Row(
               children: [
                 Expanded(
@@ -212,7 +212,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.filter_alt, color: Colors.white),
+                  icon: const Icon(Icons.filter_list, color: Colors.white),
                   onPressed: () {
                     showDialog(
                       context: context,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:money_note/constants/date_filter_option.dart';
 
@@ -62,26 +63,15 @@ class DateFilterDropdown extends StatelessWidget {
           context: context,
           firstDate: DateTime(2020),
           lastDate: now.add(const Duration(days: 365)),
-          helpText: 'Custom Date', // Set the button text here
-          confirmText: 'Apply',
-          cancelText: 'Cancel',
+          helpText: 'Custom Date',
           builder: (context, child) {
-            return Theme(
-              data: Theme.of(context).copyWith(
-                colorScheme: ColorScheme.light(
-                  primary: Theme.of(context).primaryColor,
-                  onPrimary: Colors.white,
-                  surface: Colors.white,
-                  onSurface: Colors.black,
-                ),
-                textButtonTheme: TextButtonThemeData(
-                  style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).primaryColor,
-                  ),
-                ),
-                dialogTheme: DialogThemeData(backgroundColor: Colors.white),
-              ),
-              child: child!,
+            return Localizations.override(
+              context: context,
+              delegates: [
+                ...GlobalMaterialLocalizations.delegates,
+                const _CustomMaterialLocalizationsDelegate(),
+              ],
+              child: child,
             );
           },
         );
@@ -119,7 +109,7 @@ class DateFilterDropdown extends StatelessWidget {
                 isExpanded: true,
                 dropdownColor: Colors.white,
                 style: const TextStyle(color: Colors.black),
-                icon: const SizedBox.shrink(), // hide default icon
+                icon: const SizedBox.shrink(),
                 items:
                     DateFilterOption.values.map((e) {
                       return DropdownMenuItem(
@@ -154,4 +144,32 @@ class DateFilterDropdown extends StatelessWidget {
       ),
     );
   }
+}
+
+/// --- Custom Localizations to override Save -> Apply ---
+class _CustomMaterialLocalizationsDelegate
+    extends LocalizationsDelegate<MaterialLocalizations> {
+  const _CustomMaterialLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => locale.languageCode == 'en';
+
+  @override
+  Future<MaterialLocalizations> load(Locale locale) async {
+    final defaultLocalization = await GlobalMaterialLocalizations.delegate.load(
+      locale,
+    );
+    return _CustomMaterialLocalizations(defaultLocalization);
+  }
+
+  @override
+  bool shouldReload(_CustomMaterialLocalizationsDelegate old) => false;
+}
+
+class _CustomMaterialLocalizations extends DefaultMaterialLocalizations {
+  final MaterialLocalizations _default;
+  _CustomMaterialLocalizations(this._default);
+
+  @override
+  String get saveButtonLabel => 'Apply'; // 👈 force override
 }

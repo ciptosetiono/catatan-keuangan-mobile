@@ -62,31 +62,27 @@ class RecentTransactionsSection extends StatelessWidget {
                 return InkWell(
                   onTap: () => onTapItem?.call(trx),
                   borderRadius: BorderRadius.circular(12),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                  child: ListTile(
+                    contentPadding:
+                        EdgeInsets.zero, // hilangkan padding default
+                    leading: CircleAvatar(
+                      backgroundColor: color.withOpacity(0.1),
+                      child: Icon(icon, color: color),
                     ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: color.withOpacity(0.1),
-                        child: Icon(icon, color: color),
-                      ),
-                      title: Text(
-                        trx.title,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(
-                        DateFormat.yMMMMd().format(trx.date),
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                      trailing: Text(
-                        (isIncome ? '+ ' : '- ') +
-                            CurrencyFormatter().encode(trx.amount),
-                        style: TextStyle(
-                          color: color,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    title: Text(
+                      trx.title,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(
+                      DateFormat.yMMMMd().format(trx.date),
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    trailing: Text(
+                      (isIncome ? '+ ' : '- ') +
+                          CurrencyFormatter().encode(trx.amount),
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),

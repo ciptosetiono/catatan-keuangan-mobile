@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
 import 'package:money_note/models/category_model.dart';
-
 import 'package:money_note/services/category_service.dart';
 
 class UnifiedFilterDialog extends StatefulWidget {
@@ -51,33 +49,47 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      titlePadding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
-      contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text('Search Transactions'),
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
-            tooltip: 'Close',
-          ),
-        ],
-      ),
-      content: SingleChildScrollView(
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Filter Transactions',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
             // Type selector
+            const Text("Type", style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
                   child: ChoiceChip(
-                    label: const Text('Income'),
+                    label: Text(
+                      'Income',
+                      style: TextStyle(
+                        color: _type == 'income' ? Colors.white : Colors.black,
+                      ),
+                    ),
                     selected: _type == 'income',
-                    selectedColor: Colors.green.shade100,
+                    selectedColor: Colors.green,
                     onSelected:
                         (selected) =>
                             setState(() => _type = selected ? 'income' : null),
@@ -86,9 +98,14 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: ChoiceChip(
-                    label: const Text('Expense'),
+                    label: Text(
+                      'Expense',
+                      style: TextStyle(
+                        color: _type == 'expense' ? Colors.white : Colors.black,
+                      ),
+                    ),
                     selected: _type == 'expense',
-                    selectedColor: Colors.red.shade100,
+                    selectedColor: Colors.red,
                     onSelected:
                         (selected) =>
                             setState(() => _type = selected ? 'expense' : null),
@@ -96,23 +113,29 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             // Category dropdown
             StreamBuilder<List<Category>>(
               stream: CategoryService().getCategoryStream(type: _type),
               builder: (context, snapshot) {
                 final items = snapshot.data ?? [];
-
-                // Ensure selected category exists in current list
                 final validCategoryIds = items.map((e) => e.id).toSet();
                 if (_category != null &&
                     !validCategoryIds.contains(_category)) {
                   _category = null;
                 }
+
                 return DropdownButtonFormField<String>(
                   value: _category,
-                  decoration: const InputDecoration(labelText: 'Category'),
+                  decoration: InputDecoration(
+                    labelText: 'Category',
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   isExpanded: true,
                   items:
                       items
@@ -127,37 +150,59 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
                 );
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             // Title input
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Note'),
+              decoration: InputDecoration(
+                labelText: 'Note',
+                filled: true,
+                fillColor: Colors.grey.shade100,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               onChanged:
                   (val) =>
                       setState(() => _title = val.trim().isEmpty ? null : val),
             ),
+            const SizedBox(height: 24),
+
+            // Actions
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: _resetFilters,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.grey[700],
+                  ),
+                  child: const Text('Reset'),
+                ),
+                const SizedBox(width: 12),
+                FilledButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    widget.onFilterApplied(
+                      type: _type,
+                      category: _category,
+                      title: _title,
+                    );
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Apply'),
+                ),
+              ],
+            ),
           ],
         ),
       ),
-      actions: [
-        TextButton(onPressed: _resetFilters, child: const Text('Reset')),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-            widget.onFilterApplied(
-              type: _type,
-              category: _category,
-              title: _title,
-            );
-          },
-          child: const Text('Apply'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.lightBlue,
-            foregroundColor: Colors.white,
-          ),
-        ),
-      ],
     );
   }
 }
