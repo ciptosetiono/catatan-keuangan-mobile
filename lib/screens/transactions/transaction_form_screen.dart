@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 
-import '../../../components/forms/transaction_type_selector.dart';
-import '../../../components/forms/wallet_dropdown.dart';
-import '../../../components/forms/date_picker_field.dart';
-import '../../../components/alerts/flash_message.dart';
-import '../../../components/buttons/submit_button.dart';
-import '../../components/forms/currency_text_field.dart';
+import 'package:money_note/utils/currency_formatter.dart';
 
-import '../../../utils/currency_formatter.dart';
+import 'package:money_note/models/category_model.dart';
+import 'package:money_note/models/wallet_model.dart';
+import 'package:money_note/models/transaction_model.dart';
 
-import '../../../services/transaction_service.dart';
-import '../../../services/category_service.dart';
-import '../../../services/wallet_service.dart';
+import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/services/category_service.dart';
+import 'package:money_note/services/wallet_service.dart';
 
-import '../../models/transaction_model.dart';
-import '../../../models/category_model.dart';
-import '../../../models/wallet_model.dart';
+import 'package:money_note/components/forms/transaction_type_selector.dart';
+import 'package:money_note/components/forms/wallet_dropdown.dart';
+import 'package:money_note/components/forms/date_picker_field.dart';
+import 'package:money_note/components/forms/currency_text_field.dart';
+import 'package:money_note/components/alerts/flash_message.dart';
+import 'package:money_note/components/buttons/submit_button.dart';
 
 class TransactionFormScreen extends StatefulWidget {
   final String? transactionId;
@@ -175,7 +175,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        value:
+                        initialValue:
                             _categories.any(
                                   (cat) => cat.id == _selectedCategoryId,
                                 )
@@ -211,13 +211,11 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                             (val) => setState(() => _selectedWalletId = val),
                       ),
                       const SizedBox(height: 16),
-
                       DatePickerField(
                         selectedDate: _selectedDate,
                         onDatePicked:
                             (picked) => setState(() => _selectedDate = picked),
                       ),
-
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _titleController,

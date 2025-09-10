@@ -3,9 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-import '../../../models/category_model.dart';
-import '../../../services/category_service.dart';
-import '../../../services/transaction_service.dart';
+import 'package:money_note/utils/currency_formatter.dart';
+
+import 'package:money_note/models/category_model.dart';
+
+import 'package:money_note/services/category_service.dart';
+import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/screens/categories/category_detail_screen.dart';
 
 import 'section_title.dart';
 
@@ -56,6 +60,15 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
     return Colors.primaries[idx].shade400;
   }
 
+  void _openCategoryDetail(Category category) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CategoryDetailScreen(category: category),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -82,7 +95,7 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
             if (data.isEmpty) {
               return const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
-                child: Text('There is no spent on this month!.'),
+                child: Text('There is no spent by category on this month!.'),
               );
             }
 
@@ -120,6 +133,11 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
                 const SizedBox(height: 16),
                 ...data.map((entry) {
                   return ListTile(
+                    dense: true, // makes the tile more compact
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 0,
+                    ), // reduce padding
                     leading: CircleAvatar(
                       backgroundColor: _getColor(
                         entry.category.name,
@@ -128,10 +146,10 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
                     ),
                     title: Text(entry.category.name),
                     trailing: Text(
-                      // format as currency if you want, or raw number
-                      entry.amount.toStringAsFixed(0),
+                      CurrencyFormatter().encode(entry.amount),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
+                    onTap: () => _openCategoryDetail(entry.category),
                   );
                   // ignore: unnecessary_to_list_in_spreads
                 }).toList(),

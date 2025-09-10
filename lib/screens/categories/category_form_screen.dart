@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:money_note/models/category_model.dart';
+import 'package:money_note/services/category_service.dart';
+
 import 'package:money_note/components/buttons/submit_button.dart';
-import '../../../components/forms/transaction_type_selector.dart';
-import '../../models/category_model.dart';
-import '../../services/category_service.dart';
+import 'package:money_note/components/forms/transaction_type_selector.dart';
 
 class CategoryFormScreen extends StatefulWidget {
   final Category? category;

@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 
-import '../../models/transaction_model.dart';
-import '../../models/wallet_model.dart';
+import 'package:money_note/utils/currency_formatter.dart';
+import 'package:money_note/utils/currency_input_formatter.dart';
 
-import '../../services/transfer_service.dart';
-import '../../services/wallet_service.dart';
+import 'package:money_note/models/transaction_model.dart';
+import 'package:money_note/models/wallet_model.dart';
 
-import '../../utils/currency_formatter.dart';
-import '../../utils/currency_input_formatter.dart';
+import 'package:money_note/services/transfer_service.dart';
+import 'package:money_note/services/wallet_service.dart';
 
-import '../../../components/forms/date_picker_field.dart';
-import '../../../components/alerts/flash_message.dart';
-import '../../../components/buttons/submit_button.dart';
+import 'package:money_note/components/forms/date_picker_field.dart';
+import 'package:money_note/components/alerts/flash_message.dart';
+import 'package:money_note/components/buttons/submit_button.dart';
 
 class TransferFormScreen extends StatefulWidget {
   final TransactionModel? transfer;
@@ -93,8 +93,9 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
     try {
       if (!_formKey.currentState!.validate() ||
           _fromWallet == null ||
-          _toWallet == null)
+          _toWallet == null) {
         return;
+      }
 
       final amount = _parseAmount(_amountController.text);
       final note =
@@ -193,7 +194,7 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
                   child: Column(
                     children: [
                       DropdownButtonFormField<Wallet>(
-                        value: _fromWallet,
+                        initialValue: _fromWallet,
                         items:
                             _wallets
                                 .map(
@@ -211,7 +212,7 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<Wallet>(
-                        value: _toWallet,
+                        initialValue: _toWallet,
                         items:
                             _wallets
                                 .map(

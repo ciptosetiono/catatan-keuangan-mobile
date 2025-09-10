@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../models/transaction_model.dart';
-import '../../../services/transaction_service.dart';
-import '../../../utils/currency_formatter.dart';
+
+import 'package:money_note/utils/currency_formatter.dart';
+
+import 'package:money_note/models/transaction_model.dart';
+
+import 'package:money_note/services/transaction_service.dart';
 
 class RecentTransactionsSection extends StatelessWidget {
   const RecentTransactionsSection({super.key});
@@ -13,13 +16,13 @@ class RecentTransactionsSection extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const CircularProgressIndicator();
         final data = snapshot.data!;
-        if (data.isEmpty) return const Text('Belum ada transaksi.');
+        if (data.isEmpty) return const Text('there is not any transaction.');
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Transaksi Terbaru',
+              'Last Transactions',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
@@ -50,7 +53,7 @@ class RecentTransactionsSection extends StatelessWidget {
                 onPressed: () {
                   Navigator.pushNamed(context, '/transactions');
                 },
-                child: const Text('Lihat Semua Transaksi'),
+                child: const Text('Show all transactions'),
               ),
             ),
           ],

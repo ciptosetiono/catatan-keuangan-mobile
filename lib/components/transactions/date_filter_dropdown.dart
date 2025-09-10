@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../constants/date_filter_option.dart';
+
+import 'package:money_note/constants/date_filter_option.dart';
 
 class DateFilterDropdown extends StatelessWidget {
   final DateFilterOption selected;
@@ -61,6 +62,9 @@ class DateFilterDropdown extends StatelessWidget {
           context: context,
           firstDate: DateTime(2020),
           lastDate: now.add(const Duration(days: 365)),
+          helpText: 'Custom Date', // Set the button text here
+          confirmText: 'Apply',
+          cancelText: 'Cancel',
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
@@ -80,9 +84,6 @@ class DateFilterDropdown extends StatelessWidget {
               child: child!,
             );
           },
-          helpText: 'Custom Date', // Set the button text here
-          confirmText: 'Apply',
-          cancelText: 'Cancel',
         );
         if (picked != null) {
           from = picked.start;

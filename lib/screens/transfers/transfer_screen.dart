@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../constants/date_filter_option.dart';
+import 'package:money_note/constants/date_filter_option.dart';
+import 'package:money_note/utils/currency_formatter.dart';
 
-import '../../../components/alerts/flash_message.dart';
-import '../../components/transactions/wallet_filter_dropdown.dart';
-import '../../components/transactions/date_filter_dropdown.dart';
-import '../../components/transfers/transfer_action_dialog.dart';
-import '../../components/transfers/transfer_delete_dialog.dart';
-import '../../utils/currency_formatter.dart';
-import '../../../models/transaction_model.dart';
-import '../../../models/wallet_model.dart';
-import '../../../services/transfer_service.dart';
-import '../../../services/wallet_service.dart';
+import 'package:money_note/models/transaction_model.dart';
+import 'package:money_note/models/wallet_model.dart';
 
-import '../../screens/transfers/transfer_form_screen.dart';
+import 'package:money_note/services/transfer_service.dart';
+import 'package:money_note/services/wallet_service.dart';
+
+import 'package:money_note/components/alerts/flash_message.dart';
+import 'package:money_note/components/transactions/wallet_filter_dropdown.dart';
+import 'package:money_note/components/transactions/date_filter_dropdown.dart';
+import 'package:money_note/components/transfers/transfer_action_dialog.dart';
+import 'package:money_note/components/transfers/transfer_delete_dialog.dart';
+
+import 'package:money_note/screens/transfers/transfer_form_screen.dart';
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -81,7 +83,7 @@ class _TransferScreenState extends State<TransferScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         FlashMessage(
           color: Colors.green,
-          message: 'Transaction updated successfully',
+          message: 'Transfer Deleted successfully',
         ),
       );
     }
@@ -224,9 +226,7 @@ class _TransferScreenState extends State<TransferScreen> {
                 onTap: () => _handleTransferTap(context, tx),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                 title: Text(
-                  _getWalletName(tx.fromWalletId!) +
-                      ' → ' +
-                      _getWalletName(tx.toWalletId!),
+                  '${_getWalletName(tx.fromWalletId!)} → ${_getWalletName(tx.toWalletId!)}',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(tx.title),
@@ -259,8 +259,8 @@ class _TransferScreenState extends State<TransferScreen> {
             setState(() {});
           });
         },
-        child: const Icon(Icons.add),
         backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
       ),
     );
   }

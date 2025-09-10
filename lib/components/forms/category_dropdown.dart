@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../models/category_model.dart';
+
+import 'package:money_note/models/category_model.dart';
 
 class CategoryDropdown extends StatelessWidget {
   final String? selectedId;
@@ -16,7 +17,7 @@ class CategoryDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: selectedId,
+      initialValue: selectedId,
       decoration: const InputDecoration(
         labelText: 'Select Category',
         border: OutlineInputBorder(),

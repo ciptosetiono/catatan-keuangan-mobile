@@ -5,6 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 import 'firebase_options.dart';
 
 import 'screens/login_screen.dart';
@@ -44,6 +46,14 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'MoneyNote',
           debugShowCheckedModeBanner: false,
+          locale: const Locale('en', 'US'),
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            MonthYearPickerLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en', 'US'), Locale('id', 'ID')],
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
               seedColor: Colors.lightBlue,

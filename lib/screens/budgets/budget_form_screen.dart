@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../../models/budget_model.dart';
-import '../../models/category_model.dart';
-import '../../services/budget_service.dart';
-import '../../services/category_service.dart';
-import '../../components/forms/currency_text_field.dart';
-import '../../components/forms/month_picker_field.dart';
-import '../../../utils/currency_formatter.dart';
-import '../../components/buttons/submit_button.dart';
+import 'package:money_note/utils/currency_formatter.dart';
+
+import 'package:money_note/models/budget_model.dart';
+import 'package:money_note/models/category_model.dart';
+
+import 'package:money_note/services/budget_service.dart';
+import 'package:money_note/services/category_service.dart';
+
+import 'package:money_note/components/forms/currency_text_field.dart';
+import 'package:money_note/components/forms/month_picker_field.dart';
+import 'package:money_note/components/buttons/submit_button.dart';
 
 class BudgetFormScreen extends StatefulWidget {
   final Budget? budget;
@@ -116,7 +119,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                   return DropdownButtonFormField<String>(
                     value: _selectedCategoryId,
                     decoration: const InputDecoration(
-                      labelText: 'Kategori',
+                      labelText: 'Category',
                       isDense: true,
                     ),
                     items:

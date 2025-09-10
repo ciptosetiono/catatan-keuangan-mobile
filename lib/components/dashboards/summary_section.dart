@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../services/transaction_service.dart';
-import '../../../utils/currency_formatter.dart';
+import 'package:money_note/utils/currency_formatter.dart';
+
+import 'package:money_note/services/transaction_service.dart';
+
 import 'section_title.dart';
 
 class SummarySection extends StatefulWidget {

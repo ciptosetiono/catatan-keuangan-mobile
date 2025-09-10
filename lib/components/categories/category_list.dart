@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../services/category_service.dart';
-import '../../models/category_model.dart';
-import '../../components/categories/category_list_item.dart';
+
+import 'package:money_note/models/category_model.dart';
+
+import 'package:money_note/services/category_service.dart';
+
+import 'package:money_note/components/categories/category_list_item.dart';
 
 class CategoryList extends StatelessWidget {
   final CategoryService categoryService;

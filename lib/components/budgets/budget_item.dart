@@ -3,12 +3,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../models/budget_model.dart';
-import '../../../models/category_model.dart';
-import '../../../screens/budgets/budget_detail_screen.dart';
-import '../../../screens/budgets/budget_form_screen.dart';
-import '../../../services/budget_service.dart';
-import 'budget_delete_dialog.dart';
+import 'package:money_note/models/budget_model.dart';
+import 'package:money_note/models/category_model.dart';
+
+import 'package:money_note/services/budget_service.dart';
+
+import 'package:money_note/components/budgets/budget_delete_dialog.dart';
+
+import 'package:money_note/screens/budgets/budget_detail_screen.dart';
+import 'package:money_note/screens/budgets/budget_form_screen.dart';
 
 class BudgetItem extends StatelessWidget {
   final Budget budget;
@@ -83,7 +86,7 @@ class BudgetItem extends StatelessWidget {
                 value: percentUsed,
                 backgroundColor: Colors.grey.shade300,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  isOverBudget ? Colors.red : Colors.green,
+                  isOverBudget ? Colors.red : Colors.lightBlue,
                 ),
               ),
               const SizedBox(height: 6),

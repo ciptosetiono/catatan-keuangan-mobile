@@ -3,16 +3,20 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../models/transaction_model.dart';
-import '../../../services/transaction_service.dart';
-import '../../../utils/currency_formatter.dart';
-import 'section_title.dart';
+import 'package:money_note/utils/currency_formatter.dart';
+
+import 'package:money_note/models/transaction_model.dart';
+
+import 'package:money_note/services/transaction_service.dart';
+
+import 'package:money_note/components/dashboards/section_title.dart';
 
 class RecentTransactionsSection extends StatelessWidget {
   final TransactionService _transactionService = TransactionService();
   final VoidCallback? onSeeAll;
+  final Function(TransactionModel trx)? onTapItem;
 
-  RecentTransactionsSection({super.key, this.onSeeAll});
+  RecentTransactionsSection({super.key, this.onSeeAll, this.onTapItem});
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +76,11 @@ class RecentTransactionsSection extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      onTap: () {
+                        if (onTapItem != null) {
+                          onTapItem!(trx); // trigger handler
+                        }
+                      },
                     );
                   }).toList(),
             );

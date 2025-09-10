@@ -1,13 +1,15 @@
 // lib/screens/home_screen.dart
 
 import 'package:flutter/material.dart';
-import '../components/dashboards/wallets_balance_section.dart';
-import '../components/dashboards/summary_section.dart';
-import '../components/dashboards/spending_chart_section.dart';
-import '../components/dashboards/recent_transactions_section.dart';
-import '../screens/wallets/wallet_screen.dart';
-import '../screens/categories/category_screen.dart';
-import '../screens/transactions/transaction_screen.dart';
+import 'package:money_note/components/dashboards/wallets_balance_section.dart';
+import 'package:money_note/components/dashboards/summary_section.dart';
+import 'package:money_note/components/dashboards/spending_chart_section.dart';
+import 'package:money_note/components/dashboards/recent_transactions_section.dart';
+import 'package:money_note/models/transaction_model.dart';
+import 'package:money_note/screens/wallets/wallet_screen.dart';
+import 'package:money_note/screens/categories/category_screen.dart';
+import 'package:money_note/screens/transactions/transaction_screen.dart';
+import 'package:money_note/screens/transactions/transaction_detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -33,6 +35,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  void _goToDetailTransaction(TransactionModel trx, BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TransactionDetailScreen(transaction: trx),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,6 +65,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 24),
             RecentTransactionsSection(
               onSeeAll: () => _goToTransactions(context),
+              onTapItem: (trx) => _goToDetailTransaction(trx, context),
             ),
             const SizedBox(height: 40),
           ],

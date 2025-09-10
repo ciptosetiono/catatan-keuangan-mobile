@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../models/category_model.dart';
+
+import 'package:money_note/models/category_model.dart';
 
 class BudgetCategoryDropdown extends StatelessWidget {
   final String selectedCategoryId;

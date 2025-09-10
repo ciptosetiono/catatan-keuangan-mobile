@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../models/wallet_model.dart';
-import '../../../services/wallet_service.dart';
-import '../../../utils/currency_formatter.dart';
+
+import 'package:money_note/utils/currency_formatter.dart';
+
+import 'package:money_note/models/wallet_model.dart';
+
+import 'package:money_note/services/wallet_service.dart';
+
 import 'section_title.dart';
 
 class WalletsBalanceSection extends StatelessWidget {

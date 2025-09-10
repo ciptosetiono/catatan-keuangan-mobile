@@ -29,7 +29,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
   DateTime? _from;
   DateTime? _to;
   // ignore: unused_field
-  String _dateFilterLabel = 'Bulan Ini';
+  String _dateFilterLabel = 'This Month';
   DateFilterOption _selectedDateFilter = DateFilterOption.thisMonth;
 
   String? _walletFilter;
@@ -277,8 +277,8 @@ class _TransactionScreenState extends State<TransactionScreen> {
             MaterialPageRoute(builder: (_) => const TransactionFormScreen()),
           ).then((_) => _loadTransactions(reset: true));
         },
-        child: const Icon(Icons.add),
         backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
       ),
     );
   }

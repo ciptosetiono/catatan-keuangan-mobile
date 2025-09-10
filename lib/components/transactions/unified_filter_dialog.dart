@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../models/category_model.dart';
-import '../../../services/category_service.dart';
+
+import 'package:money_note/models/category_model.dart';
+
+import 'package:money_note/services/category_service.dart';
 
 class UnifiedFilterDialog extends StatefulWidget {
   final String? typeFilter;
@@ -101,6 +103,13 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
               stream: CategoryService().getCategoryStream(type: _type),
               builder: (context, snapshot) {
                 final items = snapshot.data ?? [];
+
+                // Ensure selected category exists in current list
+                final validCategoryIds = items.map((e) => e.id).toSet();
+                if (_category != null &&
+                    !validCategoryIds.contains(_category)) {
+                  _category = null;
+                }
                 return DropdownButtonFormField<String>(
                   value: _category,
                   decoration: const InputDecoration(labelText: 'Category'),

@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import 'package:money_note/utils/currency_formatter.dart';
+import 'package:money_note/utils/date_formatter.dart';
+
 import 'package:money_note/models/budget_model.dart';
-import '../../utils/currency_formatter.dart';
-import '../../utils/date_formatter.dart';
-import '../../models/category_model.dart';
-import '../../models/transaction_model.dart';
-import '../../services/budget_service.dart';
-import '../../services/category_service.dart';
-import '../../services/transaction_service.dart';
-import '../../../components/transactions/transaction_list_item.dart';
-import '../../../components/transactions/transaction_action_dialog.dart';
-import '../../../components/transactions/transaction_delete_dialog.dart';
-import '../../screens/transactions/transaction_detail_screen.dart';
-import '../../screens/transactions/transaction_form_screen.dart';
-import 'budget_form_screen.dart';
+
+import 'package:money_note/models/category_model.dart';
+import 'package:money_note/models/transaction_model.dart';
+
+import 'package:money_note/services/budget_service.dart';
+import 'package:money_note/services/category_service.dart';
+import 'package:money_note/services/transaction_service.dart';
+
+import 'package:money_note/components/transactions/transaction_list_item.dart';
+import 'package:money_note/components/transactions/transaction_action_dialog.dart';
+import 'package:money_note/components/transactions/transaction_delete_dialog.dart';
+
+import 'package:money_note/screens/transactions/transaction_detail_screen.dart';
+import 'package:money_note/screens/transactions/transaction_form_screen.dart';
+import 'package:money_note/screens/budgets/budget_form_screen.dart';
 
 class BudgetDetailScreen extends StatefulWidget {
   final Budget budget;
@@ -302,7 +308,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                             color:
                                 remainingBudget < 0
                                     ? Colors.redAccent
-                                    : Colors.green,
+                                    : const Color.fromARGB(255, 64, 98, 253),
                           ),
                         ),
                       ],
@@ -322,7 +328,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${(progress * 100).toStringAsFixed(0)}% dari anggaran digunakan',
+                      '${(progress * 100).toStringAsFixed(0)}% used from budget',
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],

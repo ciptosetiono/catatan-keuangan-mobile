@@ -81,7 +81,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     // ✅ Headline
                     Text(
-                      'Welcome to Your Money Notes!',
+                      'Welcome to MoneyNote!',
+                      textAlign: TextAlign.center,
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Colors.white,

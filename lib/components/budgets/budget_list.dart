@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../models/budget_model.dart';
-import '../../models/category_model.dart';
-import '../../services/budget_service.dart';
-import '../../services/transaction_service.dart';
+import 'package:money_note/utils/currency_formatter.dart';
 
-import '../../utils/currency_formatter.dart';
-import 'budget_item.dart';
+import 'package:money_note/models/budget_model.dart';
+import 'package:money_note/models/category_model.dart';
+
+import 'package:money_note/services/budget_service.dart';
+import 'package:money_note/services/transaction_service.dart';
+
+import 'package:money_note/components/budgets/budget_item.dart';
 
 class BudgetList extends StatelessWidget {
   final DateTime selectedMonth;
@@ -120,7 +122,7 @@ class BudgetList extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Sisa: ${CurrencyFormatter().encode(remaining)}',
+                            'Remaining Budget: ${CurrencyFormatter().encode(remaining)}',
                           ),
                         ],
                       ),

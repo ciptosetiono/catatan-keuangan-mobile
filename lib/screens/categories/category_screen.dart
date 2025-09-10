@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
-import '../../models/category_model.dart';
-import '../../services/category_service.dart';
-import 'category_form_screen.dart';
-import '../../components/buttons/add_button.dart';
-import '../../components/categories/category_list.dart';
-import '../../components/categories/category_filter_bar.dart';
-import '../../components/categories/category_action_dialog.dart';
-import '../../components/forms/delete_confirmation_dialog.dart';
+
+import 'package:money_note/models/category_model.dart';
+
+import 'package:money_note/services/category_service.dart';
+
+import 'package:money_note/components/buttons/add_button.dart';
+import 'package:money_note/components/forms/delete_confirmation_dialog.dart';
+
+import 'package:money_note/components/categories/category_list.dart';
+import 'package:money_note/components/categories/category_filter_bar.dart';
+import 'package:money_note/components/categories/category_action_dialog.dart';
+import 'package:money_note/components/categories/category_delete_dialog.dart';
+
+import 'package:money_note/screens/categories/category_detail_screen.dart';
+import 'package:money_note/screens/categories/category_form_screen.dart';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
@@ -26,11 +33,22 @@ class _CategoryScreenState extends State<CategoryScreen> {
   ) async {
     final selected = await showCategoryActionDialog(context);
 
-    if (selected == 'edit') {
+    if (selected == 'detail') {
+      _openCategoryDetail(category);
+    } else if (selected == 'edit') {
       _openCategoryForm(category: category);
     } else if (selected == 'delete') {
       _deleteCategory(category);
     }
+  }
+
+  void _openCategoryDetail(Category category) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CategoryDetailScreen(category: category),
+      ),
+    );
   }
 
   void _openCategoryForm({Category? category}) {
@@ -41,19 +59,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 
   void _deleteCategory(Category category) async {
-    final confirm = await showDialog<bool>(
+    await confirmAndDeleteCategory(
       context: context,
-      builder:
-          (ctx) => DeleteConfirmationDialog(
-            title: 'Delete Category',
-            content: 'Are You sure You want to delete this category?',
-            onCancel: () => Navigator.pop(ctx, false),
-            onDelete: () => Navigator.pop(ctx, true),
-          ),
+      categoryId: category.id,
+      onDeleted: () {},
     );
-    if (confirm == true) {
-      await _categoryService.deleteCategory(category.id);
-    }
   }
 
   @override

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/transaction_model.dart';
-import '../../utils/currency_formatter.dart';
+
+import 'package:money_note/utils/currency_formatter.dart';
+
+import 'package:money_note/models/transaction_model.dart';
 
 class TransactionListItem extends StatelessWidget {
   final TransactionModel transaction;
