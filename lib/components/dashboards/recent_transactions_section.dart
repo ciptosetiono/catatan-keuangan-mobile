@@ -1,14 +1,10 @@
 // lib/components/dashboard/recent_transactions_section.dart
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:money_note/utils/currency_formatter.dart';
-
 import 'package:money_note/models/transaction_model.dart';
-
 import 'package:money_note/services/transaction_service.dart';
-
 import 'package:money_note/components/dashboards/section_title.dart';
 
 class RecentTransactionsSection extends StatelessWidget {
@@ -35,7 +31,7 @@ class RecentTransactionsSection extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'Error loading transactions: \${snapshot.error}',
+                  'Error loading transactions: ${snapshot.error}',
                   style: const TextStyle(color: Colors.red),
                 ),
               );
@@ -51,23 +47,39 @@ class RecentTransactionsSection extends StatelessWidget {
 
             final latest = transactions.take(5).toList();
 
-            return Column(
-              children:
-                  latest.map((trx) {
-                    final isIncome = trx.type == 'income';
-                    final color = isIncome ? Colors.green : Colors.red;
-                    final icon =
-                        isIncome ? Icons.arrow_downward : Icons.arrow_upward;
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: latest.length,
+              separatorBuilder: (context, index) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final trx = latest[index];
+                final isIncome = trx.type == 'income';
+                final color = isIncome ? Colors.green : Colors.red;
+                final icon =
+                    isIncome ? Icons.arrow_downward : Icons.arrow_upward;
 
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
+                return InkWell(
+                  onTap: () => onTapItem?.call(trx),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    child: ListTile(
                       leading: CircleAvatar(
-                        // ignore: deprecated_member_use
                         backgroundColor: color.withOpacity(0.1),
                         child: Icon(icon, color: color),
                       ),
-                      title: Text(trx.title),
-                      subtitle: Text(DateFormat.yMMMMd().format(trx.date)),
+                      title: Text(
+                        trx.title,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        DateFormat.yMMMMd().format(trx.date),
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
                       trailing: Text(
                         (isIncome ? '+ ' : '- ') +
                             CurrencyFormatter().encode(trx.amount),
@@ -76,13 +88,10 @@ class RecentTransactionsSection extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      onTap: () {
-                        if (onTapItem != null) {
-                          onTapItem!(trx); // trigger handler
-                        }
-                      },
-                    );
-                  }).toList(),
+                    ),
+                  ),
+                );
+              },
             );
           },
         ),
