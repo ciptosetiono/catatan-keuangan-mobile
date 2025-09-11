@@ -6,8 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:money_note/models/budget_model.dart';
 import 'package:money_note/models/category_model.dart';
 
-import 'package:money_note/services/budget_service.dart';
-
 import 'package:money_note/components/budgets/budget_delete_dialog.dart';
 
 import 'package:money_note/screens/budgets/budget_detail_screen.dart';
@@ -45,7 +43,7 @@ class BudgetItem extends StatelessWidget {
           items: const [
             PopupMenuItem(value: 'detail', child: Text('Detail')),
             PopupMenuItem(value: 'edit', child: Text('Edit')),
-            PopupMenuItem(value: 'delete', child: Text('Hapus')),
+            PopupMenuItem(value: 'delete', child: Text('Delete')),
           ],
         );
 
@@ -62,10 +60,7 @@ class BudgetItem extends StatelessWidget {
             MaterialPageRoute(builder: (_) => BudgetFormScreen(budget: budget)),
           );
         } else if (selected == 'delete') {
-          final confirm = await showBudgetDeleteDialog(context);
-          if (confirm) {
-            await BudgetService().deleteBudget(budget.id);
-          }
+          await showBudgetDeleteDialog(context: context, budgetId: budget.id);
         }
       },
       child: Card(

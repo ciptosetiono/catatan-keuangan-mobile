@@ -79,8 +79,20 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
         return;
       }
       await BudgetService().addBudget(budget);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Budget added succesfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
     } else {
       await BudgetService().updateBudget(budget);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Budget updated succesfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
     }
 
     if (mounted) {

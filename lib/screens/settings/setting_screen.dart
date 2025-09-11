@@ -61,8 +61,7 @@ class SettingScreen extends StatelessWidget {
             ),
 
           const SizedBox(height: 24),
-
-          // Kartu menu kategori
+          // menu wallets
           Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -80,6 +79,7 @@ class SettingScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
+          // menu transfer
           Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -96,8 +96,8 @@ class SettingScreen extends StatelessWidget {
               },
             ),
           ),
-
           const SizedBox(height: 12),
+          // menu categories
           Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -114,9 +114,27 @@ class SettingScreen extends StatelessWidget {
               },
             ),
           ),
-
+          /*
           const SizedBox(height: 12),
-
+          // menu export
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.download),
+              title: const Text('Backups'),
+              trailing: const Icon(Icons.download),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CategoryScreen()),
+                );
+              },
+            ),
+          ),
+          */
+          const SizedBox(height: 12),
           // Tombol logout
           Card(
             shape: RoundedRectangleBorder(

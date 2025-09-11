@@ -173,11 +173,13 @@ class _TransactionScreenState extends State<TransactionScreen> {
         _loadTransactions(reset: true); // Refresh list
       }
     } else if (selected == 'delete') {
-      final confirm = await showTransactionDeleteDialog(context);
-      if (confirm) {
-        await TransactionService().deleteTransaction(transaction.id);
-        _loadTransactions(reset: true);
-      }
+      await showTransactionDeleteDialog(
+        context: context,
+        transactionId: transaction.id,
+        onDeleted: () {
+          _loadTransactions(reset: true);
+        },
+      );
     }
   }
 

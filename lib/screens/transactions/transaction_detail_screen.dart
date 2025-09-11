@@ -88,17 +88,15 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                     await loadNames();
                   }
                 } else if (value == 'delete') {
-                  final confirm = await showTransactionDeleteDialog(context);
-                  if (confirm) {
-                    await TransactionService().deleteTransaction(
-                      widget.transaction.id,
-                    );
-                    if (context.mounted) {
-                      Navigator.of(
-                        context,
-                      ).pop(true); // Pass 'true' to indicate refresh
-                    }
-                  }
+                  await showTransactionDeleteDialog(
+                    context: context,
+                    transactionId: widget.transaction.id,
+                    onDeleted: () {
+                      if (context.mounted) {
+                        Navigator.of(context).pop(true);
+                      }
+                    },
+                  );
                 }
               },
               itemBuilder:

@@ -50,8 +50,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   @override
   void initState() {
     super.initState();
-    _loadInitialData();
-
     if (widget.existingData != null) {
       final data = widget.existingData!;
       _titleController.text = data.title;
@@ -67,6 +65,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       _selectedWalletId = data.walletId;
       _selectedDate = data.date;
     }
+    _loadInitialData();
   }
 
   Future<void> _loadInitialData() async {
@@ -109,7 +108,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           widget.transactionId!,
           trx,
         );
-        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
@@ -118,12 +116,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         );
       } else {
         await TransactionService().addTransaction(trx);
-        // if (!mounted) return;
-
-        if (widget.onSaved != null) {
-          widget.onSaved!(); // trigger refresh di parent
-        }
-
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
@@ -132,7 +124,11 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         );
       }
 
-      // if (mounted) Navigator.pop(context, true);
+      if (widget.onSaved != null) {
+        widget.onSaved!(); // trigger refresh di parent
+      }
+
+      if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

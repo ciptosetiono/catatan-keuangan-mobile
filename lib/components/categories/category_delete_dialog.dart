@@ -41,6 +41,12 @@ Future<bool> confirmAndDeleteCategory({
                           setState(() => isLoading = true);
                           try {
                             await categoryService.deleteCategory(categoryId);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Category deleted succesfully!'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
                             Navigator.pop(ctx, true);
                           } catch (e) {
                             setState(() => isLoading = false);
@@ -67,9 +73,6 @@ Future<bool> confirmAndDeleteCategory({
 
   final deleted = result ?? false;
   if (deleted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Category deleted successfully')),
-    );
     if (onDeleted != null) onDeleted();
   }
   return deleted;

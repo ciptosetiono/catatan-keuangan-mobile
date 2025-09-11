@@ -9,11 +9,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:month_year_picker/month_year_picker.dart';
 import 'firebase_options.dart';
 
-import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/transactions/transaction_screen.dart';
-import 'screens/budgets/budget_screen.dart';
-import 'screens/settings/setting_screen.dart';
+import 'package:money_note/screens/login_screen.dart';
+import 'package:money_note/screens/home_screen.dart';
+import 'package:money_note/screens/transactions/transaction_screen.dart';
+import 'package:money_note/screens/budgets/budget_screen.dart';
+import 'package:money_note/screens/reports/report_screen.dart';
+import 'package:money_note/screens/settings/setting_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -108,7 +109,7 @@ class _MainPageState extends State<MainPage> {
     HomeScreen(),
     TransactionScreen(),
     BudgetScreen(),
-    //WalletScreen(),
+    ReportScreen(),
     SettingScreen(),
   ];
 
@@ -119,8 +120,8 @@ class _MainPageState extends State<MainPage> {
       label: 'Home',
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.swap_horiz_outlined),
-      activeIcon: Icon(Icons.swap_horiz),
+      icon: Icon(Icons.swap_vert_outlined),
+      activeIcon: Icon(Icons.swap_vert),
       label: 'Transactions',
     ),
     BottomNavigationBarItem(
@@ -128,13 +129,11 @@ class _MainPageState extends State<MainPage> {
       activeIcon: Icon(Icons.pie_chart),
       label: 'Budgets',
     ),
-    /*
     BottomNavigationBarItem(
-      icon: Icon(Icons.wallet_outlined),
-      activeIcon: Icon(Icons.wallet),
-      label: 'Wallets',
+      icon: Icon(Icons.bar_chart_outlined),
+      activeIcon: Icon(Icons.bar_chart),
+      label: 'Report',
     ),
-    */
     BottomNavigationBarItem(
       icon: Icon(Icons.more_horiz_outlined),
       activeIcon: Icon(Icons.more_horiz),

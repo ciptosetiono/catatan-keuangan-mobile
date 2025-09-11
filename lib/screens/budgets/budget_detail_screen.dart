@@ -16,6 +16,7 @@ import 'package:money_note/services/transaction_service.dart';
 import 'package:money_note/components/transactions/transaction_list_item.dart';
 import 'package:money_note/components/transactions/transaction_action_dialog.dart';
 import 'package:money_note/components/transactions/transaction_delete_dialog.dart';
+import 'package:money_note/components/budgets/budget_delete_dialog.dart';
 
 import 'package:money_note/screens/transactions/transaction_detail_screen.dart';
 import 'package:money_note/screens/transactions/transaction_form_screen.dart';
@@ -135,16 +136,17 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
           _hasChanged = true;
         });
 
-        loadTransactions(); // Refresh list
-      }
-    } else if (selected == 'delete') {
-      // ignore: use_build_context_synchronously
-      final confirm = await showTransactionDeleteDialog(context);
-      if (confirm) {
-        await BudgetService().deleteBudget(widget.budget.id);
-
         loadTransactions();
       }
+    } else if (selected == 'delete') {
+      await showTransactionDeleteDialog(
+        context: context,
+        transactionId: transaction.id,
+        onDeleted: () async {
+          await BudgetService().deleteBudget(widget.budget.id);
+          loadTransactions();
+        },
+      );
     }
   }
 
@@ -181,15 +183,13 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                   await loadTransactions();
                 }
               } else if (value == 'delete') {
-                final confirm = await showTransactionDeleteDialog(context);
-                if (confirm) {
-                  await BudgetService().deleteBudget(widget.budget.id);
-                  if (context.mounted) {
-                    Navigator.of(
-                      context,
-                    ).pop(true); // Pass 'true' to indicate refresh
-                  }
-                }
+                await showBudgetDeleteDialog(
+                  context: context,
+                  budgetId: widget.budget.id,
+                  onDeleted: () async {
+                    Navigator.of(context).pop(true);
+                  },
+                );
               }
             },
             itemBuilder:

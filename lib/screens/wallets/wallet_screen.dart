@@ -2,12 +2,15 @@
 
 import 'package:flutter/material.dart';
 
-import '../../models/wallet_model.dart';
-import '../../services/wallet_service.dart';
-import 'wallet_form_screen.dart';
-import 'wallet_detail_screen.dart';
-import '../../screens/transfers/transfer_screen.dart';
-import '../../components/wallets/wallet_list_item.dart';
+import 'package:money_note/components/wallets/wallet_list_item.dart';
+import 'package:money_note/components/wallets/wallet_delete_dialog.dart';
+import 'package:money_note/models/wallet_model.dart';
+
+import 'package:money_note/services/wallet_service.dart';
+
+import 'package:money_note/screens/wallets/wallet_form_screen.dart';
+import 'package:money_note/screens/wallets/wallet_detail_screen.dart';
+import 'package:money_note/screens/transfers/transfer_screen.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -43,33 +46,13 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   void _deleteWallet(Wallet wallet) async {
-    final confirm = await showDialog<bool>(
+    await showWalletDeleteDialog(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text('Delete Wallet'),
-            content: Text('Are you sure you want to delete "${wallet.name}"?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
+      walletId: wallet.id,
+      onDeleted: () {
+        if (!mounted) return;
+      },
     );
-
-    if (confirm == true) {
-      await _walletService.deleteWallet(wallet.id);
-      if (!mounted) return;
-    }
   }
 
   void _showPopupMenu(Wallet wallet, Offset tapPosition) async {

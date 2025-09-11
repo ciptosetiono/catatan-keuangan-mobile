@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:money_note/services/budget_service.dart';
+import 'package:money_note/services/wallet_service.dart';
 
-Future<bool> showBudgetDeleteDialog({
+Future<bool> showWalletDeleteDialog({
   required BuildContext context,
-  required String budgetId,
+  required String walletId,
   VoidCallback? onDeleted,
 }) async {
-  final budgetService = BudgetService();
+  final walletService = WalletService();
   bool isLoading = false;
 
   final result = await showDialog<bool>(
@@ -16,7 +16,7 @@ Future<bool> showBudgetDeleteDialog({
       return StatefulBuilder(
         builder: (ctx, setState) {
           return AlertDialog(
-            title: const Text('Delete Budget'),
+            title: const Text('Delete Wallet'),
             content:
                 isLoading
                     ? const SizedBox(
@@ -24,7 +24,7 @@ Future<bool> showBudgetDeleteDialog({
                       child: Center(child: CircularProgressIndicator()),
                     )
                     : const Text(
-                      'Are you sure you want to delete this Budget ?',
+                      'Are you sure you want to delete this Wallet ?',
                     ),
 
             actions:
@@ -39,14 +39,14 @@ Future<bool> showBudgetDeleteDialog({
                         onPressed: () async {
                           setState(() => isLoading = true);
                           try {
-                            await budgetService.deleteBudget(budgetId);
-                            Navigator.pop(ctx, true);
+                            await walletService.deleteWallet(walletId);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Budget deleted succesfully!'),
+                                content: Text('Wallet deleted succesfully!'),
                                 backgroundColor: Colors.green,
                               ),
                             );
+                            Navigator.pop(ctx, true);
                           } catch (e) {
                             setState(() => isLoading = false);
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -70,8 +70,8 @@ Future<bool> showBudgetDeleteDialog({
     },
   );
   final deleted = result ?? false;
-  if (deleted && onDeleted != null) {
-    onDeleted(); // hanya refresh list, jangan panggil dialog lagi
+  if (deleted) {
+    if (onDeleted != null) onDeleted();
   }
   return deleted;
 }
