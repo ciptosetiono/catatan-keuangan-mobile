@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import '../services/user_initializer.dart';
+import 'package:money_note/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,30 +11,38 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final AuthService authService = AuthService();
   bool _isLoading = false;
 
   Future<void> _signInWithGoogle(BuildContext context) async {
     setState(() => _isLoading = true);
     try {
-      final googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
+      final User? user = await authService.signInWithGoogle();
+
+      if (user == null) {
+        // User cancelled Google sign-in
+        if (!mounted) return;
         setState(() => _isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Login cancelled')));
         return;
       }
 
-      final googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
+      // Initialize user data
       await initializeUserData();
-    } catch (e) {
+
+      if (!mounted) return;
+
+      // Navigate to home after successful login
+      Navigator.pushReplacementNamed(context, '/home');
+
       setState(() => _isLoading = false);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
       ScaffoldMessenger.of(
-        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
     }

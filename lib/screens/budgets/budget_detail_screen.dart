@@ -14,12 +14,8 @@ import 'package:money_note/services/category_service.dart';
 import 'package:money_note/services/transaction_service.dart';
 
 import 'package:money_note/components/transactions/transaction_list_item.dart';
-import 'package:money_note/components/transactions/transaction_action_dialog.dart';
-import 'package:money_note/components/transactions/transaction_delete_dialog.dart';
 import 'package:money_note/components/budgets/budget_delete_dialog.dart';
 
-import 'package:money_note/screens/transactions/transaction_detail_screen.dart';
-import 'package:money_note/screens/transactions/transaction_form_screen.dart';
 import 'package:money_note/screens/budgets/budget_form_screen.dart';
 
 class BudgetDetailScreen extends StatefulWidget {
@@ -100,54 +96,6 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
 
   String formatMonth(DateTime date) {
     return DateFormat.yMMMM().format(date);
-  }
-
-  Future<void> _handleTransactionTap(
-    BuildContext context,
-    TransactionModel transaction,
-  ) async {
-    final selected = await showTransactionActionDialog(context);
-
-    if (selected == 'detail') {
-      await Navigator.push(
-        // ignore: use_build_context_synchronously
-        context,
-        MaterialPageRoute(
-          builder: (_) => TransactionDetailScreen(transaction: transaction),
-        ),
-      );
-    } else if (selected == 'edit') {
-      final result = await Navigator.push(
-        // ignore: use_build_context_synchronously
-        context,
-        MaterialPageRoute(
-          builder:
-              (_) => TransactionFormScreen(
-                transactionId: transaction.id,
-                existingData: transaction,
-              ),
-        ),
-      );
-
-      if (result == true) {
-        final updated = await BudgetService().getBudget(widget.budget.id);
-        setState(() {
-          _localBudget = updated;
-          _hasChanged = true;
-        });
-
-        loadTransactions();
-      }
-    } else if (selected == 'delete') {
-      await showTransactionDeleteDialog(
-        context: context,
-        transactionId: transaction.id,
-        onDeleted: () async {
-          await BudgetService().deleteBudget(widget.budget.id);
-          loadTransactions();
-        },
-      );
-    }
   }
 
   @override
@@ -355,7 +303,8 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                     final trx = transactions[index];
                     return TransactionListItem(
                       transaction: trx,
-                      onTap: () => _handleTransactionTap(context, trx),
+                      onUpdated: () => loadTransactions(),
+                      onDeleted: () => loadTransactions(),
                     );
                   },
                 ),

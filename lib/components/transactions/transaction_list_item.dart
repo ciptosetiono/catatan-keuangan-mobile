@@ -5,14 +5,21 @@ import 'package:money_note/utils/currency_formatter.dart';
 
 import 'package:money_note/models/transaction_model.dart';
 
+import 'package:money_note/screens/transactions/transaction_detail_screen.dart';
+import 'package:money_note/screens/transactions/transaction_form_screen.dart';
+import 'package:money_note/components/transactions/transaction_action_dialog.dart';
+import 'package:money_note/components/transactions/transaction_delete_dialog.dart';
+
 class TransactionListItem extends StatelessWidget {
   final TransactionModel transaction;
-  final VoidCallback onTap;
+  final VoidCallback? onUpdated;
+  final VoidCallback? onDeleted;
 
   const TransactionListItem({
     super.key,
     required this.transaction,
-    required this.onTap,
+    this.onUpdated,
+    this.onDeleted,
   });
 
   @override
@@ -24,7 +31,13 @@ class TransactionListItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: InkWell(
-        onTap: onTap,
+        onTap:
+            () => handleTransactionTap(
+              context: context,
+              transaction: transaction,
+              onUpdated: onUpdated,
+              onDeleted: onDeleted,
+            ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
           child: ListTile(
@@ -44,7 +57,7 @@ class TransactionListItem extends StatelessWidget {
             trailing: Text(
               CurrencyFormatter().encode(transaction.amount),
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 color: isIncome ? Colors.green : Colors.red,
                 fontWeight: FontWeight.bold,
               ),
@@ -53,5 +66,48 @@ class TransactionListItem extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// A reusable handler for transaction actions (detail, edit, delete).
+Future<void> handleTransactionTap({
+  required BuildContext context,
+  required TransactionModel transaction,
+  Function()? onUpdated,
+  Function()? onDeleted,
+}) async {
+  final action = await showTransactionActionDialog(context);
+
+  if (action == 'detail') {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TransactionDetailScreen(transaction: transaction),
+      ),
+    );
+  } else if (action == 'edit') {
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => TransactionFormScreen(
+              transactionId: transaction.id,
+              existingData: transaction,
+            ),
+      ),
+    );
+
+    if (updated == true && onUpdated != null) {
+      onUpdated();
+    }
+  } else if (action == 'delete') {
+    final deleted = await showTransactionDeleteDialog(
+      context: context,
+      transactionId: transaction.id,
+    );
+
+    if (deleted == true && onDeleted != null) {
+      onDeleted();
+    }
   }
 }

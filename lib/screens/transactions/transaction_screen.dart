@@ -3,15 +3,15 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:money_note/constants/date_filter_option.dart';
+import 'package:money_note/components/buttons/add_button.dart';
 import 'package:money_note/components/transactions/wallet_filter_dropdown.dart';
 import 'package:money_note/components/transactions/date_filter_dropdown.dart';
 import 'package:money_note/components/transactions/unified_filter_dialog.dart';
 import 'package:money_note/components/transactions/transaction_action_dialog.dart';
 import 'package:money_note/components/transactions/transaction_delete_dialog.dart';
-import 'package:money_note/components/transactions/transaction_list_item.dart';
+import 'package:money_note/components/transactions/transaction_list.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
-
-import 'package:money_note/constants/date_filter_option.dart';
 
 import 'package:money_note/models/transaction_model.dart';
 import 'package:money_note/services/transaction_service.dart';
@@ -28,9 +28,9 @@ class TransactionScreen extends StatefulWidget {
 class _TransactionScreenState extends State<TransactionScreen> {
   DateTime? _from;
   DateTime? _to;
-  // ignore: unused_field
   String _dateFilterLabel = 'This Month';
   DateFilterOption _selectedDateFilter = DateFilterOption.thisMonth;
+  final ScrollController _scrollController = ScrollController();
 
   String? _walletFilter;
   String? _typeFilter;
@@ -42,7 +42,9 @@ class _TransactionScreenState extends State<TransactionScreen> {
   bool _hasMore = true;
   DocumentSnapshot? _lastDocument;
 
-  final ScrollController _scrollController = ScrollController();
+  num _income = 0;
+  num _expense = 0;
+  bool _isSummaryLoading = false;
 
   @override
   void initState() {
@@ -50,7 +52,9 @@ class _TransactionScreenState extends State<TransactionScreen> {
     final now = DateTime.now();
     _from = DateTime(now.year, now.month);
     _to = DateTime(now.year, now.month + 1);
-    _loadTransactions();
+
+    _loadTransactions(reset: true);
+    _loadSummary();
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
@@ -64,6 +68,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
   Future<void> _loadTransactions({bool reset = false}) async {
     if (_isLoading) return;
+
     setState(() => _isLoading = true);
 
     if (reset) {
@@ -72,30 +77,63 @@ class _TransactionScreenState extends State<TransactionScreen> {
       _hasMore = true;
     }
 
-    final snapshot = await TransactionService().getTransactionsPaginated(
-      limit: 20,
-      startAfter: _lastDocument,
-      fromDate: _from,
-      toDate: _to,
-      type: _typeFilter,
-      walletId: _walletFilter,
-      categoryId: _categoryFilter,
-      title: _titleFilter,
-    );
+    try {
+      const limit = 20;
+      final snapshot = await TransactionService().getTransactionsPaginated(
+        limit: limit,
+        startAfter: _lastDocument,
+        fromDate: _from,
+        toDate: _to,
+        type: _typeFilter,
+        walletId: _walletFilter,
+        categoryId: _categoryFilter,
+        title: _titleFilter,
+      );
 
-    if (snapshot.docs.isNotEmpty) {
-      _lastDocument = snapshot.docs.last;
-      _transactions =
-          snapshot.docs
-              .map((doc) => TransactionModel.fromFirestore(doc))
-              .toList();
+      if (snapshot.docs.isNotEmpty) {
+        _lastDocument = snapshot.docs.last;
+
+        final newTransactions =
+            snapshot.docs
+                .map((doc) => TransactionModel.fromFirestore(doc))
+                .toList();
+
+        setState(() {
+          _transactions.addAll(newTransactions);
+          if (snapshot.docs.length < limit) _hasMore = false;
+        });
+      } else {
+        setState(() => _hasMore = false);
+      }
+    } catch (e) {
+      debugPrint("Error loading transactions: $e");
+    } finally {
+      setState(() => _isLoading = false);
     }
+  }
 
-    if (snapshot.docs.length < 20) {
-      _hasMore = false;
+  Future<void> _loadSummary() async {
+    setState(() => _isSummaryLoading = true);
+    try {
+      final result = await TransactionService().getSummary(
+        fromDate: _from,
+        toDate: _to,
+        type: _typeFilter,
+        walletId: _walletFilter,
+        categoryId: _categoryFilter,
+        title: _titleFilter,
+      );
+
+      print(result);
+      setState(() {
+        _income = result['income'] ?? 0;
+        _expense = result['expense'] ?? 0;
+      });
+    } catch (e) {
+      debugPrint("Error load summary: $e");
+    } finally {
+      setState(() => _isSummaryLoading = false);
     }
-
-    setState(() => _isLoading = false);
   }
 
   void _applyDateFilter(
@@ -111,6 +149,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       _dateFilterLabel = label ?? 'This Month';
     });
     _loadTransactions(reset: true);
+    _loadSummary();
   }
 
   void _applyUnifiedFilter({String? type, String? category, String? title}) {
@@ -120,67 +159,21 @@ class _TransactionScreenState extends State<TransactionScreen> {
       _titleFilter = title;
     });
     _loadTransactions(reset: true);
+    _loadSummary();
   }
 
-  Future<Map<String, num>> _calculateSummary() async {
-    num income = 0;
-    num expense = 0;
-
-    for (var transaction in _transactions) {
-      final amount = transaction.amount;
-      final type = transaction.type;
-
-      if (type == 'income') {
-        income += amount;
-      } else if (type == 'expense') {
-        expense += amount;
-      }
-    }
-
-    return {'income': income, 'expense': expense, 'balance': income - expense};
-  }
-
-  Future<void> _handleTransactionTap(
-    BuildContext context,
-    TransactionModel transaction,
-  ) async {
-    final selected = await showTransactionActionDialog(context);
-
-    if (selected == 'detail') {
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => TransactionDetailScreen(transaction: transaction),
-        ),
-      );
-
-      if (result == true) {
-        _loadTransactions(reset: true); // Refresh list
-      }
-    } else if (selected == 'edit') {
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder:
-              (_) => TransactionFormScreen(
-                transactionId: transaction.id,
-                existingData: transaction,
-              ),
-        ),
-      );
-
-      if (result == true) {
-        _loadTransactions(reset: true); // Refresh list
-      }
-    } else if (selected == 'delete') {
-      await showTransactionDeleteDialog(
-        context: context,
-        transactionId: transaction.id,
-        onDeleted: () {
-          _loadTransactions(reset: true);
-        },
+  Widget _buildSummary() {
+    if (_isSummaryLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator()),
       );
     }
+    return TransactionSummaryCard(
+      income: _income,
+      expense: _expense,
+      balance: _income - _expense,
+    );
   }
 
   @override
@@ -193,7 +186,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               children: [
                 Expanded(
@@ -202,6 +195,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                     onChanged: (val) {
                       setState(() => _walletFilter = val);
                       _loadTransactions(reset: true);
+                      _loadSummary();
                     },
                   ),
                 ),
@@ -235,52 +229,35 @@ class _TransactionScreenState extends State<TransactionScreen> {
       ),
       body: Column(
         children: [
-          FutureBuilder<Map<String, num>>(
-            future: _calculateSummary(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final summary = snapshot.data!;
-              return TransactionSummaryCard(
-                income: summary['income']!,
-                expense: summary['expense']!,
-                balance: summary['balance']!,
-              );
-            },
-          ),
+          _buildSummary(),
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(12),
-              itemCount: _transactions.length + (_hasMore ? 1 : 0),
-              itemBuilder: (ctx, i) {
-                if (i < _transactions.length) {
-                  final transaction = _transactions[i];
-                  return TransactionListItem(
-                    transaction: transaction,
-                    onTap: () => _handleTransactionTap(context, transaction),
-                  );
-                } else {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-              },
-            ),
+            child:
+                _transactions.isEmpty && !_isLoading
+                    ? const Center(child: Text("No transactions found"))
+                    : TransactionList(
+                      transactions: _transactions,
+                      onItemUpdated: () {
+                        _loadTransactions(reset: true);
+                        _loadSummary();
+                      },
+                      onItemDeleted: () {
+                        _loadTransactions(reset: true);
+                        _loadSummary();
+                      },
+                    ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: AddButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const TransactionFormScreen()),
-          ).then((_) => _loadTransactions(reset: true));
+          ).then((_) {
+            _loadTransactions(reset: true);
+            _loadSummary();
+          });
         },
-        backgroundColor: Colors.green,
-        child: const Icon(Icons.add),
       ),
     );
   }

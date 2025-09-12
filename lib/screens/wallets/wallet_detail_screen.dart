@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/wallet_model.dart';
-import '../../models/transaction_model.dart';
-import '../../services/transaction_service.dart';
-import '../../utils/currency_formatter.dart';
-import '../transactions/transaction_detail_screen.dart';
+
+import 'package:money_note/utils/currency_formatter.dart';
+import 'package:money_note/components/transactions/transaction_summary_card.dart';
+import 'package:money_note/models/wallet_model.dart';
+import 'package:money_note/models/transaction_model.dart';
+import 'package:money_note/services/transaction_service.dart';
+
+import 'package:money_note/components/alerts/not_found_data_message.dart';
+import 'package:money_note/components/transactions/transaction_list.dart';
 
 class WalletDetailScreen extends StatefulWidget {
   final Wallet wallet;
@@ -16,9 +20,12 @@ class WalletDetailScreen extends StatefulWidget {
 }
 
 class _WalletDetailScreenState extends State<WalletDetailScreen> {
+  final TransactionService _transactionService = TransactionService();
   final currency = CurrencyFormatter();
   final dateFormat = DateFormat('dd MMM yyyy');
-  final TransactionService _transactionService = TransactionService();
+
+  List<TransactionModel> _transactions = [];
+  Map<String, num> _summary = {'income': 0, 'expense': 0, 'balance': 0};
 
   String _selectedFilter = 'All';
   DateTimeRange? _customDateRange;
@@ -27,36 +34,66 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
     return _transactionService.getTransactionsByWallet(widget.wallet.id).map((
       list,
     ) {
-      if (_selectedFilter == 'All') return list;
+      List<TransactionModel> filtered = list;
 
       DateTime now = DateTime.now();
 
       if (_selectedFilter == 'Today') {
-        return list.where((tx) {
-          return tx.date.year == now.year &&
-              tx.date.month == now.month &&
-              tx.date.day == now.day;
-        }).toList();
+        filtered =
+            filtered
+                .where(
+                  (tx) =>
+                      tx.date.year == now.year &&
+                      tx.date.month == now.month &&
+                      tx.date.day == now.day,
+                )
+                .toList();
+      } else if (_selectedFilter == 'This Month') {
+        filtered =
+            filtered
+                .where(
+                  (tx) =>
+                      tx.date.year == now.year && tx.date.month == now.month,
+                )
+                .toList();
+      } else if (_selectedFilter == 'Custom' && _customDateRange != null) {
+        filtered =
+            filtered
+                .where(
+                  (tx) =>
+                      tx.date.isAfter(
+                        _customDateRange!.start.subtract(
+                          const Duration(days: 1),
+                        ),
+                      ) &&
+                      tx.date.isBefore(
+                        _customDateRange!.end.add(const Duration(days: 1)),
+                      ),
+                )
+                .toList();
       }
 
-      if (_selectedFilter == 'This Month') {
-        return list.where((tx) {
-          return tx.date.year == now.year && tx.date.month == now.month;
-        }).toList();
-      }
+      // Hitung summary
+      _calculateSummary(filtered);
 
-      if (_selectedFilter == 'Custom' && _customDateRange != null) {
-        return list.where((tx) {
-          return tx.date.isAfter(
-                _customDateRange!.start.subtract(const Duration(days: 1)),
-              ) &&
-              tx.date.isBefore(
-                _customDateRange!.end.add(const Duration(days: 1)),
-              );
-        }).toList();
-      }
+      return filtered;
+    });
+  }
 
-      return list;
+  void _calculateSummary(List<TransactionModel> transactions) {
+    final income = transactions
+        .where((t) => t.type == 'income')
+        .fold<num>(0, (sum, t) => sum + t.amount);
+    final expense = transactions
+        .where((t) => t.type == 'expense')
+        .fold<num>(0, (sum, t) => sum + t.amount);
+
+    setState(() {
+      _summary = {
+        'income': income,
+        'expense': expense,
+        'balance': income - expense,
+      };
     });
   }
 
@@ -83,6 +120,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
       appBar: AppBar(title: const Text('Wallet Detail')),
       body: Column(
         children: [
+          // Wallet info card
           Padding(
             padding: const EdgeInsets.all(16),
             child: Card(
@@ -146,8 +184,19 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
             ),
           ),
 
+          // Summary Card
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TransactionSummaryCard(
+              income: _summary['income']!,
+              expense: _summary['expense']!,
+              balance: _summary['balance']!,
+            ),
+          ),
+
+          // Transactions header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -178,6 +227,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
             ),
           ),
 
+          // Transaction list
           const SizedBox(height: 8),
           Expanded(
             child: StreamBuilder<List<TransactionModel>>(
@@ -190,83 +240,12 @@ class _WalletDetailScreenState extends State<WalletDetailScreen> {
                 final transactions = snapshot.data ?? [];
 
                 if (transactions.isEmpty) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.receipt_long, size: 60, color: Colors.grey),
-                        SizedBox(height: 8),
-                        Text(
-                          "No transactions found.",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
+                  return const NotFoundDataMessage(
+                    message: "No transactions found.",
                   );
                 }
 
-                return ListView.separated(
-                  itemCount: transactions.length,
-                  separatorBuilder: (_, __) => const Divider(height: 0),
-                  itemBuilder: (context, index) {
-                    final tx = transactions[index];
-                    final isIncome = tx.type == 'income';
-                    return ListTile(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (_) => TransactionDetailScreen(transaction: tx),
-                          ),
-                        );
-                      },
-                      leading: Icon(
-                        isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-                        color: isIncome ? Colors.green : Colors.red,
-                      ),
-                      title: Text(tx.title),
-                      subtitle: Text(dateFormat.format(tx.date)),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            (isIncome ? '+' : '-') + currency.encode(tx.amount),
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: isIncome ? Colors.green : Colors.red,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  isIncome
-                                      ? Colors.green[100]
-                                      : Colors.red[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              isIncome ? 'Income' : 'Expense',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color:
-                                    isIncome
-                                        ? Colors.green[700]
-                                        : Colors.red[700],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
+                return TransactionList(transactions: transactions);
               },
             ),
           ),

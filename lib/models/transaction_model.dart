@@ -43,20 +43,35 @@ class TransactionModel {
     );
   }
 
- Map<String, dynamic> toMap() {
-  return {
-    'id': id,
-    'title': title,
-    'amount': amount,
-    'type': type,
-    'date': Timestamp.fromDate(date),
-    'userId': userId,
-    'walletId': walletId,
-    if (categoryId != null) 'categoryId': categoryId,
-    if (fromWalletId != null) 'fromWalletId': fromWalletId,
-    if (toWalletId != null) 'toWalletId': toWalletId,
-  };
-}
+  factory TransactionModel.fromMap(Map<String, dynamic> data) {
+    return TransactionModel(
+      id: data['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      userId: data['userId'],
+      walletId: data['walletId'],
+      amount: (data['amount'] ?? 0).toDouble(),
+      type: data['type'],
+      categoryId: data['categoryId'],
+      title: data['title'],
+      date: data['date'] ?? DateTime.now(),
+      fromWalletId: data['fromWalletId'],
+      toWalletId: data['toWalletId'],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'amount': amount,
+      'type': type,
+      'date': Timestamp.fromDate(date),
+      'userId': userId,
+      'walletId': walletId,
+      if (categoryId != null) 'categoryId': categoryId,
+      if (fromWalletId != null) 'fromWalletId': fromWalletId,
+      if (toWalletId != null) 'toWalletId': toWalletId,
+    };
+  }
 
   TransactionModel copyWith({
     String? id,

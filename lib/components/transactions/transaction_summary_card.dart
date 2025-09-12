@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:money_note/utils/currency_formatter.dart';
 
 class TransactionSummaryCard extends StatelessWidget {
   final num income;
@@ -59,7 +60,7 @@ class TransactionSummaryCard extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          NumberFormat.currency(locale: 'id', symbol: 'Rp').format(value),
+          CurrencyFormatter().encode(value),
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
