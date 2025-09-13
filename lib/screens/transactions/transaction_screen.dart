@@ -8,14 +8,11 @@ import 'package:money_note/components/buttons/add_button.dart';
 import 'package:money_note/components/transactions/wallet_filter_dropdown.dart';
 import 'package:money_note/components/transactions/date_filter_dropdown.dart';
 import 'package:money_note/components/transactions/unified_filter_dialog.dart';
-import 'package:money_note/components/transactions/transaction_action_dialog.dart';
-import 'package:money_note/components/transactions/transaction_delete_dialog.dart';
 import 'package:money_note/components/transactions/transaction_list.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
 
 import 'package:money_note/models/transaction_model.dart';
 import 'package:money_note/services/transaction_service.dart';
-import 'package:money_note/screens/transactions/transaction_detail_screen.dart';
 import 'package:money_note/screens/transactions/transaction_form_screen.dart';
 
 class TransactionScreen extends StatefulWidget {
@@ -152,9 +149,15 @@ class _TransactionScreenState extends State<TransactionScreen> {
     _loadSummary();
   }
 
-  void _applyUnifiedFilter({String? type, String? category, String? title}) {
+  void _applyUnifiedFilter({
+    String? type,
+    String? wallet,
+    String? category,
+    String? title,
+  }) {
     setState(() {
       _typeFilter = type;
+      _walletFilter = wallet;
       _categoryFilter = category;
       _titleFilter = title;
     });
@@ -215,6 +218,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                       builder:
                           (_) => UnifiedFilterDialog(
                             typeFilter: _typeFilter,
+                            walletFilter: _walletFilter,
                             categoryFilter: _categoryFilter,
                             titleFilter: _titleFilter,
                             onFilterApplied: _applyUnifiedFilter,

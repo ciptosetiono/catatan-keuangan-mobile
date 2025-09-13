@@ -12,6 +12,7 @@ import 'package:money_note/services/wallet_service.dart';
 
 import 'package:money_note/components/forms/transaction_type_selector.dart';
 import 'package:money_note/components/forms/wallet_dropdown.dart';
+import 'package:money_note/components/forms/category_dropdown.dart';
 import 'package:money_note/components/forms/date_picker_field.dart';
 import 'package:money_note/components/forms/currency_text_field.dart';
 import 'package:money_note/components/alerts/flash_message.dart';
@@ -170,29 +171,13 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        initialValue:
-                            _categories.any(
-                                  (cat) => cat.id == _selectedCategoryId,
-                                )
-                                ? _selectedCategoryId
-                                : null,
-                        decoration: const InputDecoration(
-                          labelText: 'Select Category',
-                          border: OutlineInputBorder(),
-                        ),
-                        items:
-                            _categories
-                                .map(
-                                  (cat) => DropdownMenuItem(
-                                    value: cat.id,
-                                    child: Text(cat.name),
-                                  ),
-                                )
-                                .toList(),
+                      CategoryDropdown(
+                        value: _selectedCategoryId,
+                        type: _type,
                         onChanged:
                             (val) => setState(() => _selectedCategoryId = val),
                       ),
+
                       const SizedBox(height: 16),
 
                       WalletDropdown(

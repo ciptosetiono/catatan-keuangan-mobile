@@ -132,24 +132,30 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
                 ),
                 const SizedBox(height: 16),
                 ...data.map((entry) {
-                  return ListTile(
-                    dense: true, // makes the tile more compact
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 0,
-                    ), // reduce padding
-                    leading: CircleAvatar(
-                      backgroundColor: _getColor(
-                        entry.category.name,
-                        // ignore: deprecated_member_use
-                      ).withOpacity(0.3),
+                  return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: ListTile(
+                      dense: true, // makes the tile more compact
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 0,
+                      ), // reduce padding
+                      leading: CircleAvatar(
+                        backgroundColor: _getColor(
+                          entry.category.name,
+                          // ignore: deprecated_member_use
+                        ).withOpacity(0.3),
+                      ),
+                      title: Text(entry.category.name),
+                      trailing: Text(
+                        CurrencyFormatter().encode(entry.amount),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      onTap: () => _openCategoryDetail(entry.category),
                     ),
-                    title: Text(entry.category.name),
-                    trailing: Text(
-                      CurrencyFormatter().encode(entry.amount),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    onTap: () => _openCategoryDetail(entry.category),
                   );
                   // ignore: unnecessary_to_list_in_spreads
                 }).toList(),

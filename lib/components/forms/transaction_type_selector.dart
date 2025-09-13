@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TransactionTypeSelector extends StatelessWidget {
-  final String selected;
+  final String? selected;
   final void Function(String) onChanged;
 
   const TransactionTypeSelector({

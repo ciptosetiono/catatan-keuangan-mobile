@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:money_note/models/category_model.dart';
-import 'package:money_note/services/category_service.dart';
+import 'package:money_note/components/forms/transaction_type_selector.dart';
+import 'package:money_note/components/forms/wallet_dropdown.dart';
+import 'package:money_note/components/forms/category_dropdown.dart';
 
 class UnifiedFilterDialog extends StatefulWidget {
   final String? typeFilter;
+  final String? walletFilter;
   final String? categoryFilter;
   final String? titleFilter;
-  final void Function({String? type, String? category, String? title})
+  final void Function({
+    String? type,
+    String wallet,
+    String? category,
+    String? title,
+  })
   onFilterApplied;
 
   const UnifiedFilterDialog({
     super.key,
     required this.typeFilter,
+    required this.walletFilter,
     required this.categoryFilter,
     required this.titleFilter,
     required this.onFilterApplied,
@@ -23,6 +31,7 @@ class UnifiedFilterDialog extends StatefulWidget {
 
 class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
   String? _type;
+  String? _wallet;
   String? _category;
   String? _title;
   final TextEditingController _titleController = TextEditingController();
@@ -31,6 +40,7 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
   void initState() {
     super.initState();
     _type = widget.typeFilter;
+    _wallet = widget.walletFilter;
     _category = widget.categoryFilter;
     _title = widget.titleFilter;
     _titleController.text = _title ?? '';
@@ -58,101 +68,60 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Filter Transactions',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
+            // Header tanpa margin
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Filter Transactions',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
             ),
+
             const SizedBox(height: 16),
 
-            // Type selector
-            const Text("Type", style: TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: ChoiceChip(
-                    label: Text(
-                      'Income',
-                      style: TextStyle(
-                        color: _type == 'income' ? Colors.white : Colors.black,
-                      ),
-                    ),
-                    selected: _type == 'income',
-                    selectedColor: Colors.green,
-                    onSelected:
-                        (selected) =>
-                            setState(() => _type = selected ? 'income' : null),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ChoiceChip(
-                    label: Text(
-                      'Expense',
-                      style: TextStyle(
-                        color: _type == 'expense' ? Colors.white : Colors.black,
-                      ),
-                    ),
-                    selected: _type == 'expense',
-                    selectedColor: Colors.red,
-                    onSelected:
-                        (selected) =>
-                            setState(() => _type = selected ? 'expense' : null),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Category dropdown
-            StreamBuilder<List<Category>>(
-              stream: CategoryService().getCategoryStream(type: _type),
-              builder: (context, snapshot) {
-                final items = snapshot.data ?? [];
-                final validCategoryIds = items.map((e) => e.id).toSet();
-                if (_category != null &&
-                    !validCategoryIds.contains(_category)) {
+            TransactionTypeSelector(
+              selected: _type,
+              onChanged: (val) {
+                setState(() {
+                  _type = val;
                   _category = null;
-                }
-
-                return DropdownButtonFormField<String>(
-                  value: _category,
-                  decoration: InputDecoration(
-                    labelText: 'Category',
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  isExpanded: true,
-                  items:
-                      items
-                          .map(
-                            (e) => DropdownMenuItem(
-                              value: e.id,
-                              child: Text(e.name),
-                            ),
-                          )
-                          .toList(),
-                  onChanged: (val) => setState(() => _category = val),
-                );
+                });
               },
             ),
-            const SizedBox(height: 20),
 
-            // Title input
+            const SizedBox(height: 20),
+            CategoryDropdown(
+              value: _category,
+              type: _type,
+              onChanged: (val) => setState(() => _category = val),
+            ),
+            const SizedBox(height: 20),
+            WalletDropdown(
+              value: _wallet,
+              onChanged: (val) => setState(() => _wallet = val),
+            ),
+            const SizedBox(height: 20),
             TextField(
               controller: _titleController,
               decoration: InputDecoration(
@@ -168,7 +137,6 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
                       setState(() => _title = val.trim().isEmpty ? null : val),
             ),
             const SizedBox(height: 24),
-
             // Actions
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
