@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:money_note/constants/date_filter_option.dart';
 import 'package:money_note/components/buttons/add_button.dart';
+import 'package:money_note/components/buttons/filter_button.dart';
+
 import 'package:money_note/components/transactions/wallet_filter_dropdown.dart';
 import 'package:money_note/components/transactions/date_filter_dropdown.dart';
 import 'package:money_note/components/transactions/unified_filter_dialog.dart';
@@ -183,54 +185,41 @@ class _TransactionScreenState extends State<TransactionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transactions'),
-        backgroundColor: Colors.lightBlue,
-        foregroundColor: Colors.white,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: WalletFilterDropdown(
-                    value: _walletFilter,
-                    onChanged: (val) {
-                      setState(() => _walletFilter = val);
-                      _loadTransactions(reset: true);
-                      _loadSummary();
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: DateFilterDropdown(
-                    selected: _selectedDateFilter,
-                    onFilterApplied: _applyDateFilter,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.filter_list, color: Colors.white),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder:
-                          (_) => UnifiedFilterDialog(
-                            typeFilter: _typeFilter,
-                            walletFilter: _walletFilter,
-                            categoryFilter: _categoryFilter,
-                            titleFilter: _titleFilter,
-                            onFilterApplied: _applyUnifiedFilter,
-                          ),
-                    );
-                  },
-                ),
-              ],
+        title: Row(
+          children: [
+            const Expanded(child: Text('Transactions')),
+            // Date dropdown
+            SizedBox(
+              width: 300,
+              child: DateFilterDropdown(
+                selected: _selectedDateFilter,
+                onFilterApplied: _applyDateFilter,
+              ),
             ),
-          ),
+            const SizedBox(width: 8),
+            // Custom filter button, format sama seperti dropdown
+            SizedBox(
+              height: 40,
+              child: FilterButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder:
+                        (_) => UnifiedFilterDialog(
+                          typeFilter: _typeFilter,
+                          walletFilter: _walletFilter,
+                          categoryFilter: _categoryFilter,
+                          titleFilter: _titleFilter,
+                          onFilterApplied: _applyUnifiedFilter,
+                        ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
+
       body: Column(
         children: [
           _buildSummary(),

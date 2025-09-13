@@ -145,6 +145,13 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
                   onPressed: _resetFilters,
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.grey[700],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ), // lebih besar
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                    ), // ukuran font lebih besar
                   ),
                   child: const Text('Reset'),
                 ),
@@ -163,6 +170,13 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ), // lebih besar
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                    ), // font lebih besar
                   ),
                   child: const Text('Apply'),
                 ),

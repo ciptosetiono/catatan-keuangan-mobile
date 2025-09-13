@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
 import 'package:money_note/constants/date_filter_option.dart';
 
 class DateFilterDropdown extends StatelessWidget {
   final DateFilterOption selected;
-  final Function(
+  final void Function(
     DateFilterOption option, {
     DateTime? from,
     DateTime? to,
@@ -20,7 +19,10 @@ class DateFilterDropdown extends StatelessWidget {
     required this.onFilterApplied,
   });
 
-  void _handleChange(BuildContext context, DateFilterOption option) async {
+  Future<void> _handleChange(
+    BuildContext context,
+    DateFilterOption option,
+  ) async {
     final now = DateTime.now();
     DateTime? from;
     DateTime? to;
@@ -63,18 +65,49 @@ class DateFilterDropdown extends StatelessWidget {
           context: context,
           firstDate: DateTime(2020),
           lastDate: now.add(const Duration(days: 365)),
-          helpText: 'Custom Date',
+          helpText: 'Select Date Range',
+          cancelText: 'Cancel',
+          confirmText: 'Apply',
           builder: (context, child) {
-            return Localizations.override(
-              context: context,
-              delegates: [
-                ...GlobalMaterialLocalizations.delegates,
-                const _CustomMaterialLocalizationsDelegate(),
-              ],
-              child: child,
+            return Theme(
+              data: Theme.of(context).copyWith(
+                dialogBackgroundColor: Colors.grey[50],
+                colorScheme: const ColorScheme.light(
+                  primary: Colors.blueAccent,
+                  onPrimary: Colors.white,
+                  surface: Colors.white,
+                  onSurface: Colors.black87,
+                ),
+                textButtonTheme: TextButtonThemeData(
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.blueAccent,
+                    textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                inputDecorationTheme: InputDecorationTheme(
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                textTheme: Theme.of(context).textTheme.copyWith(
+                  titleLarge: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  bodyMedium: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              child: child!,
             );
           },
         );
+
         if (picked != null) {
           from = picked.start;
           to = picked.end.add(const Duration(days: 1));
@@ -108,32 +141,38 @@ class DateFilterDropdown extends StatelessWidget {
                 value: selected,
                 isExpanded: true,
                 dropdownColor: Colors.white,
-                style: const TextStyle(color: Colors.black),
+                style: const TextStyle(color: Color.fromARGB(255, 15, 15, 15)),
                 icon: const SizedBox.shrink(),
                 items:
                     DateFilterOption.values.map((e) {
-                      return DropdownMenuItem(
-                        value: e,
-                        child: Text(
-                          e == DateFilterOption.custom
-                              ? 'Custom...'
-                              : e
-                                  .toString()
-                                  .split('.')
-                                  .last
-                                  .replaceAll('thisMonth', 'This Month')
-                                  .replaceAll('lastMonth', 'Last Month')
-                                  .replaceAll('last30Days', 'Last 30 Days')
-                                  .replaceAll('thisYear', 'This Year')
-                                  .replaceAll('today', 'Today')
-                                  .replaceAll('all', 'All Time'),
-                        ),
-                      );
+                      String text;
+                      switch (e) {
+                        case DateFilterOption.today:
+                          text = 'Today';
+                          break;
+                        case DateFilterOption.thisMonth:
+                          text = 'This Month';
+                          break;
+                        case DateFilterOption.lastMonth:
+                          text = 'Last Month';
+                          break;
+                        case DateFilterOption.last30Days:
+                          text = 'Last 30 Days';
+                          break;
+                        case DateFilterOption.thisYear:
+                          text = 'This Year';
+                          break;
+                        case DateFilterOption.all:
+                          text = 'All Time';
+                          break;
+                        case DateFilterOption.custom:
+                          text = 'Custom...';
+                          break;
+                      }
+                      return DropdownMenuItem(value: e, child: Text(text));
                     }).toList(),
                 onChanged: (option) {
-                  if (option != null) {
-                    _handleChange(context, option);
-                  }
+                  if (option != null) _handleChange(context, option);
                 },
               ),
             ),
@@ -171,5 +210,5 @@ class _CustomMaterialLocalizations extends DefaultMaterialLocalizations {
   _CustomMaterialLocalizations(this._default);
 
   @override
-  String get saveButtonLabel => 'Apply'; // 👈 force override
+  String get saveButtonLabel => 'Apply';
 }
