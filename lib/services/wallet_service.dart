@@ -3,75 +3,152 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/wallet_model.dart';
 
 class WalletService {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
   final CollectionReference walletsRef = FirebaseFirestore.instance.collection(
     'wallets',
   );
+  final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
-  final String userId = FirebaseAuth.instance.currentUser!.uid;
+  // Local cache
+  List<Wallet> _localCache = [];
 
-  /// ✅ Stream wallet list milik user
-  Stream<List<Wallet>> getWalletStream() {
-    return walletsRef
+  WalletService() {
+    // Aktifkan offline persistence Firestore
+    _db.settings = const Settings(persistenceEnabled: true);
+  }
+
+  /// Stream wallet list milik user (support offline)
+  Stream<List<Wallet>> getWalletStream() async* {
+    if (userId == null) return;
+
+    await for (var snap in walletsRef
         .where('userId', isEqualTo: userId)
         .orderBy('name')
-        .snapshots()
-        .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            return Wallet.fromMap(doc.id, doc.data() as Map<String, dynamic>);
-          }).toList();
-        });
+        .snapshots(includeMetadataChanges: true)) {
+      _localCache =
+          snap.docs
+              .map(
+                (doc) =>
+                    Wallet.fromMap(doc.id, doc.data() as Map<String, dynamic>),
+              )
+              .toList();
+      yield _localCache;
+    }
   }
 
-  /// ✅ Get wallet by ID
+  /// Get wallet by ID
   Future<Wallet> getWalletById(String id) async {
-    try {
-      final doc = await walletsRef.doc(id).get();
-      if (doc.exists) {
-        return Wallet.fromMap(doc.id, doc.data() as Map<String, dynamic>);
-      } else {
-        throw Exception('Wallet not found');
-      }
-    } catch (error) {
-      throw Exception('Error fetching wallet: $error');
+    // Cek cache dulu
+    final cached = _localCache.firstWhere(
+      (w) => w.id == id,
+      orElse:
+          () => Wallet(
+            id: id,
+            name: '',
+            currentBalance: 0,
+            userId: userId ?? '',
+            startBalance: 0,
+            createdAt: DateTime.now(),
+          ),
+    );
+    if (cached.name.isNotEmpty) return cached;
+
+    // Ambil dari Firestore
+    final doc = await walletsRef
+        .doc(id)
+        .get(GetOptions(source: Source.serverAndCache));
+    if (doc.exists) {
+      final wallet = Wallet.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+      // update cache
+      _localCache.removeWhere((w) => w.id == wallet.id);
+      _localCache.add(wallet);
+      return wallet;
     }
+
+    throw Exception('Wallet not found');
   }
 
-  /// ✅ Add wallet baru
+  /// Add wallet baru
   Future<void> addWallet(Wallet wallet) async {
-    await walletsRef.add(wallet.toMap());
+    _localCache.add(wallet); // update cache
+    try {
+      final docRef = walletsRef.doc();
+      await docRef.set(wallet.copyWith(id: docRef.id).toMap());
+    } catch (_) {
+      // Offline: cache tetap dipakai
+    }
   }
 
-  /// ✅ Update wallet existing
+  /// Update wallet existing
   Future<void> updateWallet(Wallet wallet) async {
-    await walletsRef.doc(wallet.id).update(wallet.toMap());
+    int index = _localCache.indexWhere((w) => w.id == wallet.id);
+    if (index != -1) _localCache[index] = wallet;
+
+    try {
+      await walletsRef.doc(wallet.id).update(wallet.toMap());
+    } catch (_) {
+      // Offline: cache tetap dipakai
+    }
   }
 
-  /// ✅ Delete wallet
+  /// Delete wallet
   Future<void> deleteWallet(String id) async {
-    await walletsRef.doc(id).delete();
+    _localCache.removeWhere((w) => w.id == id);
+
+    try {
+      await walletsRef.doc(id).delete();
+    } catch (_) {
+      // Offline: cache tetap dipakai
+    }
   }
 
-  /// ✅ Hitung total balance dari semua wallet user
+  /// Hitung total balance dari semua wallet user
   Future<int> getTotalBalance() async {
-    final snapshot = await walletsRef.where('userId', isEqualTo: userId).get();
+    try {
+      final snapshot = await walletsRef
+          .where('userId', isEqualTo: userId)
+          .get(GetOptions(source: Source.serverAndCache));
+      final wallets =
+          snapshot.docs
+              .map(
+                (doc) =>
+                    Wallet.fromMap(doc.id, doc.data() as Map<String, dynamic>),
+              )
+              .toList();
+      _localCache = wallets;
+      return wallets
+          .fold<num>(0, (sum, w) => sum + (w.currentBalance ?? 0))
+          .toInt();
+    } catch (_) {
+      // Offline: gunakan cache
+      return _localCache.fold<int>(
+        0,
+        (sum, w) => sum + w.currentBalance.toInt(),
+      );
+    }
+  }
 
-    int total = 0;
-    for (var doc in snapshot.docs) {
-      total += (doc['currentBalance'] ?? 0) as int;
+  /// Tambah saldo ke wallet
+  Future<void> increaseBalance(String walletId, int amount) async {
+    int index = _localCache.indexWhere((w) => w.id == walletId);
+    if (index != -1) {
+      final wallet = _localCache[index];
+      _localCache[index] = wallet.copyWith(
+        currentBalance: wallet.currentBalance + amount.toDouble(),
+      );
     }
 
-    return total;
+    try {
+      await walletsRef.doc(walletId).update({
+        'currentBalance': FieldValue.increment(amount),
+      });
+    } catch (_) {
+      // Offline: cache tetap dipakai
+    }
   }
 
-  /// ✅ Tambah saldo ke wallet
-  Future<void> increaseBalance(String walletId, int amount) async {
-    final ref = walletsRef.doc(walletId);
-    await ref.update({'currentBalance': FieldValue.increment(amount)});
-  }
-
-  /// ✅ Kurangi saldo dari wallet
+  /// Kurangi saldo dari wallet
   Future<void> decreaseBalance(String walletId, int amount) async {
-    final ref = walletsRef.doc(walletId);
-    await ref.update({'currentBalance': FieldValue.increment(-amount)});
+    await increaseBalance(walletId, -amount);
   }
 }
