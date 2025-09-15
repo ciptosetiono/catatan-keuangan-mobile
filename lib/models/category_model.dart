@@ -23,4 +23,13 @@ class Category {
   Map<String, dynamic> toMap() {
     return {'name': name, 'type': type, 'userId': userId};
   }
+
+  Category copyWith({String? id, String? name, String? type, String? userId}) {
+    return Category(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      userId: userId ?? this.userId,
+    );
+  }
 }

@@ -46,11 +46,12 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
   }
 
   Future<void> loadCategoryName() async {
-    final Category category = await CategoryService().getCategoryById(
+    final Category? category = await CategoryService().getCategoryById(
       widget.budget.categoryId,
     );
     setState(() {
-      categoryName = category.name.isNotEmpty ? category.name : '-';
+      categoryName =
+          (category != null && category.name.isNotEmpty) ? category.name : '-';
     });
   }
 

@@ -53,10 +53,10 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
 
   Future<String> getCategoryName(String? categoryId) async {
     if (categoryId == null) return '-';
-    final Category category = await CategoryService().getCategoryById(
+    final Category? category = await CategoryService().getCategoryById(
       categoryId,
     );
-    if (category.id.isEmpty) return '-';
+    if (category == null || category.id.isEmpty) return '-';
     return category.name.isNotEmpty ? category.name : '-';
   }
 
