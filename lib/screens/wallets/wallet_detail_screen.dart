@@ -83,9 +83,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
   }
 
   void _loadTransfers() {
-    _transferService.getTransfersByWallet(walletId: widget.wallet.id).listen((
-      data,
-    ) {
+    _transferService.getTransfersByWallet(widget.wallet.id).listen((data) {
       if (!mounted) return;
       setState(() {
         _transfers = data;
