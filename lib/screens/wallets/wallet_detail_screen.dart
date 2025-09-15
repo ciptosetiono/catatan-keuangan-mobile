@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
 import 'package:money_note/utils/currency_formatter.dart';
+import 'package:money_note/constants/date_filter_option.dart';
+
+import 'package:money_note/components/transactions/date_filter_dropdown.dart';
+import 'package:money_note/components/transactions/transaction_list.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
+
+import 'package:money_note/components/transfers/transfer_list.dart';
+import 'package:money_note/components/wallets/wallet_delete_dialog.dart';
+import 'package:money_note/components/wallets/wallet_info_card.dart';
+
 import 'package:money_note/models/wallet_model.dart';
 import 'package:money_note/models/transaction_model.dart';
-import 'package:money_note/services/transaction_service.dart';
 
-import 'package:money_note/components/alerts/not_found_data_message.dart';
-import 'package:money_note/components/transactions/transaction_list.dart';
+import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/services/transfer_service.dart';
+import 'package:money_note/services/wallet_service.dart';
+
+import 'package:money_note/screens/wallets/wallet_form_screen.dart';
 
 class WalletDetailScreen extends StatefulWidget {
   final Wallet wallet;
@@ -19,252 +28,284 @@ class WalletDetailScreen extends StatefulWidget {
   State<WalletDetailScreen> createState() => _WalletDetailScreenState();
 }
 
-class _WalletDetailScreenState extends State<WalletDetailScreen> {
+class _WalletDetailScreenState extends State<WalletDetailScreen>
+    with SingleTickerProviderStateMixin {
   final TransactionService _transactionService = TransactionService();
-  final currency = CurrencyFormatter();
-  final dateFormat = DateFormat('dd MMM yyyy');
+  final TransferService _transferService = TransferService();
+  final WalletService _walletService = WalletService();
+  final currencyFormatter = CurrencyFormatter();
 
+  Wallet? _wallet;
   List<TransactionModel> _transactions = [];
-  Map<String, num> _summary = {'income': 0, 'expense': 0, 'balance': 0};
+  List<TransactionModel> _transfers = [];
+  List<Wallet> _wallets = [];
 
-  String _selectedFilter = 'All';
-  DateTimeRange? _customDateRange;
+  late TabController _tabController;
 
-  Stream<List<TransactionModel>> _getFilteredTransactions() {
-    return _transactionService.getTransactionsByWallet(widget.wallet.id).map((
-      list,
-    ) {
-      List<TransactionModel> filtered = list;
+  bool _loadingTransactions = true;
+  bool _loadingTransfers = true;
+  bool _loadingWallets = true;
 
-      DateTime now = DateTime.now();
-
-      if (_selectedFilter == 'Today') {
-        filtered =
-            filtered
-                .where(
-                  (tx) =>
-                      tx.date.year == now.year &&
-                      tx.date.month == now.month &&
-                      tx.date.day == now.day,
-                )
-                .toList();
-      } else if (_selectedFilter == 'This Month') {
-        filtered =
-            filtered
-                .where(
-                  (tx) =>
-                      tx.date.year == now.year && tx.date.month == now.month,
-                )
-                .toList();
-      } else if (_selectedFilter == 'Custom' && _customDateRange != null) {
-        filtered =
-            filtered
-                .where(
-                  (tx) =>
-                      tx.date.isAfter(
-                        _customDateRange!.start.subtract(
-                          const Duration(days: 1),
-                        ),
-                      ) &&
-                      tx.date.isBefore(
-                        _customDateRange!.end.add(const Duration(days: 1)),
-                      ),
-                )
-                .toList();
-      }
-
-      // Hitung summary
-      _calculateSummary(filtered);
-
-      return filtered;
-    });
-  }
-
-  void _calculateSummary(List<TransactionModel> transactions) {
-    final income = transactions
-        .where((t) => t.type == 'income')
-        .fold<num>(0, (sum, t) => sum + t.amount);
-    final expense = transactions
-        .where((t) => t.type == 'expense')
-        .fold<num>(0, (sum, t) => sum + t.amount);
-
-    setState(() {
-      _summary = {
-        'income': income,
-        'expense': expense,
-        'balance': income - expense,
-      };
-    });
-  }
-
-  void _pickCustomDateRange() async {
-    final picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-
-    if (picked != null) {
-      setState(() {
-        _selectedFilter = 'Custom';
-        _customDateRange = picked;
-      });
-    }
-  }
+  DateTime? _from;
+  DateTime? _to;
+  DateFilterOption _selectedDateFilter = DateFilterOption.all;
 
   @override
-  Widget build(BuildContext context) {
-    final wallet = widget.wallet;
+  void initState() {
+    super.initState();
+    _wallet = widget.wallet;
+    _tabController = TabController(length: 2, vsync: this);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Wallet Detail')),
-      body: Column(
-        children: [
-          // Wallet info card
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+    _loadWallets();
+    _loadTransactions();
+    _loadTransfers();
+  }
+
+  Future<void> _loadWallets() async {
+    final wallets = await _walletService.getWalletStream().first;
+    if (!mounted) return;
+    setState(() {
+      _wallets = wallets;
+      _loadingWallets = false;
+    });
+  }
+
+  void _loadTransactions() {
+    _transactionService
+        .getTransactionsStream(walletId: widget.wallet.id)
+        .listen((data) {
+          if (!mounted) return;
+          setState(() {
+            _transactions = data;
+            _loadingTransactions = false;
+          });
+        });
+  }
+
+  void _loadTransfers() {
+    _transferService.getTransfersByWallet(walletId: widget.wallet.id).listen((
+      data,
+    ) {
+      if (!mounted) return;
+      setState(() {
+        _transfers = data;
+        _loadingTransfers = false;
+      });
+    });
+  }
+
+  String _getWalletName(String? id) {
+    if (id == null) return 'unknown';
+    return _wallets
+        .firstWhere(
+          (w) => w.id == id,
+          orElse:
+              () => Wallet(
+                id: id,
+                name: 'unknown',
+                userId: '-',
+                startBalance: 0,
+                currentBalance: 0,
+                createdAt: DateTime.now(),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        const CircleAvatar(
-                          radius: 24,
-                          backgroundColor: Colors.blue,
-                          child: Icon(
-                            Icons.account_balance_wallet,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                wallet.name,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Created: ${dateFormat.format(wallet.createdAt)}',
-                                style: const TextStyle(color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _balanceInfo(
-                          "Start Balance",
-                          currency.encode(wallet.startBalance),
-                        ),
-                        _balanceInfo(
-                          "Current Balance",
-                          currency.encode(wallet.currentBalance),
-                        ),
-                      ],
-                    ),
-                  ],
+        )
+        .name;
+  }
+
+  void _applyDateFilter(
+    DateFilterOption option, {
+    DateTime? from,
+    String? label,
+    DateTime? to,
+  }) {
+    setState(() {
+      _selectedDateFilter = option;
+      _from = from;
+      _to = to;
+    });
+  }
+
+  Widget _buildTransactionsTab() {
+    if (_loadingTransactions) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // filter tanggal
+    final filteredTransactions =
+        _transactions.where((tx) {
+          if (_from != null && tx.date.isBefore(_from!)) return false;
+          if (_to != null && tx.date.isAfter(_to!)) return false;
+          return true;
+        }).toList();
+
+    if (filteredTransactions.isEmpty)
+      return const Center(child: Text("No transactions found"));
+
+    final income = filteredTransactions
+        .where((tx) => tx.type == "income")
+        .fold<int>(0, (sum, tx) => sum + tx.amount.toInt());
+    final expense = filteredTransactions
+        .where((tx) => tx.type == "expense")
+        .fold<int>(0, (sum, tx) => sum + tx.amount.toInt());
+
+    final balance = income - expense;
+    return Column(
+      children: [
+        TransactionSummaryCard(
+          income: income,
+          expense: expense,
+          balance: balance,
+        ),
+        Expanded(child: TransactionList(transactions: filteredTransactions)),
+      ],
+    );
+  }
+
+  Widget _buildTransfersTab() {
+    if (_loadingTransfers) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final filteredTransfers =
+        _transfers.where((t) {
+          if (_from != null && t.date.isBefore(_from!)) return false;
+          if (_to != null && t.date.isAfter(_to!)) return false;
+          return true;
+        }).toList();
+
+    if (filteredTransfers.isEmpty)
+      return const Center(child: Text("No transfers found"));
+
+    final totalOut = filteredTransfers
+        .where((t) => t.fromWalletId == widget.wallet.id)
+        .fold<int>(0, (sum, t) => sum + t.amount.toInt());
+    final totalIn = filteredTransfers
+        .where((t) => t.toWalletId == widget.wallet.id)
+        .fold<int>(0, (sum, t) => sum + t.amount.toInt());
+    final transactionBalance = totalIn - totalOut;
+    return Column(
+      children: [
+        TransactionSummaryCard(
+          income: totalIn,
+          expense: totalOut,
+          balance: transactionBalance,
+        ),
+        Expanded(
+          child: TransferList(
+            transfers: filteredTransfers,
+            getWalletName: _getWalletName,
+            onItemUpdated: () {},
+            onItemDeleted: () {},
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("Filter: "),
+            const SizedBox(width: 8),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 200),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.shade400,
+                  ), // border abu-abu
+                  borderRadius: BorderRadius.circular(8), // radius sudut
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                ), // padding dalam
+                child: DateFilterDropdown(
+                  selected: _selectedDateFilter,
+                  onFilterApplied: _applyDateFilter,
                 ),
               ),
             ),
-          ),
-
-          // Summary Card
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TransactionSummaryCard(
-              income: _summary['income']!,
-              expense: _summary['expense']!,
-              balance: _summary['balance']!,
-            ),
-          ),
-
-          // Transactions header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Transactions",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                DropdownButton<String>(
-                  value: _selectedFilter,
-                  items:
-                      ['All', 'Today', 'This Month', 'Custom']
-                          .map(
-                            (label) => DropdownMenuItem(
-                              value: label,
-                              child: Text(label),
-                            ),
-                          )
-                          .toList(),
-                  onChanged: (value) {
-                    if (value == 'Custom') {
-                      _pickCustomDateRange();
-                    } else {
-                      setState(() => _selectedFilter = value!);
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-
-          // Transaction list
-          const SizedBox(height: 8),
-          Expanded(
-            child: StreamBuilder<List<TransactionModel>>(
-              stream: _getFilteredTransactions(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                final transactions = snapshot.data ?? [];
-
-                if (transactions.isEmpty) {
-                  return const NotFoundDataMessage(
-                    message: "No transactions found.",
-                  );
-                }
-
-                return TransactionList(transactions: transactions);
-              },
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _balanceInfo(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-      ],
+  void _showActions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit, color: Colors.green),
+                title: const Text('Edit'),
+                onTap: () async {
+                  Navigator.pop(context); // tutup bottomsheet
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => WalletFormScreen(wallet: _wallet),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Delete'),
+                onTap: () async {
+                  Navigator.pop(context); // tutup bottomsheet
+                  final deleted = await showWalletDeleteDialog(
+                    context: context,
+                    walletId: widget.wallet.id,
+                  );
+                  if (deleted == true && context.mounted) {
+                    Navigator.pop(context, true); // balik ke list & reload
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Wallet Detail")),
+      body: Column(
+        children: [
+          WalletInfoCard(wallet: _wallet!),
+          _buildFilterRow(),
+          TabBar(
+            controller: _tabController,
+            labelColor: Theme.of(context).primaryColor,
+            unselectedLabelColor: Colors.grey,
+            tabs: const [Tab(text: "Transactions"), Tab(text: "Transfers")],
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [_buildTransactionsTab(), _buildTransfersTab()],
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.more_vert),
+        onPressed: () => _showActions(context),
+      ),
     );
   }
 }

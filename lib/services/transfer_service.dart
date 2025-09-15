@@ -78,6 +78,67 @@ class TransferService {
     });
   }
 
+  Stream<List<TransactionModel>> getTransfersByWallet({
+    required String walletId,
+    DateTime? fromDate,
+    DateTime? toDate,
+  }) {
+    final Timestamp? startTimestamp =
+        fromDate != null ? Timestamp.fromDate(fromDate) : null;
+    final Timestamp? endTimestamp =
+        toDate != null ? Timestamp.fromDate(toDate) : null;
+
+    // Query dasar untuk dari wallet
+    Query fromQuery = transfersRef
+        .where('userId', isEqualTo: userId)
+        .where('type', isEqualTo: 'transfer')
+        .where('fromWalletId', isEqualTo: walletId);
+
+    // Query dasar untuk ke wallet
+    Query toQuery = transfersRef
+        .where('userId', isEqualTo: userId)
+        .where('type', isEqualTo: 'transfer')
+        .where('toWalletId', isEqualTo: walletId);
+
+    // Tambahkan filter tanggal jika ada
+    if (startTimestamp != null && endTimestamp != null) {
+      fromQuery = fromQuery
+          .where('date', isGreaterThanOrEqualTo: startTimestamp)
+          .where('date', isLessThanOrEqualTo: endTimestamp);
+      toQuery = toQuery
+          .where('date', isGreaterThanOrEqualTo: startTimestamp)
+          .where('date', isLessThanOrEqualTo: endTimestamp);
+    }
+
+    // Gabungkan dua query menggunakan Rx.combineLatest2
+    return Rx.combineLatest2(fromQuery.snapshots(), toQuery.snapshots(), (
+      QuerySnapshot fromSnap,
+      QuerySnapshot toSnap,
+    ) {
+      final Map<String, DocumentSnapshot> allDocsMap = {};
+
+      // Masukkan semua dokumen dari query 'from'
+      for (final doc in fromSnap.docs) {
+        allDocsMap[doc.id] = doc;
+      }
+
+      // Masukkan semua dokumen dari query 'to', overwrite jika duplikat
+      for (final doc in toSnap.docs) {
+        allDocsMap[doc.id] = doc;
+      }
+
+      // Konversi ke list, urutkan descending berdasarkan tanggal
+      final allDocs = allDocsMap.values.toList();
+      allDocs.sort((a, b) {
+        final dateA = (a['date'] as Timestamp).toDate();
+        final dateB = (b['date'] as Timestamp).toDate();
+        return dateB.compareTo(dateA);
+      });
+
+      return allDocs.map((doc) => TransactionModel.fromFirestore(doc)).toList();
+    });
+  }
+
   Future<void> addTransfer(TransactionModel transfer) async {
     if (transfer.fromWalletId == null || transfer.toWalletId == null) {
       throw Exception('Wallet ID could not be null');

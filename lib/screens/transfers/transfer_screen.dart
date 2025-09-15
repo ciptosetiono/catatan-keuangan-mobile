@@ -13,6 +13,8 @@ import 'package:money_note/services/wallet_service.dart';
 import 'package:money_note/components/alerts/flash_message.dart';
 import 'package:money_note/components/transactions/wallet_filter_dropdown.dart';
 import 'package:money_note/components/transactions/date_filter_dropdown.dart';
+
+import 'package:money_note/components/transfers/transfer_list.dart';
 import 'package:money_note/components/transfers/transfer_action_dialog.dart';
 import 'package:money_note/components/transfers/transfer_delete_dialog.dart';
 
@@ -55,7 +57,8 @@ class _TransferScreenState extends State<TransferScreen> {
     });
   }
 
-  String _getWalletName(String id) {
+  String _getWalletName(String? id) {
+    if (id == null) return 'unknown';
     return _wallets
         .firstWhere(
           (w) => w.id == id,
@@ -72,48 +75,6 @@ class _TransferScreenState extends State<TransferScreen> {
         .name;
   }
 
-  Future<void> _confirmDelete(BuildContext context, TransactionModel tx) async {
-    final confirm = await showConfirmDialog(
-      context: context,
-      title: 'Delete Transfer',
-      message: 'Are you sure to delete this wallet?',
-    );
-    if (confirm == true) {
-      await _transferService.deleteTransfer(tx.id);
-      ScaffoldMessenger.of(context).showSnackBar(
-        FlashMessage(
-          color: Colors.green,
-          message: 'Transfer Deleted successfully',
-        ),
-      );
-    }
-  }
-
-  Future<bool?> showConfirmDialog({
-    required BuildContext context,
-    required String title,
-    required String message,
-  }) {
-    return showDialog<bool>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Batal'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Hapus'),
-              ),
-            ],
-          ),
-    );
-  }
-
   void _applyDateFilter(
     DateFilterOption option, {
     DateTime? from,
@@ -126,30 +87,6 @@ class _TransferScreenState extends State<TransferScreen> {
       _toDate = to;
       _dateFilterLabel = label ?? 'This Month';
     });
-  }
-
-  Future<void> _handleTransferTap(
-    BuildContext context,
-    TransactionModel transfer,
-  ) async {
-    final selected = await showTransferActionDialog(context);
-    if (selected == 'edit') {
-      await Navigator.push(
-        // ignore: use_build_context_synchronously
-        context,
-        MaterialPageRoute(
-          builder: (_) => TransferFormScreen(transfer: transfer),
-        ),
-      );
-      setState(() {}); // Refresh the transfers list after editing
-    } else if (selected == 'delete') {
-      // ignore: use_build_context_synchronously
-      final confirm = await showTransferDeleteDialog(context);
-      if (confirm) {
-        await TransferService().deleteTransfer(transfer.id);
-        setState(() {});
-      }
-    }
   }
 
   @override
@@ -216,36 +153,9 @@ class _TransferScreenState extends State<TransferScreen> {
             return const Center(child: Text('There are no transfers yet.'));
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            separatorBuilder: (_, __) => const Divider(height: 20),
-            itemCount: transfers.length,
-            itemBuilder: (context, index) {
-              final tx = transfers[index];
-              return ListTile(
-                onTap: () => _handleTransferTap(context, tx),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                title: Text(
-                  '${_getWalletName(tx.fromWalletId!)} → ${_getWalletName(tx.toWalletId!)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(tx.title),
-                trailing: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      CurrencyFormatter().encode(tx.amount),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.teal,
-                      ),
-                    ),
-                    Text(DateFormat('dd/MM yyyy').format(tx.date)),
-                  ],
-                ),
-                onLongPress: () => _confirmDelete(context, tx),
-              );
-            },
+          return TransferList(
+            transfers: transfers,
+            getWalletName: _getWalletName,
           );
         },
       ),

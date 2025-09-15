@@ -423,47 +423,9 @@ class TransactionService {
 
   /// Stream transaksi berdasarkan wallet
   Stream<List<TransactionModel>> getTransactionsByWallet(String walletId) {
-    final query = _buildQuery(walletId: walletId); // ambil semua tipe transaksi
+    final query = _buildQuery(walletId: walletId);
 
     return query.snapshots().map((snap) {
-      _localCache =
-          snap.docs.map((doc) => TransactionModel.fromFirestore(doc)).toList();
-      return _localCache;
-    });
-  }
-
-  /// Stream transaksi transfer berdasarkan wallet dan tanggal
-  Stream<List<TransactionModel>> getTransfers({
-    String? fromWalletId,
-    String? toWalletId,
-    DateTime? fromDate,
-    DateTime? toDate,
-  }) {
-    Query<Map<String, dynamic>> query = _db
-        .collection('transactions')
-        .where('userId', isEqualTo: userId)
-        .where('type', isEqualTo: 'transfer');
-
-    if (fromWalletId != null && fromWalletId.isNotEmpty) {
-      query = query.where('fromWalletId', isEqualTo: fromWalletId);
-    }
-    if (toWalletId != null && toWalletId.isNotEmpty) {
-      query = query.where('toWalletId', isEqualTo: toWalletId);
-    }
-    if (fromDate != null) {
-      query = query.where(
-        'date',
-        isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate),
-      );
-    }
-    if (toDate != null) {
-      query = query.where(
-        'date',
-        isLessThanOrEqualTo: Timestamp.fromDate(toDate),
-      );
-    }
-
-    return query.orderBy('date', descending: true).snapshots().map((snap) {
       _localCache =
           snap.docs.map((doc) => TransactionModel.fromFirestore(doc)).toList();
       return _localCache;
