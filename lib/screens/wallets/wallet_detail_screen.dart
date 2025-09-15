@@ -251,12 +251,22 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
                 title: const Text('Edit'),
                 onTap: () async {
                   Navigator.pop(context); // tutup bottomsheet
-                  await Navigator.push(
+                  final updatedWallet = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => WalletFormScreen(wallet: _wallet),
                     ),
                   );
+
+                  if (updatedWallet != null && mounted) {
+                    setState(() {
+                      _wallet = updatedWallet as Wallet?;
+                    });
+
+                    // opsional: reload transaksi dan transfer
+                    _loadTransactions();
+                    _loadTransfers();
+                  }
                 },
               ),
               ListTile(

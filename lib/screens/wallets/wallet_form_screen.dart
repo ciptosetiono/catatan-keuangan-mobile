@@ -98,7 +98,7 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
     setState(() => _isSubmitting = false);
 
     // ignore: use_build_context_synchronously
-    Navigator.pop(context);
+    Navigator.pop(context, wallet); //kirim sinyal berhasil disimpan
   }
 
   @override
