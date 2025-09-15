@@ -60,7 +60,7 @@ class TransactionModel {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      //  'id': id,
       'title': title,
       'amount': amount,
       'type': type,

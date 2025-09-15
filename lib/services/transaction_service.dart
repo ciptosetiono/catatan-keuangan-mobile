@@ -1,6 +1,7 @@
 // lib/services/transaction_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import '../models/transaction_model.dart';
 import 'wallet_service.dart';
 
@@ -217,7 +218,10 @@ class TransactionService {
 
     final txMap = Map<String, dynamic>.from(newTransaction);
     txMap['userId'] = userId;
-    final tx = TransactionModel.fromMap(txMap);
+
+    // 🔥 Generate Firestore doc ref first
+    final docRef = transactionsRef.doc();
+    final tx = TransactionModel.fromMap(txMap).copyWith(id: docRef.id);
 
     // Add to local cache immediately
     _localCache.add(tx);
@@ -233,10 +237,10 @@ class TransactionService {
     );
 
     try {
-      // Attempt to add to Firestore
-      await transactionsRef.doc(tx.id).set(tx.toMap());
-    } catch (_) {
-      // Handle offline scenario: skip Firestore, cache will be used
+      await docRef.set(tx.toMap());
+      debugPrint("✅ Transaction added with ID: ${tx.id}");
+    } catch (e) {
+      debugPrint("⚠️ Failed to add transaction to Firestore: $e");
     }
   }
 
@@ -244,9 +248,22 @@ class TransactionService {
     String id,
     Map<String, dynamic> newData,
   ) async {
-    final index = _localCache.indexWhere((tx) => tx.id == id);
-    if (index == -1) return;
+    debugPrint("🔥 Transaction update requested for $id: $newData");
 
+    final index = _localCache.indexWhere((tx) => tx.id == id);
+
+    if (index == -1) {
+      debugPrint("⚠️ Transaction not in cache, updating Firestore directly...");
+      try {
+        await transactionsRef.doc(id).update(newData);
+        debugPrint("✅ Transaction $id updated on Firestore (cache skipped)");
+      } catch (e) {
+        debugPrint("❌ Failed to update Firestore transaction $id: $e");
+      }
+      return;
+    }
+
+    // --- Cache hit: update both cache + Firestore ---
     final oldTx = _localCache[index];
     final updatedTx = oldTx.copyWith(
       amount: (newData['amount'] ?? oldTx.amount).toDouble(),
@@ -259,7 +276,7 @@ class TransactionService {
 
     _localCache[index] = updatedTx;
 
-    // Update wallet balances
+    // --- Wallet balance updates ---
     final oldWallet = await _walletService.getWalletById(oldTx.walletId!);
     final rollback = oldTx.type == 'income' ? -oldTx.amount : oldTx.amount;
     final apply =
@@ -281,20 +298,34 @@ class TransactionService {
       );
     }
 
+    // --- Firestore update ---
     try {
       await transactionsRef.doc(id).update(updatedTx.toMap());
-    } catch (_) {
-      // Offline: skip Firestore update, cache already updated
+      debugPrint("✅ Transaction $id updated on Firestore and cache");
+    } catch (e) {
+      debugPrint("❌ Failed to update transaction $id on Firestore: $e");
     }
   }
 
   Future<void> deleteTransaction(String id) async {
     final index = _localCache.indexWhere((tx) => tx.id == id);
-    if (index == -1) return;
 
+    if (index == -1) {
+      debugPrint(
+        "⚠️ Transaction $id not found in cache, deleting from Firestore directly...",
+      );
+      try {
+        await transactionsRef.doc(id).delete();
+        debugPrint("✅ Transaction $id deleted from Firestore (cache skipped)");
+      } catch (e) {
+        debugPrint("❌ Failed to delete transaction $id from Firestore: $e");
+      }
+      return;
+    }
+
+    // --- Cache hit: remove from cache and adjust wallet ---
     final tx = _localCache.removeAt(index);
 
-    // Adjust wallet balance
     final wallet = await _walletService.getWalletById(tx.walletId!);
     final adjust = tx.type == 'income' ? -tx.amount : tx.amount;
     await _walletService.updateWallet(
@@ -303,8 +334,9 @@ class TransactionService {
 
     try {
       await transactionsRef.doc(id).delete();
-    } catch (_) {
-      // Offline: Firestore delete skipped, cache is authoritative
+      debugPrint("✅ Transaction $id deleted from Firestore and cache");
+    } catch (e) {
+      debugPrint("❌ Failed to delete transaction $id on Firestore: $e");
     }
   }
 

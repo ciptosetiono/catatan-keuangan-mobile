@@ -23,7 +23,7 @@ class TransactionDetailScreen extends StatefulWidget {
 }
 
 class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
-  TransactionModel? _localTransaction;
+  TransactionModel? _transaction;
   String walletName = '-';
   String categoryName = '-';
   bool _hasChanged = false;
@@ -31,7 +31,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _localTransaction = widget.transaction;
+    _transaction = widget.transaction;
     loadNames();
   }
 
@@ -45,12 +45,79 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     });
   }
 
+  Future<String> getWalletName(String? walletId) async {
+    if (walletId == null) return '-';
+    final Wallet wallet = await WalletService().getWalletById(walletId);
+    if (wallet.id.isEmpty) return '-';
+    return wallet.name.isNotEmpty ? wallet.name : '-';
+  }
+
+  Future<String> getCategoryName(String? categoryId) async {
+    if (categoryId == null) return '-';
+    final Category category = await CategoryService().getCategoryById(
+      categoryId,
+    );
+    if (category.id.isEmpty) return '-';
+    return category.name.isNotEmpty ? category.name : '-';
+  }
+
+  void _showActions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit, color: Colors.green),
+                title: const Text('Edit'),
+                onTap: () async {
+                  Navigator.pop(context); // tutup bottomsheet
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => TransactionFormScreen(
+                            transactionId: widget.transaction.id,
+                            existingData: _transaction,
+                            onSaved: () {
+                              Navigator.pop(context, true); // reload list
+                            },
+                          ),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Delete'),
+                onTap: () async {
+                  Navigator.pop(context); // tutup bottomsheet
+                  final deleted = await showTransactionDeleteDialog(
+                    context: context,
+                    transactionId: widget.transaction.id,
+                  );
+                  if (deleted == true && context.mounted) {
+                    Navigator.pop(context, true); // balik ke list & reload
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final formatCurrency = NumberFormat.currency(decimalDigits: 0, symbol: '');
     final formatDate = DateFormat('EEEE, d MMMM yyyy');
 
-    final isIncome = _localTransaction?.type == 'income';
+    final isIncome = _transaction?.type == 'income';
 
     // ignore: deprecated_member_use
     return WillPopScope(
@@ -59,66 +126,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
         return false; // cegah pop default
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Detail Transaction'),
-          backgroundColor: Colors.lightBlue,
-          foregroundColor: Colors.white,
-          actions: [
-            PopupMenuButton<String>(
-              onSelected: (value) async {
-                if (value == 'edit') {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => TransactionFormScreen(
-                            transactionId: widget.transaction.id,
-                            existingData: widget.transaction,
-                          ),
-                    ),
-                  );
-
-                  if (result == true) {
-                    final updated = await TransactionService()
-                        .getTransactionById(widget.transaction.id);
-                    setState(() {
-                      _localTransaction = updated;
-                      _hasChanged = true;
-                    });
-                    await loadNames();
-                  }
-                } else if (value == 'delete') {
-                  await showTransactionDeleteDialog(
-                    context: context,
-                    transactionId: widget.transaction.id,
-                    onDeleted: () {
-                      if (context.mounted) {
-                        Navigator.of(context).pop(true);
-                      }
-                    },
-                  );
-                }
-              },
-              itemBuilder:
-                  (context) => [
-                    const PopupMenuItem(
-                      value: 'edit',
-                      child: ListTile(
-                        leading: Icon(Icons.edit),
-                        title: Text('Edit'),
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: ListTile(
-                        leading: Icon(Icons.delete),
-                        title: Text('Delete'),
-                      ),
-                    ),
-                  ],
-            ),
-          ],
-        ),
+        appBar: AppBar(title: const Text('Detail Transaction')),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -145,7 +153,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          formatCurrency.format(_localTransaction?.amount),
+                          formatCurrency.format(_transaction?.amount),
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -165,9 +173,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               TransactionDetailTile(
                 icon: Icons.calendar_today,
                 label: 'Date',
-                value: formatDate.format(
-                  _localTransaction?.date ?? DateTime.now(),
-                ),
+                value: formatDate.format(_transaction?.date ?? DateTime.now()),
               ),
               TransactionDetailTile(
                 icon: Icons.account_balance_wallet,
@@ -182,28 +188,16 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               TransactionDetailTile(
                 icon: Icons.note,
                 label: 'Note',
-                value: _localTransaction?.title ?? '-',
+                value: _transaction?.title ?? '-',
               ),
             ],
           ),
         ),
+        floatingActionButton: FloatingActionButton(
+          child: const Icon(Icons.more_vert),
+          onPressed: () => _showActions(context),
+        ),
       ),
     );
-  }
-
-  Future<String> getWalletName(String? walletId) async {
-    if (walletId == null) return '-';
-    final Wallet wallet = await WalletService().getWalletById(walletId);
-    if (wallet.id.isEmpty) return '-';
-    return wallet.name.isNotEmpty ? wallet.name : '-';
-  }
-
-  Future<String> getCategoryName(String? categoryId) async {
-    if (categoryId == null) return '-';
-    final Category category = await CategoryService().getCategoryById(
-      categoryId,
-    );
-    if (category.id.isEmpty) return '-';
-    return category.name.isNotEmpty ? category.name : '-';
   }
 }

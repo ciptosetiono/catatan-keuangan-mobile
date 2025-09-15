@@ -12,7 +12,6 @@ import 'package:money_note/models/transaction_model.dart';
 import 'package:money_note/services/transaction_service.dart';
 import 'package:money_note/services/category_service.dart';
 import 'package:money_note/screens/categories/category_form_screen.dart';
-import 'package:money_note/screens/categories/category_screen.dart';
 
 class CategoryDetailScreen extends StatefulWidget {
   final Category category;

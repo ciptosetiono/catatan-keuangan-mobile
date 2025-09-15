@@ -119,6 +119,11 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         );
       } else {
         await TransactionService().addTransaction(trx);
+
+        //clear the form
+        _titleController.clear();
+        _amountController.clear();
+
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
@@ -131,7 +136,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         widget.onSaved!(); // trigger refresh di parent
       }
 
-      if (mounted) Navigator.pop(context, true);
+      // if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

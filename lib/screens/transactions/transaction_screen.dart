@@ -260,11 +260,16 @@ class _TransactionScreenState extends State<TransactionScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const TransactionFormScreen()),
-          ).then((_) {
-            _loadTransactions(reset: true);
-            _loadSummary();
-          });
+            MaterialPageRoute(
+              builder:
+                  (_) => TransactionFormScreen(
+                    onSaved: () {
+                      _loadTransactions(reset: true);
+                      _loadSummary();
+                    },
+                  ),
+            ),
+          );
         },
       ),
     );

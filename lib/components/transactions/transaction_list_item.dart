@@ -79,27 +79,34 @@ Future<void> handleTransactionTap({
   final action = await showTransactionActionDialog(context);
 
   if (action == 'detail') {
-    await Navigator.push(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => TransactionDetailScreen(transaction: transaction),
       ),
     );
+
+    if (result == 'updated' && onUpdated != null) {
+      onUpdated();
+    } else if (result == 'deleted' && onDeleted != null) {
+      onDeleted();
+    }
   } else if (action == 'edit') {
-    final updated = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder:
             (_) => TransactionFormScreen(
               transactionId: transaction.id,
               existingData: transaction,
+              onSaved: () {
+                if (onUpdated != null) {
+                  onUpdated();
+                }
+              },
             ),
       ),
     );
-
-    if (updated == true && onUpdated != null) {
-      onUpdated();
-    }
   } else if (action == 'delete') {
     final deleted = await showTransactionDeleteDialog(
       context: context,
