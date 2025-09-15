@@ -26,10 +26,7 @@ class CategoryListItem extends StatelessWidget {
             isIncome ? Icons.arrow_downward : Icons.arrow_upward,
             color: isIncome ? Colors.green : Colors.red,
           ),
-          title: Text(
-            category.name,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          title: Text(category.name),
         ),
       ),
     );

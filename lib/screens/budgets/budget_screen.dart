@@ -5,6 +5,7 @@ import 'package:money_note/models/category_model.dart';
 
 import 'package:money_note/services/category_service.dart';
 
+import 'package:money_note/components/buttons/add_button.dart';
 import 'package:money_note/components/budgets/budget_list.dart';
 import 'package:money_note/components/budgets/budget_month_dropdown.dart';
 import 'package:money_note/components/budgets/budget_category_name_filter.dart';
@@ -91,15 +92,13 @@ class _BudgetScreenState extends State<BudgetScreen> {
         ),
       ),
       body: BudgetList(selectedMonth: _selectedMonth, categories: _categories),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: AddButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const BudgetFormScreen()),
           );
         },
-        backgroundColor: Colors.green,
-        child: const Icon(Icons.add),
       ),
     );
   }

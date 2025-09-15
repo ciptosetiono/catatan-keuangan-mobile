@@ -55,6 +55,7 @@ class Wallet {
   }
 
   /// Safe parsing Timestamp from Firestore
+  // ignore: unused_element
   static DateTime _parseTimestamp(dynamic value) {
     if (value is Timestamp) {
       return value.toDate();

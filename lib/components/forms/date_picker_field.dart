@@ -21,21 +21,27 @@ class DatePickerField extends StatelessWidget {
       builder: (context, child) {
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
+
         return Theme(
           data: theme.copyWith(
+            dialogTheme: DialogThemeData(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
             colorScheme:
                 isDark
                     ? const ColorScheme.dark(
-                      primary: Colors.lightBlue,
+                      primary: Colors.blueAccent,
                       onPrimary: Colors.white,
                       surface: Color(0xFF121212),
                       onSurface: Colors.white,
                     )
                     : const ColorScheme.light(
-                      primary: Colors.lightBlue,
+                      primary: Colors.blueAccent,
                       onPrimary: Colors.white,
                       surface: Colors.white,
-                      onSurface: Colors.black,
+                      onSurface: Colors.black87,
                     ),
           ),
           child: child!,
@@ -51,26 +57,37 @@ class DatePickerField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formattedDate = DateFormat('dd MMM yyyy').format(selectedDate);
-    final theme = Theme.of(context);
 
     return InkWell(
       onTap: () => _pickDate(context),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(12),
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: 'Date',
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          labelStyle: const TextStyle(fontSize: 14, color: Colors.black54),
+          filled: true,
+          fillColor: Colors.grey[100],
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 12,
             vertical: 14,
           ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          suffixIcon: const Icon(
+            Icons.calendar_month,
+            color: Colors.blueAccent,
+            size: 22,
+          ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(formattedDate, style: theme.textTheme.bodyLarge),
-            const Icon(Icons.calendar_month_outlined, size: 22),
-          ],
+        child: Text(
+          formattedDate,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+            color: Colors.black87,
+          ),
         ),
       ),
     );

@@ -10,12 +10,28 @@ class ExportScreen extends StatefulWidget {
 class _ExportScreen extends State<ExportScreen> {
   DateTime? _from;
   DateTime? _to;
-  String? _wallet;
-  String? _type;
-  String? _category;
+  // String? _wallet;
+  //String? _type;
+  //String? _category;
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    // Example usage of _from field
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            _from != null
+                ? 'From date: ${_from!.toLocal()}'
+                : 'No from date selected',
+          ),
+          SizedBox(height: 8),
+          Text(
+            _to != null ? 'To date: ${_to!.toLocal()}' : 'No to date selected',
+          ),
+        ],
+      ),
+    );
   }
 }

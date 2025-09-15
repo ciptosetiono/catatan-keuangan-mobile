@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/user_initializer.dart';
@@ -44,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
+      ).showSnackBar(SnackBar(content: Text('Login failed')));
     }
   }
 
@@ -61,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color.fromARGB(255, 7, 85, 230),
+                  Color.fromARGB(255, 4, 231, 80),
                   Color.fromARGB(255, 40, 174, 236),
                 ],
                 begin: Alignment.topCenter,

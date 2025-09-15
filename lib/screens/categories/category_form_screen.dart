@@ -51,7 +51,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       await _categoryService.addCategory(newCategory);
     }
 
-    if (mounted) Navigator.pop(context);
+    if (mounted) Navigator.pop(context, true);
   }
 
   @override

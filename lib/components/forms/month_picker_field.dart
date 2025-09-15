@@ -17,6 +17,7 @@ class MonthPickerField extends StatelessWidget {
     final formatted = DateFormat.yMMMM('en_US').format(selectedMonth);
 
     return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () async {
         final picked = await showMonthYearPicker(
           context: context,
@@ -26,10 +27,15 @@ class MonthPickerField extends StatelessWidget {
           builder: (context, child) {
             return Theme(
               data: ThemeData.light().copyWith(
+                dialogTheme: DialogThemeData(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
                 colorScheme: const ColorScheme.light(
-                  primary: Colors.blue, // warna utama
-                  onPrimary: Colors.white, // teks tombol OK
-                  onSurface: Colors.black, // teks default
+                  primary: Colors.blueAccent, // highlight utama
+                  onPrimary: Colors.white, // teks di atas primary
+                  onSurface: Colors.black87, // teks default
                 ),
               ),
               child: child!,
@@ -41,12 +47,32 @@ class MonthPickerField extends StatelessWidget {
         }
       },
       child: InputDecorator(
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           labelText: 'Month',
-          border: OutlineInputBorder(),
-          suffixIcon: Icon(Icons.calendar_today),
+          labelStyle: const TextStyle(fontSize: 14, color: Colors.black54),
+          filled: true,
+          fillColor: Colors.grey[100],
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 14,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          suffixIcon: const Icon(
+            Icons.calendar_month,
+            color: Colors.blueAccent,
+          ),
         ),
-        child: Text(formatted),
+        child: Text(
+          formatted,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+            color: Colors.black87,
+          ),
+        ),
       ),
     );
   }

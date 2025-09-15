@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/constants/date_filter_option.dart';
+import 'package:money_note/utils/currency_formatter.dart';
+
+import 'package:money_note/components/transactions/transaction_list_item.dart';
+import 'package:money_note/components/transactions/date_filter_dropdown.dart';
+import 'package:money_note/components/categories/category_delete_dialog.dart';
 
 import 'package:money_note/models/category_model.dart';
 import 'package:money_note/models/transaction_model.dart';
-
-import 'package:money_note/services/category_service.dart';
 import 'package:money_note/services/transaction_service.dart';
-
-import 'package:money_note/components/transactions/date_filter_dropdown.dart';
-import 'package:money_note/components/transactions/transaction_list_item.dart';
-import 'package:money_note/components/transactions/transaction_summary_card.dart';
+import 'package:money_note/services/category_service.dart';
+import 'package:money_note/screens/categories/category_form_screen.dart';
+import 'package:money_note/screens/categories/category_screen.dart';
 
 class CategoryDetailScreen extends StatefulWidget {
   final Category category;
+
   const CategoryDetailScreen({super.key, required this.category});
 
   @override
@@ -23,23 +24,11 @@ class CategoryDetailScreen extends StatefulWidget {
 }
 
 class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
-  Category? _category;
-  final currency = CurrencyFormatter();
-  final dateFormat = DateFormat('dd MMM yyyy');
-
+  late Category _category;
   DateTime? _from;
   DateTime? _to;
   DateFilterOption _selectedDateFilter = DateFilterOption.thisMonth;
 
-  Map<String, num> _summary = {'income': 0, 'expense': 0, 'balance': 0};
-
-  @override
-  void initState() {
-    super.initState();
-    _category = widget.category;
-  }
-
-  /// Apply filter date
   void _applyDateFilter(
     DateFilterOption option, {
     DateTime? from,
@@ -53,90 +42,73 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     });
   }
 
-  Future<void> _loadCategory() async {
-    final updatedCategory = await CategoryService().getCategoryById(
-      widget.category.id,
-    );
-
-    if (updatedCategory != null) {
-      setState(() {
-        _category = updatedCategory;
-      });
-    }
-  }
-
-  /// Get transaction stream for this category
-  Stream<List<TransactionModel>> _transactionStream() {
-    return TransactionService().getTransactionsStream(
-      categoryId: widget.category.id,
-      fromDate: _from,
-      toDate: _to,
-    );
-  }
-
-  /// Recalculate income/expense/balance summary
-  void _calculateSummary(List<TransactionModel> transactions) {
-    num income = 0;
-    num expense = 0;
-
-    for (var tx in transactions) {
-      if (tx.type == 'income') {
-        income += tx.amount;
-      } else {
-        expense += tx.amount;
-      }
-    }
-
-    setState(() {
-      _summary = {
-        'income': income,
-        'expense': expense,
-        'balance': income - expense,
-      };
-    });
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final category = _category ?? widget.category;
+  void initState() {
+    super.initState();
+    _category = widget.category;
+  }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Category Detail')),
-      body: Column(
-        children: [
-          // Category info card
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Card(
-              elevation: 4,
+  Widget _buildTransactionsSection() {
+    return StreamBuilder<List<TransactionModel>>(
+      stream: TransactionService().getTransactionsStream(
+        categoryId: _category.id,
+        fromDate: _from,
+        toDate: _to,
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        final transactions = snapshot.data ?? [];
+        final totalAmount = transactions.fold<double>(
+          0,
+          (sum, tx) => sum + tx.amount,
+        );
+
+        return Column(
+          children: [
+            // Total summary card
+            Card(
+              color: Colors.blue.shade50,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(12),
               ),
+              margin: const EdgeInsets.only(bottom: 16),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16.0),
                 child: Row(
                   children: [
-                    const CircleAvatar(
-                      radius: 24,
-                      backgroundColor: Colors.blue,
-                      child: Icon(Icons.category, color: Colors.white),
-                    ),
-                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            category.name,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                          const Text(
+                            "Total Transactions",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black54,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            category.type,
-                            style: const TextStyle(color: Colors.grey),
+                            CurrencyFormatter().encode(totalAmount),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          Text(
+                            "${transactions.length} items",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black45,
+                            ),
                           ),
                         ],
                       ),
@@ -145,89 +117,132 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                 ),
               ),
             ),
-          ),
 
-          // Transactions header & filter
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Transactions",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                DateFilterDropdown(
-                  selected: _selectedDateFilter,
-                  onFilterApplied: _applyDateFilter,
-                ),
-              ],
-            ),
-          ),
-
-          // Transaction list & summary
-          Expanded(
-            child: StreamBuilder<List<TransactionModel>>(
-              stream: _transactionStream(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                final transactions = snapshot.data ?? [];
-
-                _calculateSummary(transactions);
-
-                if (transactions.isEmpty) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.receipt_long, size: 60, color: Colors.grey),
-                        SizedBox(height: 8),
-                        Text(
-                          "No transactions found.",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return Column(
-                  children: [
-                    // Summary Card
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: TransactionSummaryCard(
-                        income: _summary['income']!,
-                        expense: _summary['expense']!,
-                        balance: _summary['balance']!,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Transaction list
-                    Expanded(
-                      child: ListView.separated(
+            // List transaksi
+            Expanded(
+              child:
+                  transactions.isEmpty
+                      ? const Center(child: Text("No transactions found"))
+                      : ListView.builder(
                         itemCount: transactions.length,
-                        separatorBuilder: (_, __) => const Divider(height: 0),
                         itemBuilder: (context, index) {
                           final transaction = transactions[index];
                           return TransactionListItem(
                             transaction: transaction,
-                            onUpdated: () => _loadCategory(),
-                            onDeleted: () => _loadCategory(),
+                            onUpdated: () => setState(() {}),
+                            onDeleted: () => setState(() {}),
                           );
                         },
                       ),
-                    ),
-                  ],
-                );
-              },
             ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _category.name,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Text(_category.type, style: const TextStyle(fontSize: 14)),
+          ],
+        ),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              if (value == 'edit') {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CategoryFormScreen(category: _category),
+                  ),
+                );
+
+                if (result == true) {
+                  final updatedCategory = await CategoryService()
+                      .getCategoryById(_category.id);
+
+                  if (updatedCategory != null) {
+                    setState(() {
+                      _category = updatedCategory; // replace object
+                    });
+                  }
+                }
+              } else if (value == 'delete') {
+                await confirmAndDeleteCategory(
+                  context: context,
+                  categoryId: _category.id,
+                  onDeleted: () {
+                    Navigator.pop(context, true); // keluar dari detail screen
+                  },
+                );
+              }
+            },
+            itemBuilder:
+                (context) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: ListTile(
+                      leading: Icon(Icons.edit),
+                      title: Text('Edit'),
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: ListTile(
+                      leading: Icon(Icons.delete),
+                      title: Text('Delete'),
+                    ),
+                  ),
+                ],
           ),
         ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Filter row
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    "Transactions",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(
+                  width: 200,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 0,
+                      vertical: 0,
+                    ),
+                    child: DateFilterDropdown(
+                      selected: _selectedDateFilter,
+                      onFilterApplied: _applyDateFilter,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Transactions section
+            Expanded(child: _buildTransactionsSection()),
+          ],
+        ),
       ),
     );
   }

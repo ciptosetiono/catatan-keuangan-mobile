@@ -137,7 +137,7 @@ class _MainPageState extends State<MainPage> {
     BottomNavigationBarItem(
       icon: Icon(Icons.more_horiz_outlined),
       activeIcon: Icon(Icons.more_horiz),
-      label: 'Other',
+      label: 'More',
     ),
   ];
 

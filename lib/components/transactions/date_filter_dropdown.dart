@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:money_note/constants/date_filter_option.dart';
 
 class DateFilterDropdown extends StatelessWidget {
@@ -71,12 +70,16 @@ class DateFilterDropdown extends StatelessWidget {
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
-                dialogBackgroundColor: Colors.grey[50],
                 colorScheme: const ColorScheme.light(
                   primary: Colors.blueAccent,
                   onPrimary: Colors.white,
                   surface: Colors.white,
                   onSurface: Colors.black87,
+                ),
+                dialogTheme: DialogThemeData(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                 ),
                 textButtonTheme: TextButtonThemeData(
                   style: TextButton.styleFrom(
@@ -183,32 +186,4 @@ class DateFilterDropdown extends StatelessWidget {
       ),
     );
   }
-}
-
-/// --- Custom Localizations to override Save -> Apply ---
-class _CustomMaterialLocalizationsDelegate
-    extends LocalizationsDelegate<MaterialLocalizations> {
-  const _CustomMaterialLocalizationsDelegate();
-
-  @override
-  bool isSupported(Locale locale) => locale.languageCode == 'en';
-
-  @override
-  Future<MaterialLocalizations> load(Locale locale) async {
-    final defaultLocalization = await GlobalMaterialLocalizations.delegate.load(
-      locale,
-    );
-    return _CustomMaterialLocalizations(defaultLocalization);
-  }
-
-  @override
-  bool shouldReload(_CustomMaterialLocalizationsDelegate old) => false;
-}
-
-class _CustomMaterialLocalizations extends DefaultMaterialLocalizations {
-  final MaterialLocalizations _default;
-  _CustomMaterialLocalizations(this._default);
-
-  @override
-  String get saveButtonLabel => 'Apply';
 }

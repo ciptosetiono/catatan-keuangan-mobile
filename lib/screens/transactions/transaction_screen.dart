@@ -185,38 +185,53 @@ class _TransactionScreenState extends State<TransactionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            const Expanded(child: Text('Transactions')),
-            // Date dropdown
-            SizedBox(
-              width: 300,
-              child: DateFilterDropdown(
-                selected: _selectedDateFilter,
-                onFilterApplied: _applyDateFilter,
-              ),
+        title: const Text('Transactions'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Row(
+              children: [
+                // Date filter dropdown
+                Expanded(
+                  child: DateFilterDropdown(
+                    selected: _selectedDateFilter,
+                    onFilterApplied: _applyDateFilter,
+                  ),
+                ),
+
+                Expanded(
+                  child: WalletFilterDropdown(
+                    value: _walletFilter,
+                    onChanged: (val) {
+                      setState(() => _walletFilter = val);
+                      _loadTransactions(reset: true);
+                      _loadSummary();
+                    },
+                  ),
+                ),
+                // Custom filter button (format sama seperti dropdown)
+                SizedBox(
+                  height: 40,
+                  child: FilterButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder:
+                            (_) => UnifiedFilterDialog(
+                              typeFilter: _typeFilter,
+                              walletFilter: _walletFilter,
+                              categoryFilter: _categoryFilter,
+                              titleFilter: _titleFilter,
+                              onFilterApplied: _applyUnifiedFilter,
+                            ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            // Custom filter button, format sama seperti dropdown
-            SizedBox(
-              height: 40,
-              child: FilterButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder:
-                        (_) => UnifiedFilterDialog(
-                          typeFilter: _typeFilter,
-                          walletFilter: _walletFilter,
-                          categoryFilter: _categoryFilter,
-                          titleFilter: _titleFilter,
-                          onFilterApplied: _applyUnifiedFilter,
-                        ),
-                  );
-                },
-              ),
-            ),
-          ],
+          ),
         ),
       ),
 

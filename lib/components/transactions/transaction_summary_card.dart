@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:money_note/utils/currency_formatter.dart';
 
 class TransactionSummaryCard extends StatelessWidget {
