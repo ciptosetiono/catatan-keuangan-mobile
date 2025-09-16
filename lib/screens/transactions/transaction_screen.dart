@@ -89,6 +89,8 @@ class _TransactionScreenState extends State<TransactionScreen> {
         title: _titleFilter,
       );
 
+      if (!mounted) return;
+
       if (snapshot.docs.isNotEmpty) {
         _lastDocument = snapshot.docs.last;
 
@@ -112,6 +114,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
   }
 
   Future<void> _loadSummary() async {
+    if (!mounted) return;
     setState(() => _isSummaryLoading = true);
     try {
       final result = await TransactionService().getSummary(
@@ -140,6 +143,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
     DateTime? to,
     String? label,
   }) {
+    if (!mounted) return;
     setState(() {
       _selectedDateFilter = option;
       _selectedDateLabel = label;
@@ -156,6 +160,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
     String? category,
     String? title,
   }) {
+    if (!mounted) return;
     setState(() {
       _typeFilter = type;
       _walletFilter = wallet;
@@ -204,6 +209,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                   child: WalletFilterDropdown(
                     value: _walletFilter,
                     onChanged: (val) {
+                      if (!mounted) return;
                       setState(() => _walletFilter = val);
                       _loadTransactions(reset: true);
                       _loadSummary();

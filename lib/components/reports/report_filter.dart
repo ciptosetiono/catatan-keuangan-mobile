@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:money_note/components/forms/date_filter_dropdown.dart';
 import 'package:money_note/constants/date_filter_option.dart';
-import 'package:money_note/screens/reports/display_option_selector.dart';
+import 'package:money_note/components/forms/display_option_selector.dart';
 
 class ReportFilter extends StatefulWidget implements PreferredSizeWidget {
   final DateFilterOption? selectedRange;

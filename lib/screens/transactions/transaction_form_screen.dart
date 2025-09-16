@@ -73,10 +73,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
   Future<void> _loadInitialData() async {
     CategoryService().getCategoryStream(type: _type).listen((list) {
+      if (!mounted) return;
       setState(() => _categories = list);
     });
 
     WalletService().getWalletStream().listen((list) {
+      if (!mounted) return;
       setState(() => _wallets = list);
     });
   }
@@ -91,7 +93,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       return;
     }
 
-    setState(() => _isSubmitting = true);
+    if (mounted) setState(() => _isSubmitting = true);
 
     final title = _titleController.text.trim();
     // Remove all non-digit and non-decimal separator characters

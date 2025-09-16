@@ -23,7 +23,7 @@ class DisplayOptionSelector extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.account_balance_wallet, color: Colors.black),
+          const Icon(Icons.stacked_bar_chart, color: Colors.black),
           const SizedBox(width: 8),
 
           // Group By Filter (expand like a dropdown)
@@ -44,10 +44,7 @@ class DisplayOptionSelector extends StatelessWidget {
                   ],
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(groupBy.toUpperCase()),
-                  const Icon(Icons.arrow_drop_down),
-                ],
+                children: [Text(groupBy), const Icon(Icons.arrow_drop_down)],
               ),
             ),
           ),
