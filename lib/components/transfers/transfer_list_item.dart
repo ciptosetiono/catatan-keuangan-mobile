@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/transaction_model.dart';
@@ -40,7 +42,7 @@ class TransferListItem extends StatelessWidget {
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 8),
           title: Text(
-            '${fromWalletName} → ${toWalletName}',
+            '$fromWalletName → $toWalletName',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Text(transfer.title),

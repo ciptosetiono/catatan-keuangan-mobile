@@ -73,8 +73,12 @@ class TransferService {
       (QuerySnapshot fromSnap, QuerySnapshot toSnap) {
         final allDocsMap = <String, DocumentSnapshot>{};
 
-        for (final doc in fromSnap.docs) allDocsMap[doc.id] = doc;
-        for (final doc in toSnap.docs) allDocsMap[doc.id] = doc;
+        for (final doc in fromSnap.docs) {
+          allDocsMap[doc.id] = doc;
+        }
+        for (final doc in toSnap.docs) {
+          allDocsMap[doc.id] = doc;
+        }
 
         final allDocs =
             allDocsMap.values.toList()..sort((a, b) {

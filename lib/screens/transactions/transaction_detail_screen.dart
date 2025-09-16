@@ -1,15 +1,14 @@
+// ignore_for_file: prefer_final_fields
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/transaction_model.dart';
-import '../../models/wallet_model.dart';
-import '../../models/category_model.dart';
-
-import '../../services/wallet_service.dart';
-import '../../services/category_service.dart';
-import '../../screens/transactions/transaction_form_screen.dart';
-
-import '../../../components/transactions/transaction_delete_dialog.dart';
-import '../../../components/transactions/transaction_detail_tile.dart';
+import 'package:money_note/models/transaction_model.dart';
+import 'package:money_note/models/wallet_model.dart';
+import 'package:money_note/models/category_model.dart';
+import 'package:money_note/services/wallet_service.dart';
+import 'package:money_note/services/category_service.dart';
+import 'package:money_note/components/transactions/transaction_bottomsheet_menu.dart';
+import 'package:money_note/components/transactions/transaction_detail_tile.dart';
 
 class TransactionDetailScreen extends StatefulWidget {
   final TransactionModel transaction;
@@ -58,57 +57,6 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     );
     if (category == null || category.id.isEmpty) return '-';
     return category.name.isNotEmpty ? category.name : '-';
-  }
-
-  void _showActions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.edit, color: Colors.green),
-                title: const Text('Edit'),
-                onTap: () async {
-                  Navigator.pop(context); // tutup bottomsheet
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => TransactionFormScreen(
-                            transactionId: widget.transaction.id,
-                            existingData: _transaction,
-                            onSaved: () {
-                              Navigator.pop(context, true); // reload list
-                            },
-                          ),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Delete'),
-                onTap: () async {
-                  Navigator.pop(context); // tutup bottomsheet
-                  final deleted = await showTransactionDeleteDialog(
-                    context: context,
-                    transactionId: widget.transaction.id,
-                  );
-                  if (deleted == true && context.mounted) {
-                    Navigator.pop(context, true); // balik ke list & reload
-                  }
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -194,7 +142,11 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.more_vert),
-          onPressed: () => _showActions(context),
+          onPressed:
+              () => showTransactionBottomsheetMenu(
+                context: context,
+                transaction: _transaction!,
+              ),
         ),
       ),
     );

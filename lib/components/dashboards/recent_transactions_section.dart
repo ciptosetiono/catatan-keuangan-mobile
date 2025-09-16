@@ -1,4 +1,6 @@
 // lib/components/dashboard/recent_transactions_section.dart
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 

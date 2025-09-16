@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/constants/date_filter_option.dart';
 
-import 'package:money_note/components/transactions/date_filter_dropdown.dart';
+import 'package:money_note/components/forms/date_filter_dropdown.dart';
 import 'package:money_note/components/transactions/transaction_list.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
-
 import 'package:money_note/components/transfers/transfer_list.dart';
 import 'package:money_note/components/wallets/wallet_delete_dialog.dart';
 import 'package:money_note/components/wallets/wallet_info_card.dart';
@@ -44,7 +43,6 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
 
   bool _loadingTransactions = true;
   bool _loadingTransfers = true;
-  bool _loadingWallets = true;
 
   DateTime? _from;
   DateTime? _to;
@@ -66,7 +64,6 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
     if (!mounted) return;
     setState(() {
       _wallets = wallets;
-      _loadingWallets = false;
     });
   }
 
@@ -136,8 +133,9 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
           return true;
         }).toList();
 
-    if (filteredTransactions.isEmpty)
+    if (filteredTransactions.isEmpty) {
       return const Center(child: Text("No transactions found"));
+    }
 
     final income = filteredTransactions
         .where((tx) => tx.type == "income")
@@ -171,8 +169,9 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
           return true;
         }).toList();
 
-    if (filteredTransfers.isEmpty)
+    if (filteredTransfers.isEmpty) {
       return const Center(child: Text("No transfers found"));
+    }
 
     final totalOut = filteredTransfers
         .where((t) => t.fromWalletId == widget.wallet.id)

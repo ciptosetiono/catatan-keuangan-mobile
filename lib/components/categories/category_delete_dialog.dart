@@ -1,5 +1,7 @@
 // lib/utils/dialog_utils.dart
 
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:money_note/services/category_service.dart';
 

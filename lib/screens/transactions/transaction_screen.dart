@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, prefer_final_fields
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,7 +8,7 @@ import 'package:money_note/components/buttons/add_button.dart';
 import 'package:money_note/components/buttons/filter_button.dart';
 
 import 'package:money_note/components/transactions/wallet_filter_dropdown.dart';
-import 'package:money_note/components/transactions/date_filter_dropdown.dart';
+import 'package:money_note/components/forms/date_filter_dropdown.dart';
 import 'package:money_note/components/transactions/unified_filter_dialog.dart';
 import 'package:money_note/components/transactions/transaction_list.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
@@ -27,7 +27,6 @@ class TransactionScreen extends StatefulWidget {
 class _TransactionScreenState extends State<TransactionScreen> {
   DateTime? _from;
   DateTime? _to;
-  String _dateFilterLabel = 'This Month';
   DateFilterOption _selectedDateFilter = DateFilterOption.thisMonth;
   final ScrollController _scrollController = ScrollController();
 
@@ -123,7 +122,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
         title: _titleFilter,
       );
 
-      print(result);
       setState(() {
         _income = result['income'] ?? 0;
         _expense = result['expense'] ?? 0;
@@ -145,7 +143,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
       _selectedDateFilter = option;
       _from = from;
       _to = to;
-      _dateFilterLabel = label ?? 'This Month';
     });
     _loadTransactions(reset: true);
     _loadSummary();

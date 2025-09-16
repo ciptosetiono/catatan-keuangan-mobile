@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_types_as_parameter_names
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/wallet_model.dart';
@@ -116,9 +118,7 @@ class WalletService {
               )
               .toList();
       _localCache = wallets;
-      return wallets
-          .fold<num>(0, (sum, w) => sum + (w.currentBalance ?? 0))
-          .toInt();
+      return wallets.fold<num>(0, (sum, w) => sum + w.currentBalance).toInt();
     } catch (_) {
       // Offline: gunakan cache
       return _localCache.fold<int>(

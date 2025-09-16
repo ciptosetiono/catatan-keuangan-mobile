@@ -1,3 +1,5 @@
+// ignore_for_file: empty_catches
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/category_model.dart';
@@ -112,12 +114,17 @@ class CategoryService {
   // ======================= Search Offline =======================
   List<Category> searchLocal({String? query, String? type}) {
     return _localCache.where((cat) {
-      if (type != null && type.isNotEmpty && type != 'all' && cat.type != type)
+      if (type != null &&
+          type.isNotEmpty &&
+          type != 'all' &&
+          cat.type != type) {
         return false;
+      }
       if (query != null &&
           query.trim().isNotEmpty &&
-          !cat.name.toLowerCase().contains(query.toLowerCase()))
+          !cat.name.toLowerCase().contains(query.toLowerCase())) {
         return false;
+      }
       return true;
     }).toList();
   }
