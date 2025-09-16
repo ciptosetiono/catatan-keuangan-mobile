@@ -27,7 +27,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   DateTime? _from;
   DateTime? _to;
   DateFilterOption _selectedDateFilter = DateFilterOption.thisMonth;
-
+  String? _selectedDateLabel;
   void _applyDateFilter(
     DateFilterOption option, {
     DateTime? from,
@@ -38,6 +38,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
       _selectedDateFilter = option;
       _from = from;
       _to = to;
+      _selectedDateLabel = label;
     });
   }
 
@@ -63,6 +64,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
         }
 
         final transactions = snapshot.data ?? [];
+
         final totalAmount = transactions.fold<double>(
           0,
           (sum, tx) => sum + tx.amount,
@@ -231,6 +233,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                     ),
                     child: DateFilterDropdown(
                       selected: _selectedDateFilter,
+                      label: _selectedDateLabel,
                       onFilterApplied: _applyDateFilter,
                     ),
                   ),

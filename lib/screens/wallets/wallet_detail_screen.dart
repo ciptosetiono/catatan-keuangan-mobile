@@ -47,7 +47,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
   DateTime? _from;
   DateTime? _to;
   DateFilterOption _selectedDateFilter = DateFilterOption.all;
-
+  String? _selectedDateLabel;
   @override
   void initState() {
     super.initState();
@@ -117,6 +117,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
       _selectedDateFilter = option;
       _from = from;
       _to = to;
+      _selectedDateLabel = label;
     });
   }
 
@@ -210,7 +211,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
             const Text("Filter: "),
             const SizedBox(width: 8),
             ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 200),
+              constraints: const BoxConstraints(maxWidth: 300),
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(
@@ -223,6 +224,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
                 ), // padding dalam
                 child: DateFilterDropdown(
                   selected: _selectedDateFilter,
+                  label: _selectedDateLabel,
                   onFilterApplied: _applyDateFilter,
                 ),
               ),

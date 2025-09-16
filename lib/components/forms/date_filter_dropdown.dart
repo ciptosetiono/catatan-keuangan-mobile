@@ -4,6 +4,7 @@ import 'package:money_note/constants/date_filter_option.dart';
 
 class DateFilterDropdown extends StatelessWidget {
   final DateFilterOption selected;
+  final String? label; // <-- NEW: show custom or predefined label
   final void Function(
     DateFilterOption option, {
     DateTime? from,
@@ -16,6 +17,7 @@ class DateFilterDropdown extends StatelessWidget {
     super.key,
     required this.selected,
     required this.onFilterApplied,
+    this.label,
   });
 
   Future<void> _handleChange(
@@ -67,48 +69,6 @@ class DateFilterDropdown extends StatelessWidget {
           helpText: 'Select Date Range',
           cancelText: 'Cancel',
           confirmText: 'Apply',
-          builder: (context, child) {
-            return Theme(
-              data: Theme.of(context).copyWith(
-                colorScheme: const ColorScheme.light(
-                  primary: Colors.blueAccent,
-                  onPrimary: Colors.white,
-                  surface: Colors.white,
-                  onSurface: Colors.black87,
-                ),
-                dialogTheme: DialogThemeData(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                textButtonTheme: TextButtonThemeData(
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.blueAccent,
-                    textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                inputDecorationTheme: InputDecorationTheme(
-                  filled: true,
-                  fillColor: Colors.grey[100],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                textTheme: Theme.of(context).textTheme.copyWith(
-                  titleLarge: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                  bodyMedium: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-              child: child!,
-            );
-          },
         );
 
         if (picked != null) {
@@ -127,6 +87,29 @@ class DateFilterDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Map enum to display text, but allow custom label override
+    String getLabel(DateFilterOption option) {
+      if (option == DateFilterOption.custom && label != null) {
+        return label!; // show picked custom range
+      }
+      switch (option) {
+        case DateFilterOption.today:
+          return 'Today';
+        case DateFilterOption.thisMonth:
+          return 'This Month';
+        case DateFilterOption.lastMonth:
+          return 'Last Month';
+        case DateFilterOption.last30Days:
+          return 'Last 30 Days';
+        case DateFilterOption.thisYear:
+          return 'This Year';
+        case DateFilterOption.all:
+          return 'All Time';
+        case DateFilterOption.custom:
+          return 'Custom...';
+      }
+    }
+
     return Container(
       height: 40,
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
@@ -138,50 +121,31 @@ class DateFilterDropdown extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Row(
         children: [
+          const Icon(Icons.date_range, color: Colors.black),
+          const SizedBox(width: 8),
           Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<DateFilterOption>(
                 value: selected,
                 isExpanded: true,
                 dropdownColor: Colors.white,
-                style: const TextStyle(color: Color.fromARGB(255, 15, 15, 15)),
+                style: const TextStyle(color: Colors.black87),
                 icon: const SizedBox.shrink(),
                 items:
-                    DateFilterOption.values.map((e) {
-                      String text;
-                      switch (e) {
-                        case DateFilterOption.today:
-                          text = 'Today';
-                          break;
-                        case DateFilterOption.thisMonth:
-                          text = 'This Month';
-                          break;
-                        case DateFilterOption.lastMonth:
-                          text = 'Last Month';
-                          break;
-                        case DateFilterOption.last30Days:
-                          text = 'Last 30 Days';
-                          break;
-                        case DateFilterOption.thisYear:
-                          text = 'This Year';
-                          break;
-                        case DateFilterOption.all:
-                          text = 'All Time';
-                          break;
-                        case DateFilterOption.custom:
-                          text = 'Custom...';
-                          break;
-                      }
-                      return DropdownMenuItem(value: e, child: Text(text));
-                    }).toList(),
+                    DateFilterOption.values
+                        .map(
+                          (e) => DropdownMenuItem(
+                            value: e,
+                            child: Text(getLabel(e)),
+                          ),
+                        )
+                        .toList(),
                 onChanged: (option) {
                   if (option != null) _handleChange(context, option);
                 },
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          const Icon(Icons.date_range, color: Colors.black),
         ],
       ),
     );

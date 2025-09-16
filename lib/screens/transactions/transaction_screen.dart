@@ -28,6 +28,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
   DateTime? _from;
   DateTime? _to;
   DateFilterOption _selectedDateFilter = DateFilterOption.thisMonth;
+  String? _selectedDateLabel;
   final ScrollController _scrollController = ScrollController();
 
   String? _walletFilter;
@@ -141,6 +142,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
   }) {
     setState(() {
       _selectedDateFilter = option;
+      _selectedDateLabel = label;
       _from = from;
       _to = to;
     });
@@ -194,6 +196,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                   child: DateFilterDropdown(
                     selected: _selectedDateFilter,
                     onFilterApplied: _applyDateFilter,
+                    label: _selectedDateLabel,
                   ),
                 ),
 

@@ -1,10 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
+import 'package:money_note/constants/date_filter_option.dart';
 import 'package:money_note/components/reports/report_chart.dart';
 import 'package:money_note/components/reports/report_filter.dart';
 import 'package:money_note/components/reports/report_list.dart';
 import 'package:money_note/components/reports/report_summary.dart';
+import 'package:money_note/services/transaction_service.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -14,7 +14,11 @@ class ReportScreen extends StatefulWidget {
 }
 
 class _ReportScreenState extends State<ReportScreen> {
-  DateTimeRange? selectedRange;
+  DateFilterOption? selectedRange;
+  DateTime? fromDate;
+  DateTime? toDate;
+  String? selectedLabel;
+
   String groupBy = "month";
   List<Map<String, dynamic>> transactions = [];
 
@@ -29,27 +33,12 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Future<void> _loadTransactions() async {
-    final userId =
-        "dummyUser"; // ganti dengan FirebaseAuth.instance.currentUser!.uid
-
-    Query query = FirebaseFirestore.instance
-        .collection("transactions")
-        .where("userId", isEqualTo: userId);
-
-    if (selectedRange != null) {
-      query = query
-          .where("date", isGreaterThanOrEqualTo: selectedRange!.start)
-          .where("date", isLessThanOrEqualTo: selectedRange!.end);
-    }
-
-    final snapshot = await query.get();
-    transactions =
-        snapshot.docs.map((doc) {
-          return {"id": doc.id, ...doc.data() as Map<String, dynamic>};
-        }).toList();
-
-    _calculateSummary();
-    setState(() {});
+    TransactionService()
+        .getTransactionsStream(fromDate: fromDate, toDate: toDate)
+        .listen((txList) {
+          transactions = txList.map((tx) => tx.toMap()).toList();
+          _calculateSummary();
+        });
   }
 
   void _calculateSummary() {
@@ -63,6 +52,21 @@ class _ReportScreenState extends State<ReportScreen> {
       }
     }
     balance = income - expense;
+  }
+
+  void _applyDateFilter(
+    DateFilterOption option, {
+    DateTime? from,
+    DateTime? to,
+    String? label,
+  }) {
+    setState(() {
+      selectedRange = option;
+      selectedLabel = label;
+      from = from;
+      to = to;
+    });
+    _loadTransactions();
   }
 
   void _export(String type) {
@@ -85,36 +89,39 @@ class _ReportScreenState extends State<ReportScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Report"),
+        title: const Text("Report"), // kosong atau back button
         actions: [
           PopupMenuButton<String>(
             onSelected: _export,
             itemBuilder:
-                (context) => const [
-                  PopupMenuItem(value: "csv", child: Text("Export CSV")),
-                  PopupMenuItem(value: "pdf", child: Text("Export PDF")),
-                  PopupMenuItem(
+                (context) => [
+                  const PopupMenuItem(
+                    value: "csv",
+                    child: Text("Export as CSV"),
+                  ),
+                  const PopupMenuItem(
+                    value: "pdf",
+                    child: Text("Export as PDF"),
+                  ),
+                  const PopupMenuItem(
                     value: "pdf_preview",
                     child: Text("Preview PDF"),
                   ),
                 ],
+            icon: const Icon(Icons.share),
           ),
         ],
+        bottom: ReportFilter(
+          groupBy: "month",
+          selectedRange: DateFilterOption.thisMonth,
+          onDateRangePicked: _applyDateFilter,
+          onGroupChanged: (group) {
+            // update data laporan sesuai groupBy
+          },
+        ),
       ),
       body: Column(
         children: [
-          ReportFilter(
-            selectedRange: selectedRange,
-            groupBy: groupBy,
-            onDateRangePicked: (range) {
-              setState(() => selectedRange = range);
-              _loadTransactions();
-            },
-            onGroupChanged: (v) {
-              setState(() => groupBy = v);
-              _loadTransactions();
-            },
-          ),
           ReportSummary(income: income, expense: expense, balance: balance),
           Expanded(
             flex: 1,
