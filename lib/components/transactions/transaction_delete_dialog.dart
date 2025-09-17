@@ -2,10 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/models/transaction_model.dart';
 
 Future<bool> showTransactionDeleteDialog({
   required BuildContext context,
-  required String transactionId,
+  required TransactionModel transaction,
   VoidCallback? onDeleted,
 }) async {
   final transactionService = TransactionService();
@@ -18,11 +19,11 @@ Future<bool> showTransactionDeleteDialog({
 
       return StatefulBuilder(
         builder: (ctx, setState) {
-          Future<void> _deleteTransaction() async {
+          Future<void> deleteTransaction() async {
             setState(() => isLoading = true);
 
             try {
-              await transactionService.deleteTransaction(transactionId);
+              await transactionService.deleteTransaction(transaction);
 
               if (onDeleted != null) onDeleted();
 
@@ -71,7 +72,7 @@ Future<bool> showTransactionDeleteDialog({
                         child: const Text('Cancel'),
                       ),
                       ElevatedButton(
-                        onPressed: _deleteTransaction,
+                        onPressed: deleteTransaction,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,

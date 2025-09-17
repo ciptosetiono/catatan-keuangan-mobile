@@ -49,7 +49,7 @@ Future<void> showTransactionBottomsheetMenu({
                 Navigator.pop(sheetContext); // close bottomsheet only
                 final deleted = await showTransactionDeleteDialog(
                   context: context,
-                  transactionId: transaction.id,
+                  transaction: transaction,
                 );
                 if (deleted == true && context.mounted && onDeleted != null) {
                   onDeleted();

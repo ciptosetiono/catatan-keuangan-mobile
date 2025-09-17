@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/transaction_model.dart';
+import '../models/wallet_model.dart';
 import 'wallet_service.dart';
 
 class TransactionService {
@@ -256,106 +257,165 @@ class TransactionService {
     String id,
     Map<String, dynamic> newData,
   ) async {
-    debugPrint("🔥 Transaction update requested for $id: $newData");
-
-    final index = _localCache.indexWhere((tx) => tx.id == id);
-
-    if (index == -1) {
-      debugPrint("⚠️ Transaction not in cache, updating Firestore directly...");
-      try {
-        await transactionsRef.doc(id).update(newData);
-
-        // Ambil lagi data terbaru dari Firestore
-        final snapshot = await transactionsRef.doc(id).get();
-        final updatedTx = TransactionModel.fromMap(
-          snapshot.data() as Map<String, dynamic>,
-        ).copyWith(id: id);
-
-        debugPrint("✅ Transaction $id updated on Firestore (cache skipped)");
-        return updatedTx;
-      } catch (e) {
-        debugPrint("❌ Failed to update Firestore transaction $id: $e");
-        rethrow;
-      }
-    }
-
-    // --- Cache hit: update both cache + Firestore ---
-    final oldTx = _localCache[index];
-    final updatedTx = oldTx.copyWith(
-      amount: (newData['amount'] ?? oldTx.amount).toDouble(),
-      type: newData['type'] ?? oldTx.type,
-      walletId: newData['walletId'] ?? oldTx.walletId,
-      categoryId: newData['categoryId'] ?? oldTx.categoryId,
-      title: newData['title'] ?? oldTx.title,
-      date: newData['date'] ?? oldTx.date,
-    );
-
-    _localCache[index] = updatedTx;
-
-    // --- Wallet balance updates ---
-    final oldWallet = await _walletService.getWalletById(oldTx.walletId!);
-    final rollback = oldTx.type == 'income' ? -oldTx.amount : oldTx.amount;
-    final apply =
-        updatedTx.type == 'income' ? updatedTx.amount : -updatedTx.amount;
-
-    if (oldTx.walletId != updatedTx.walletId) {
-      await _walletService.updateWallet(
-        oldWallet.copyWith(currentBalance: oldWallet.currentBalance + rollback),
-      );
-      final newWallet = await _walletService.getWalletById(updatedTx.walletId!);
-      await _walletService.updateWallet(
-        newWallet.copyWith(currentBalance: newWallet.currentBalance + apply),
-      );
-    } else {
-      await _walletService.updateWallet(
-        oldWallet.copyWith(
-          currentBalance: oldWallet.currentBalance + rollback + apply,
-        ),
-      );
-    }
-
-    // --- Firestore update ---
     try {
-      await transactionsRef.doc(id).update(updatedTx.toMap());
-      debugPrint("✅ Transaction $id updated on Firestore and cache");
-    } catch (e) {
-      debugPrint("❌ Failed to update transaction $id on Firestore: $e");
+      late TransactionModel updatedTx;
+
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        // Ambil snapshot transaksi lama
+        final docRef = transactionsRef.doc(id);
+        final snapshot = await tx.get(docRef);
+
+        if (!snapshot.exists) throw Exception("Transaction $id not found");
+
+        // Safe cast data
+        final snapshotData = snapshot.data();
+        if (snapshotData == null || snapshotData is! Map<String, dynamic>) {
+          throw Exception("Transaction data invalid");
+        }
+
+        final oldTx = TransactionModel.fromMap(snapshotData).copyWith(id: id);
+
+        // Buat updated transaction
+        updatedTx = oldTx.copyWith(
+          amount: (newData['amount'] ?? oldTx.amount).toDouble(),
+          type: newData['type'] ?? oldTx.type,
+          walletId: newData['walletId'] ?? oldTx.walletId,
+          categoryId: newData['categoryId'] ?? oldTx.categoryId,
+          title: newData['title'] ?? oldTx.title,
+          date: newData['date'] ?? oldTx.date,
+        );
+
+        // --- Update wallet(s) ---
+        if (oldTx.walletId != updatedTx.walletId) {
+          // Wallet berganti
+          if (oldTx.walletId != null) {
+            final oldWalletRef = _walletService.walletsRef.doc(oldTx.walletId!);
+            final oldWalletSnapshot = await tx.get(oldWalletRef);
+            final oldWalletData = oldWalletSnapshot.data();
+            if (oldWalletData == null ||
+                oldWalletData is! Map<String, dynamic>) {
+              throw Exception("Old wallet data invalid");
+            }
+            final oldWallet = Wallet.fromMap(
+              oldWalletSnapshot.id,
+              oldWalletData,
+            );
+            final rollback =
+                oldTx.type == 'income' ? -oldTx.amount : oldTx.amount;
+            tx.update(oldWalletRef, {
+              'currentBalance': oldWallet.currentBalance + rollback,
+            });
+          }
+          if (updatedTx.walletId != null) {
+            final newWalletRef = _walletService.walletsRef.doc(
+              updatedTx.walletId!,
+            );
+            final newWalletSnapshot = await tx.get(newWalletRef);
+            final newWalletData = newWalletSnapshot.data();
+            if (newWalletData == null ||
+                newWalletData is! Map<String, dynamic>) {
+              throw Exception("New wallet data invalid");
+            }
+            final newWallet = Wallet.fromMap(
+              newWalletSnapshot.id,
+              newWalletData,
+            );
+            final apply =
+                updatedTx.type == 'income'
+                    ? updatedTx.amount
+                    : -updatedTx.amount;
+            tx.update(newWalletRef, {
+              'currentBalance': newWallet.currentBalance + apply,
+            });
+          }
+        } else if (updatedTx.walletId != null) {
+          // Wallet sama
+          final walletRef = _walletService.walletsRef.doc(updatedTx.walletId!);
+          final walletSnapshot = await tx.get(walletRef);
+          final walletData = walletSnapshot.data();
+          if (walletData == null || walletData is! Map<String, dynamic>) {
+            throw Exception("Wallet data invalid");
+          }
+          final wallet = Wallet.fromMap(walletSnapshot.id, walletData);
+          final rollback =
+              oldTx.type == 'income' ? -oldTx.amount : oldTx.amount;
+          final apply =
+              updatedTx.type == 'income' ? updatedTx.amount : -updatedTx.amount;
+          tx.update(walletRef, {
+            'currentBalance': wallet.currentBalance + rollback + apply,
+          });
+        }
+
+        // --- Update transaksi ---
+        tx.update(docRef, updatedTx.toMap());
+      });
+
+      // --- Update cache jika perlu ---
+      final index = _localCache.indexWhere((tx) => tx.id == id);
+      if (index != -1) _localCache[index] = updatedTx;
+
+      debugPrint("✅ Transaction $id updated atomically with wallet");
+      return updatedTx;
+    } catch (e, st) {
+      debugPrint("❌ Failed to update transaction $id atomically: $e");
+      debugPrint(st.toString());
       rethrow;
     }
-
-    return updatedTx; // ✅ return hasil update
   }
 
-  Future<void> deleteTransaction(String id) async {
-    final index = _localCache.indexWhere((tx) => tx.id == id);
-
-    if (index == -1) {
-      debugPrint(
-        "⚠️ Transaction $id not found in cache, deleting from Firestore directly...",
-      );
-      try {
-        await transactionsRef.doc(id).delete();
-        debugPrint("✅ Transaction $id deleted from Firestore (cache skipped)");
-      } catch (e) {
-        debugPrint("❌ Failed to delete transaction $id from Firestore: $e");
-      }
-      return;
-    }
-
-    // --- Cache hit: remove from cache and adjust wallet ---
-    final tx = _localCache.removeAt(index);
-
-    final wallet = await _walletService.getWalletById(tx.walletId!);
-    final adjust = tx.type == 'income' ? -tx.amount : tx.amount;
-    await _walletService.updateWallet(
-      wallet.copyWith(currentBalance: wallet.currentBalance + adjust),
-    );
-
+  Future<bool> deleteTransaction(TransactionModel transaction) async {
     try {
-      await transactionsRef.doc(id).delete();
-      debugPrint("✅ Transaction $id deleted from Firestore and cache");
-    } catch (e) {
-      debugPrint("❌ Failed to delete transaction $id on Firestore: $e");
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final docRef = transactionsRef.doc(transaction.id);
+
+        // --- 1. Ambil transaksi dari Firestore ---
+        final snapshot = await tx.get(docRef);
+        if (!snapshot.exists) {
+          throw Exception(
+            "Transaction ${transaction.id} not found in Firestore",
+          );
+        }
+
+        // --- 2. Update wallet saldo ---
+        if (transaction.walletId != null) {
+          final walletRef = _walletService.walletsRef.doc(
+            transaction.walletId!,
+          );
+          final walletSnapshot = await tx.get(walletRef);
+
+          final walletData = walletSnapshot.data();
+          if (walletData == null || walletData is! Map<String, dynamic>) {
+            throw Exception("Wallet ${transaction.walletId} data invalid");
+          }
+
+          final wallet = Wallet.fromMap(walletSnapshot.id, walletData);
+          final adjust =
+              transaction.type == 'income'
+                  ? -transaction.amount
+                  : transaction.amount;
+
+          tx.update(walletRef, {
+            'currentBalance': wallet.currentBalance + adjust,
+          });
+          debugPrint("🔥 Wallet ${wallet.id} balance adjusted by $adjust");
+        }
+
+        // --- 3. Hapus transaksi di Firestore ---
+        tx.delete(docRef);
+        debugPrint("✅ Transaction ${transaction.id} deleted from Firestore");
+      });
+
+      // --- 4. Hapus dari cache lokal ---
+      final index = _localCache.indexWhere((t) => t.id == transaction.id);
+      if (index != -1) _localCache.removeAt(index);
+
+      return true;
+    } catch (e, st) {
+      debugPrint(
+        "❌ Failed to delete transaction ${transaction.id} atomically: $e",
+      );
+      debugPrint(st.toString());
+      return false;
     }
   }
 

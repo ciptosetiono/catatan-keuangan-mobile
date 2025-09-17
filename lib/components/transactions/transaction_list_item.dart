@@ -117,7 +117,7 @@ Future<void> handleTransactionTap({
     debugPrint("showing delete transaction dilog after click delete");
     final deleted = await showTransactionDeleteDialog(
       context: context,
-      transactionId: transaction.id,
+      transaction: transaction,
     );
 
     if (deleted) {
