@@ -7,6 +7,7 @@ import 'package:money_note/components/reports/report_filter.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
 import 'package:money_note/components/reports/report_list.dart';
 import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/services/report_export_service.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -115,19 +116,10 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   void _export(String type) {
-    /*
-    final exportService = ReportExportService(
-      transactions: transactions,
-      income: income,
-      expense: expense,
-      balance: balance,
-      range: selectedRange,
-    );
+    final exportService = ReportExportService();
 
-    if (type == "csv") exportService.shareCsv();
-    if (type == "pdf") exportService.sharePdf();
-    if (type == "pdf_preview") exportService.previewPdf();
-    */
+    if (type == "excel") exportService.exportToCsv(transactions: transactions);
+    if (type == "pdf") exportService.exportToPdf(transactions: transactions);
   }
 
   @override
@@ -171,6 +163,22 @@ class _ReportScreenState extends State<ReportScreen> {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Leave empty because PopupMenuButton handles tap
+        },
+        child: PopupMenuButton<String>(
+          icon: Icon(Icons.more_vert), // Icon inside FAB
+          onSelected: (value) {
+            _export(value);
+          },
+          itemBuilder:
+              (context) => [
+                PopupMenuItem(value: 'excel', child: Text('Export Excel')),
+                PopupMenuItem(value: 'pdf', child: Text('Export PDF')),
+              ],
+        ),
       ),
     );
   }

@@ -11,8 +11,8 @@ class ReportExportService {
   /// Export transaksi ke CSV
   Future<String> exportToCsv({
     required List<Map<String, dynamic>> transactions,
-    required DateTime start,
-    required DateTime end,
+    // DateTime? start,
+    //DateTime? end,
     String fileName = 'report.csv',
   }) async {
     final csvData = [
@@ -23,7 +23,7 @@ class ReportExportService {
 
     for (var trx in transactions) {
       final trxDate = trx['date'] as DateTime;
-      if (trxDate.isAfter(end) || trxDate.isBefore(start)) continue;
+      // if (trxDate.isAfter(end) || trxDate.isBefore(start)) continue;
 
       csvData.add([
         formatter.format(trxDate),
@@ -49,18 +49,14 @@ class ReportExportService {
   /// Export transaksi ke PDF
   Future<void> exportToPdf({
     required List<Map<String, dynamic>> transactions,
-    required DateTime start,
-    required DateTime end,
+    // required DateTime start,
+    //required DateTime end,
     String fileName = 'report.pdf',
   }) async {
     final pdf = pw.Document();
     final formatter = DateFormat('yyyy-MM-dd');
 
-    final filtered =
-        transactions.where((trx) {
-          final trxDate = trx['date'] as DateTime;
-          return !(trxDate.isBefore(start) || trxDate.isAfter(end));
-        }).toList();
+    final filtered = transactions.toList();
 
     pdf.addPage(
       pw.MultiPage(

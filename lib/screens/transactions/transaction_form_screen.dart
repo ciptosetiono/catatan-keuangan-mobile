@@ -12,8 +12,8 @@ import 'package:money_note/services/transaction_service.dart';
 import 'package:money_note/services/category_service.dart';
 import 'package:money_note/services/wallet_service.dart';
 
-import 'package:money_note/components/forms/transaction_type_selector.dart';
-import 'package:money_note/components/forms/wallet_dropdown.dart';
+import 'package:money_note/components/transactions/transaction_type_selector.dart';
+import 'package:money_note/components/wallets/wallet_dropdown.dart';
 import 'package:money_note/components/forms/category_dropdown.dart';
 import 'package:money_note/components/forms/date_picker_field.dart';
 import 'package:money_note/components/forms/currency_text_field.dart';
@@ -37,16 +37,22 @@ class TransactionFormScreen extends StatefulWidget {
 
 class _TransactionFormScreenState extends State<TransactionFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _amountController = TextEditingController();
 
   String _type = 'expense';
-  DateTime _selectedDate = DateTime.now();
-  String? _selectedCategoryId;
-  String? _selectedWalletId;
 
-  List<Category> _categories = [];
+  String? _selectedWalletId;
   List<Wallet> _wallets = [];
+
+  String? _selectedCategoryId;
+  List<Category> _categories = [];
+
+  DateTime _selectedDate = DateTime.now();
+
+  String? _title;
+  final _titleController = TextEditingController();
+
+  double? _amount;
+  final _amountController = TextEditingController();
 
   bool _isSubmitting = false;
 
@@ -85,26 +91,35 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
   void _submit() async {
     if (_isSubmitting) return;
+
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedCategoryId == null || _selectedWalletId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Choose category and wallet first')),
-      );
+
+    if (_selectedWalletId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Choose wallet first')));
       return;
     }
 
+    if (_selectedCategoryId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Choose category first')));
+      return;
+    }
+
+    _amount = CurrencyFormatter().decodeAmount(_amountController.text);
+    _title = _titleController.text.trim();
+
     if (mounted) setState(() => _isSubmitting = true);
 
-    final title = _titleController.text.trim();
-    // Remove all non-digit and non-decimal separator characters
-    final amount = CurrencyFormatter().decodeAmount(_amountController.text);
     final trx = {
-      'title': title,
-      'amount': amount,
       'type': _type,
-      'date': _selectedDate,
-      'categoryId': _selectedCategoryId,
       'walletId': _selectedWalletId,
+      'categoryId': _selectedCategoryId,
+      'amount': _amount,
+      'date': _selectedDate,
+      'title': _title,
     };
 
     try {
@@ -180,15 +195,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      CategoryDropdown(
-                        value: _selectedCategoryId,
-                        type: _type,
-                        onChanged:
-                            (val) => setState(() => _selectedCategoryId = val),
-                      ),
-
-                      const SizedBox(height: 16),
-
                       WalletDropdown(
                         value:
                             _wallets.any(
@@ -200,6 +206,14 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                         onChanged:
                             (val) => setState(() => _selectedWalletId = val),
                       ),
+                      const SizedBox(height: 16),
+                      CategoryDropdown(
+                        value: _selectedCategoryId,
+                        type: _type,
+                        onChanged:
+                            (val) => setState(() => _selectedCategoryId = val),
+                      ),
+
                       const SizedBox(height: 16),
                       DatePickerField(
                         selectedDate: _selectedDate,
@@ -220,17 +234,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                                     : null,
                       ),
                       const SizedBox(height: 16),
-                      CurrencyTextField(
-                        controller: _amountController,
-                        label: 'Amount',
-                        validator:
-                            (val) =>
-                                val == null || val.trim().isEmpty
-                                    ? 'Amount is required'
-                                    : null,
-                      ),
-
-                      const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,
                         child: SubmitButton(
@@ -238,6 +241,25 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                           onPressed: _submit,
                           label: isEdit ? 'Update' : 'Save',
                         ),
+                      ),
+                      const SizedBox(height: 16),
+                      CurrencyTextField(
+                        controller: _amountController,
+                        label: 'Amount',
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Amount is required';
+                          }
+                          final amount = CurrencyFormatter().decodeAmount(val);
+                          final wallet = _wallets.firstWhere(
+                            (w) => w.id == _selectedWalletId,
+                          );
+                          if (_type == 'expense' &&
+                              amount > wallet.currentBalance) {
+                            return 'Amount exceeds wallet balance';
+                          }
+                          return null;
+                        },
                       ),
                     ],
                   ),

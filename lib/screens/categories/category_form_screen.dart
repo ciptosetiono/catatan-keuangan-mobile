@@ -5,7 +5,7 @@ import 'package:money_note/models/category_model.dart';
 import 'package:money_note/services/category_service.dart';
 
 import 'package:money_note/components/buttons/submit_button.dart';
-import 'package:money_note/components/forms/transaction_type_selector.dart';
+import 'package:money_note/components/transactions/transaction_type_selector.dart';
 
 class CategoryFormScreen extends StatefulWidget {
   final Category? category;
