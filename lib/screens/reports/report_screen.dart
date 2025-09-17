@@ -7,7 +7,7 @@ import 'package:money_note/components/reports/report_filter.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
 import 'package:money_note/components/reports/report_list.dart';
 import 'package:money_note/services/transaction_service.dart';
-import 'package:money_note/services/report_export_service.dart';
+import 'package:money_note/services/export_service.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -41,7 +41,6 @@ class _ReportScreenState extends State<ReportScreen> {
         .listen((txList) {
           setState(() {
             transactions = txList.map((tx) => tx.toMap()).toList();
-            debugPrint(transactions.toString());
             _calculateSummary();
           });
         });

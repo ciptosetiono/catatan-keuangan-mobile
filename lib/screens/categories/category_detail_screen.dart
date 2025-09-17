@@ -5,13 +5,12 @@ import 'package:money_note/utils/currency_formatter.dart';
 
 import 'package:money_note/components/transactions/transaction_list_item.dart';
 import 'package:money_note/components/forms/date_filter_dropdown.dart';
-import 'package:money_note/components/categories/category_delete_dialog.dart';
+import 'package:money_note/components/categories/category_bottomsheet_menu.dart';
 
 import 'package:money_note/models/category_model.dart';
 import 'package:money_note/models/transaction_model.dart';
 import 'package:money_note/services/transaction_service.dart';
 import 'package:money_note/services/category_service.dart';
-import 'package:money_note/screens/categories/category_form_screen.dart';
 
 class CategoryDetailScreen extends StatefulWidget {
   final Category category;
@@ -156,56 +155,6 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
             Text(_category.type, style: const TextStyle(fontSize: 14)),
           ],
         ),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) async {
-              if (value == 'edit') {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => CategoryFormScreen(category: _category),
-                  ),
-                );
-
-                if (result == true) {
-                  final updatedCategory = await CategoryService()
-                      .getCategoryById(_category.id);
-
-                  if (updatedCategory != null) {
-                    setState(() {
-                      _category = updatedCategory; // replace object
-                    });
-                  }
-                }
-              } else if (value == 'delete') {
-                await confirmAndDeleteCategory(
-                  context: context,
-                  categoryId: _category.id,
-                  onDeleted: () {
-                    Navigator.pop(context, true); // keluar dari detail screen
-                  },
-                );
-              }
-            },
-            itemBuilder:
-                (context) => [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: ListTile(
-                      leading: Icon(Icons.edit),
-                      title: Text('Edit'),
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: ListTile(
-                      leading: Icon(Icons.delete),
-                      title: Text('Delete'),
-                    ),
-                  ),
-                ],
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -245,6 +194,27 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
             Expanded(child: _buildTransactionsSection()),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.more_vert),
+        onPressed:
+            () => showCategoryBottomsheetMenu(
+              context: context,
+              category: _category,
+              onCategoryUpdated: () async {
+                final updatedCategory = await CategoryService().getCategoryById(
+                  _category.id,
+                );
+                if (updatedCategory != null) {
+                  setState(() {
+                    _category = updatedCategory;
+                  });
+                }
+              },
+              onCategoryDeleted: () {
+                Navigator.pop(context, true);
+              },
+            ),
       ),
     );
   }

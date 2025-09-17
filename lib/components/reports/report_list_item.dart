@@ -31,9 +31,6 @@ class ReportListItem extends StatelessWidget {
         subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
         children:
             items.map((tx) {
-              debugPrint(
-                'ReportListItem: Displaying transaction "${tx["title"]}"',
-              );
               return ListTile(
                 title: Text(tx["title"] ?? "-"),
                 subtitle: Text(

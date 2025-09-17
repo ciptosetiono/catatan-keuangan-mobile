@@ -2,93 +2,124 @@
 
 import 'dart:io';
 import 'package:csv/csv.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:money_note/utils/currency_formatter.dart';
 
-class ExportService {
-  /// Export transactions to CSV
-  static Future<void> exportToCsv(
-    List<Map<String, dynamic>> transactions,
-  ) async {
-    List<List<dynamic>> rows = [
-      ["Date", "Title", "Category", "Account", "Type", "Amount"],
+class ReportExportService {
+  CurrencyFormatter currencyFormatter = CurrencyFormatter();
+
+  String dateFormat(Object? date) {
+    DateTime trxDate;
+    if (date is DateTime) {
+      trxDate = date;
+    } else if (date is String) {
+      trxDate = DateTime.tryParse(date) ?? DateTime.now();
+    } else if (date is Timestamp) {
+      trxDate = date.toDate();
+    } else {
+      trxDate = DateTime.now();
+    }
+    return DateFormat('yyyy-MM-dd').format(trxDate);
+  }
+
+  /// Export transaksi ke CSV
+  Future<String> exportToCsv({
+    required List<Map<String, dynamic>> transactions,
+    // DateTime? start,
+    //DateTime? end,
+    String fileName = 'report.csv',
+  }) async {
+    final csvData = [
+      ['Date', 'Title', 'Type', 'Amount', 'Category', 'Wallet'],
     ];
 
-    for (var tx in transactions) {
-      rows.add([
-        tx["date"] ?? "",
-        tx["title"] ?? "",
-        tx["categoryName"] ?? "",
-        tx["accountName"] ?? "",
-        tx["type"] ?? "",
-        tx["amount"] ?? 0,
+    for (var trx in transactions) {
+      // if (trxDate.isAfter(end) || trxDate.isBefore(start)) continue;
+      csvData.add([
+        dateFormat(trx['date']),
+        trx['title'] ?? '',
+        trx['type'] ?? '',
+        (trx['amount'] ?? 0).toString(),
+        trx['category'] ?? '',
+        trx['wallet'] ?? '',
       ]);
     }
 
-    String csv = const ListToCsvConverter().convert(rows);
-
-    final dir = await getApplicationDocumentsDirectory();
-    final file = File("${dir.path}/transactions.csv");
-    await file.writeAsString(csv);
-
-    Share.shareXFiles([
-      XFile(file.path),
-    ], text: "My exported transactions (CSV).");
+    final csvString = const ListToCsvConverter().convert(csvData);
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/$fileName');
+    await file.writeAsString(csvString);
+    return file.path;
   }
 
-  /// Export transactions to PDF
-  static Future<void> exportToPdf(
-    List<Map<String, dynamic>> transactions,
-  ) async {
+  /// Export transaksi ke PDF
+  Future<void> exportToPdf({
+    required List<Map<String, dynamic>> transactions,
+    // required DateTime start,
+    //required DateTime end,
+    String fileName = 'report.pdf',
+  }) async {
     final pdf = pw.Document();
 
+    final filtered = transactions.toList();
+
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         build:
-            (pw.Context context) => pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text(
-                  "Transaction Report",
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
+            (context) => [
+              pw.Text(
+                'Transaction Report',
+                style: pw.TextStyle(
+                  fontSize: 20,
+                  fontWeight: pw.FontWeight.bold,
                 ),
-                pw.SizedBox(height: 12),
-                pw.Table.fromTextArray(
-                  headers: [
-                    "Date",
-                    "Title",
-                    "Category",
-                    "Account",
-                    "Type",
-                    "Amount",
-                  ],
-                  data:
-                      transactions
-                          .map(
-                            (tx) => [
-                              tx["date"] ?? "",
-                              tx["title"] ?? "",
-                              tx["categoryName"] ?? "",
-                              tx["accountName"] ?? "",
-                              tx["type"] ?? "",
-                              tx["amount"]?.toString() ?? "0",
-                            ],
-                          )
-                          .toList(),
-                ),
-              ],
-            ),
+              ),
+              pw.SizedBox(height: 12),
+              pw.Table.fromTextArray(
+                headers: [
+                  'Date',
+                  'Title',
+                  'Type',
+                  'Amount',
+                  'Category',
+                  'Wallet',
+                ],
+                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                cellAlignment: pw.Alignment.centerLeft,
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(2), // Date
+                  1: const pw.FlexColumnWidth(4), // Title
+                  2: const pw.FlexColumnWidth(2), // Type
+                  3: const pw.FlexColumnWidth(3), // Amount
+                  4: const pw.FlexColumnWidth(3), // Category
+                  5: const pw.FlexColumnWidth(3), // Wallet
+                },
+                data:
+                    filtered.map((trx) {
+                      return [
+                        dateFormat(trx['date']),
+                        trx['title'] ?? '',
+                        trx['type'] ?? '',
+                        (trx['amount'] ?? 0).toString(),
+                        trx['category'] ?? '',
+                        trx['wallet'] ?? '',
+                      ];
+                    }).toList(),
+              ),
+            ],
       ),
     );
 
-    await Printing.sharePdf(
-      bytes: await pdf.save(),
-      filename: 'transactions.pdf',
-    );
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/$fileName');
+
+    final bytes = await pdf.save();
+    await file.writeAsBytes(await pdf.save());
+
+    await Printing.sharePdf(bytes: bytes, filename: fileName);
   }
 }
