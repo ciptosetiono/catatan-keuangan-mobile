@@ -129,7 +129,9 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                           final transaction = transactions[index];
                           return TransactionListItem(
                             transaction: transaction,
-                            onUpdated: () => setState(() {}),
+                            onUpdated:
+                                (TransactionModel updatedTransaction) =>
+                                    setState(() {}),
                             onDeleted: () => setState(() {}),
                           );
                         },

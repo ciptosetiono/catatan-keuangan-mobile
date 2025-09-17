@@ -14,7 +14,7 @@ import 'package:money_note/components/transactions/transaction_delete_dialog.dar
 
 class TransactionListItem extends StatelessWidget {
   final TransactionModel transaction;
-  final VoidCallback? onUpdated;
+  final void Function(TransactionModel)? onUpdated;
   final VoidCallback? onDeleted;
 
   const TransactionListItem({
@@ -75,7 +75,7 @@ class TransactionListItem extends StatelessWidget {
 Future<void> handleTransactionTap({
   required BuildContext context,
   required TransactionModel transaction,
-  Function()? onUpdated,
+  final void Function(TransactionModel)? onUpdated,
   Function()? onDeleted,
 }) async {
   final action = await showTransactionActionDialog(context);
@@ -88,9 +88,14 @@ Future<void> handleTransactionTap({
       ),
     );
 
-    if (result == 'updated' && onUpdated != null) {
-      onUpdated();
+    debugPrint(
+      "Triggering onSaved callback from list item with result: $result",
+    );
+    if (result is TransactionModel && onUpdated != null) {
+      // ✅ Kalau update, result akan berupa TransactionModel
+      onUpdated(result);
     } else if (result == 'deleted' && onDeleted != null) {
+      // ✅ Kalau delete, result adalah string "deleted"
       onDeleted();
     }
   } else if (action == 'edit') {
@@ -101,9 +106,9 @@ Future<void> handleTransactionTap({
             (_) => TransactionFormScreen(
               transactionId: transaction.id,
               existingData: transaction,
-              onSaved: () {
+              onSaved: (updatedTransaction) {
                 if (onUpdated != null) {
-                  onUpdated();
+                  onUpdated(updatedTransaction);
                 }
               },
             ),

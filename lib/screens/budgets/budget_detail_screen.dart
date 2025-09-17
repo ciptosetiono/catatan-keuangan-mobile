@@ -304,7 +304,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                     final trx = transactions[index];
                     return TransactionListItem(
                       transaction: trx,
-                      onUpdated: () => loadTransactions(),
+                      onUpdated: (updatedTransaction) => loadTransactions(),
                       onDeleted: () => loadTransactions(),
                     );
                   },

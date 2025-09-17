@@ -41,13 +41,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
     }
   }
 
-  void _openCategoryDetail(Category category) {
-    Navigator.push(
+  void _openCategoryDetail(Category category) async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => CategoryDetailScreen(category: category),
       ),
     );
+
+    if (result == true) {}
   }
 
   void _openCategoryForm({Category? category}) {

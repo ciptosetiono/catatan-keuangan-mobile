@@ -214,9 +214,12 @@ class TransactionService {
   }
 
   // ======================= Add / Update / Delete =======================
-
-  Future<void> addTransaction(Map<String, dynamic> newTransaction) async {
-    if (userId == null) return;
+  Future<TransactionModel> addTransaction(
+    Map<String, dynamic> newTransaction,
+  ) async {
+    if (userId == null) {
+      throw Exception("User not logged in");
+    }
 
     final txMap = Map<String, dynamic>.from(newTransaction);
     txMap['userId'] = userId;
@@ -228,7 +231,7 @@ class TransactionService {
     // Add to local cache immediately
     _localCache.add(tx);
 
-    // Update wallet balance locally
+    // --- Wallet balance update ---
     final wallet = await _walletService.getWalletById(tx.walletId!);
     final newBalance =
         tx.type == 'income'
@@ -243,10 +246,13 @@ class TransactionService {
       debugPrint("✅ Transaction added with ID: ${tx.id}");
     } catch (e) {
       debugPrint("⚠️ Failed to add transaction to Firestore: $e");
+      rethrow; // lempar error biar bisa ditangani di UI
     }
+
+    return tx; // ✅ return model lengkap
   }
 
-  Future<void> updateTransaction(
+  Future<TransactionModel> updateTransaction(
     String id,
     Map<String, dynamic> newData,
   ) async {
@@ -258,11 +264,19 @@ class TransactionService {
       debugPrint("⚠️ Transaction not in cache, updating Firestore directly...");
       try {
         await transactionsRef.doc(id).update(newData);
+
+        // Ambil lagi data terbaru dari Firestore
+        final snapshot = await transactionsRef.doc(id).get();
+        final updatedTx = TransactionModel.fromMap(
+          snapshot.data() as Map<String, dynamic>,
+        ).copyWith(id: id);
+
         debugPrint("✅ Transaction $id updated on Firestore (cache skipped)");
+        return updatedTx;
       } catch (e) {
         debugPrint("❌ Failed to update Firestore transaction $id: $e");
+        rethrow;
       }
-      return;
     }
 
     // --- Cache hit: update both cache + Firestore ---
@@ -306,7 +320,10 @@ class TransactionService {
       debugPrint("✅ Transaction $id updated on Firestore and cache");
     } catch (e) {
       debugPrint("❌ Failed to update transaction $id on Firestore: $e");
+      rethrow;
     }
+
+    return updatedTx; // ✅ return hasil update
   }
 
   Future<void> deleteTransaction(String id) async {

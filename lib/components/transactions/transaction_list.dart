@@ -6,7 +6,7 @@ import 'package:money_note/models/transaction_model.dart';
 class TransactionList extends StatelessWidget {
   final ScrollController? scrollController;
   final List<TransactionModel> transactions;
-  final VoidCallback? onItemUpdated;
+  final void Function(TransactionModel)? onItemUpdated;
   final VoidCallback? onItemDeleted;
   final bool isLoadingMore;
 

@@ -250,7 +250,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                     ? const Center(child: Text("No transactions found"))
                     : TransactionList(
                       transactions: _transactions,
-                      onItemUpdated: () {
+                      onItemUpdated: (updatedTransaction) {
                         _loadTransactions(reset: true);
                         _loadSummary();
                       },
@@ -269,7 +269,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
             MaterialPageRoute(
               builder:
                   (_) => TransactionFormScreen(
-                    onSaved: () {
+                    onSaved: (updatedTransaction) {
                       _loadTransactions(reset: true);
                       _loadSummary();
                     },

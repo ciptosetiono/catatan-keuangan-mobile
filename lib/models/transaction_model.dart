@@ -44,6 +44,20 @@ class TransactionModel {
   }
 
   factory TransactionModel.fromMap(Map<String, dynamic> data) {
+    DateTime parsedDate;
+
+    final rawDate = data['date'];
+
+    if (rawDate is Timestamp) {
+      parsedDate = rawDate.toDate();
+    } else if (rawDate is DateTime) {
+      parsedDate = rawDate;
+    } else if (rawDate is String) {
+      parsedDate = DateTime.tryParse(rawDate) ?? DateTime.now();
+    } else {
+      parsedDate = DateTime.now(); // fallback
+    }
+
     return TransactionModel(
       id: data['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
       userId: data['userId'],
@@ -52,7 +66,7 @@ class TransactionModel {
       type: data['type'],
       categoryId: data['categoryId'],
       title: data['title'],
-      date: data['date'] ?? DateTime.now(),
+      date: parsedDate,
       fromWalletId: data['fromWalletId'],
       toWalletId: data['toWalletId'],
     );

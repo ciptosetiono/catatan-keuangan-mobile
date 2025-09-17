@@ -7,13 +7,15 @@ import 'package:money_note/screens/transactions/transaction_form_screen.dart';
 Future<void> showTransactionBottomsheetMenu({
   required BuildContext context,
   required TransactionModel transaction,
+  void Function(TransactionModel updated)? onUpdated,
+  VoidCallback? onDeleted,
 }) {
   return showModalBottomSheet(
     context: context,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
-    builder: (_) {
+    builder: (sheetContext) {
       return SafeArea(
         child: Wrap(
           children: [
@@ -21,7 +23,8 @@ Future<void> showTransactionBottomsheetMenu({
               leading: const Icon(Icons.edit, color: Colors.green),
               title: const Text('Edit'),
               onTap: () async {
-                Navigator.pop(context); // tutup bottomsheet
+                Navigator.pop(sheetContext);
+
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -29,8 +32,10 @@ Future<void> showTransactionBottomsheetMenu({
                         (_) => TransactionFormScreen(
                           transactionId: transaction.id,
                           existingData: transaction,
-                          onSaved: () {
-                            Navigator.pop(context, true); // reload list
+                          onSaved: (updatedTransaction) {
+                            if (onUpdated != null) {
+                              onUpdated(updatedTransaction);
+                            }
                           },
                         ),
                   ),
@@ -41,16 +46,13 @@ Future<void> showTransactionBottomsheetMenu({
               leading: const Icon(Icons.delete, color: Colors.red),
               title: const Text('Delete'),
               onTap: () async {
-                Navigator.pop(context); // tutup bottomsheet
+                Navigator.pop(sheetContext); // close bottomsheet only
                 final deleted = await showTransactionDeleteDialog(
                   context: context,
                   transactionId: transaction.id,
                 );
-                if (deleted == true && context.mounted) {
-                  Navigator.pop(
-                    context,
-                    true,
-                  ); // balik ke screen sebelumnya & reload
+                if (deleted == true && context.mounted && onDeleted != null) {
+                  onDeleted();
                 }
               },
             ),

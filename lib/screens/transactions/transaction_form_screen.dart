@@ -23,7 +23,7 @@ import 'package:money_note/components/buttons/submit_button.dart';
 class TransactionFormScreen extends StatefulWidget {
   final String? transactionId;
   final TransactionModel? existingData;
-  final VoidCallback? onSaved;
+  final void Function(TransactionModel)? onSaved;
   const TransactionFormScreen({
     super.key,
     this.transactionId,
@@ -91,7 +91,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
   void _submit() async {
     if (_isSubmitting) return;
-
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedWalletId == null) {
@@ -123,11 +122,17 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     };
 
     try {
+      TransactionModel updatedTransaction;
+
       if (widget.transactionId != null) {
         await TransactionService().updateTransaction(
           widget.transactionId!,
           trx,
         );
+        updatedTransaction = await TransactionService().getTransactionById(
+          widget.transactionId!,
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
@@ -135,9 +140,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           ),
         );
       } else {
-        await TransactionService().addTransaction(trx);
+        updatedTransaction = await TransactionService().addTransaction(trx);
 
-        //clear the form
         _titleController.clear();
         _amountController.clear();
 
@@ -150,10 +154,15 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       }
 
       if (widget.onSaved != null) {
-        widget.onSaved!(); // trigger refresh di parent
+        widget.onSaved!(updatedTransaction);
       }
 
-      // if (mounted) Navigator.pop(context, true);
+      /*
+      Navigator.pop(
+        context,
+        updatedTransaction,
+      ); // ✅ selalu return TransactionModel
+      */
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -161,7 +170,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         );
       }
     } finally {
-      if (mounted) setState(() => _isSubmitting = false); // SELESAI LOADING
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -234,15 +243,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                                     : null,
                       ),
                       const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: SubmitButton(
-                          isSubmitting: _isSubmitting,
-                          onPressed: _submit,
-                          label: isEdit ? 'Update' : 'Save',
-                        ),
-                      ),
-                      const SizedBox(height: 16),
                       CurrencyTextField(
                         controller: _amountController,
                         label: 'Amount',
@@ -260,6 +260,15 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                           }
                           return null;
                         },
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: SubmitButton(
+                          isSubmitting: _isSubmitting,
+                          onPressed: _submit,
+                          label: isEdit ? 'Update' : 'Save',
+                        ),
                       ),
                     ],
                   ),
