@@ -227,30 +227,49 @@ class TransactionService {
 
     // 🔥 Generate Firestore doc ref first
     final docRef = transactionsRef.doc();
-    final tx = TransactionModel.fromMap(txMap).copyWith(id: docRef.id);
-
-    // Add to local cache immediately
-    _localCache.add(tx);
-
-    // --- Wallet balance update ---
-    final wallet = await _walletService.getWalletById(tx.walletId!);
-    final newBalance =
-        tx.type == 'income'
-            ? wallet.currentBalance + tx.amount
-            : wallet.currentBalance - tx.amount;
-    await _walletService.updateWallet(
-      wallet.copyWith(currentBalance: newBalance.toDouble()),
-    );
+    late TransactionModel txModel;
 
     try {
-      await docRef.set(tx.toMap());
-      debugPrint("✅ Transaction added with ID: ${tx.id}");
-    } catch (e) {
-      debugPrint("⚠️ Failed to add transaction to Firestore: $e");
-      rethrow; // lempar error biar bisa ditangani di UI
-    }
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        // --- 1. Buat model transaksi ---
+        txModel = TransactionModel.fromMap(txMap).copyWith(id: docRef.id);
 
-    return tx; // ✅ return model lengkap
+        // --- 2. Update wallet saldo ---
+        if (txModel.walletId != null) {
+          final walletRef = _walletService.walletsRef.doc(txModel.walletId!);
+          final walletSnapshot = await tx.get(walletRef);
+
+          final walletData = walletSnapshot.data();
+          if (walletData == null || walletData is! Map<String, dynamic>) {
+            throw Exception("Wallet ${txModel.walletId} data invalid");
+          }
+
+          final wallet = Wallet.fromMap(walletSnapshot.id, walletData);
+          final newBalance =
+              txModel.type == 'income'
+                  ? wallet.currentBalance + txModel.amount
+                  : wallet.currentBalance - txModel.amount;
+
+          tx.update(walletRef, {'currentBalance': newBalance.toDouble()});
+          debugPrint(
+            "🔥 Wallet ${wallet.id} balance adjusted by ${txModel.amount}",
+          );
+        }
+
+        // --- 3. Tambah transaksi ke Firestore ---
+        tx.set(docRef, txModel.toMap());
+        debugPrint("✅ Transaction will be added with ID: ${txModel.id}");
+      });
+
+      // --- 4. Update cache lokal setelah transaction berhasil ---
+      _localCache.add(txModel);
+
+      return txModel;
+    } catch (e, st) {
+      debugPrint("❌ Failed to add transaction atomically: $e");
+      debugPrint(st.toString());
+      rethrow;
+    }
   }
 
   Future<TransactionModel> updateTransaction(
