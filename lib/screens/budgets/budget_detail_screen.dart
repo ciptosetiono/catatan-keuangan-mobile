@@ -136,7 +136,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                   context: context,
                   budgetId: widget.budget.id,
                   onDeleted: () async {
-                    Navigator.of(context).pop(true);
+                    //Navigator.of(context).pop(true);
                   },
                 );
               }
@@ -305,7 +305,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                     return TransactionListItem(
                       transaction: trx,
                       onUpdated: (updatedTransaction) => loadTransactions(),
-                      onDeleted: () => loadTransactions(),
+                      onDeleted: loadTransactions,
                     );
                   },
                 ),

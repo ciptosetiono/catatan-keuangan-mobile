@@ -9,14 +9,48 @@ Future<bool> showTransactionDeleteDialog({
   VoidCallback? onDeleted,
 }) async {
   final transactionService = TransactionService();
-  bool isLoading = false;
 
   final result = await showDialog<bool>(
     context: context,
     barrierDismissible: false,
     builder: (ctx) {
+      bool isLoading = false;
+
       return StatefulBuilder(
         builder: (ctx, setState) {
+          Future<void> _deleteTransaction() async {
+            setState(() => isLoading = true);
+
+            try {
+              await transactionService.deleteTransaction(transactionId);
+
+              if (onDeleted != null) onDeleted();
+
+              // Tampilkan SnackBar sebelum menutup dialog
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Transaction deleted successfully!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+
+              if (ctx.mounted) Navigator.pop(ctx, true);
+            } catch (e) {
+              setState(() => isLoading = false);
+
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to delete: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          }
+
           return AlertDialog(
             title: const Text('Delete Transaction'),
             content:
@@ -26,9 +60,8 @@ Future<bool> showTransactionDeleteDialog({
                       child: Center(child: CircularProgressIndicator()),
                     )
                     : const Text(
-                      'Are you sure you want to delete this Transaction ?',
+                      'Are you sure you want to delete this transaction?',
                     ),
-
             actions:
                 isLoading
                     ? []
@@ -38,31 +71,7 @@ Future<bool> showTransactionDeleteDialog({
                         child: const Text('Cancel'),
                       ),
                       ElevatedButton(
-                        onPressed: () async {
-                          setState(() => isLoading = true);
-                          try {
-                            await transactionService.deleteTransaction(
-                              transactionId,
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Transaction deleted succesfully!',
-                                ),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                            Navigator.pop(ctx, true);
-                          } catch (e) {
-                            setState(() => isLoading = false);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Failed to delete: $e'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        },
+                        onPressed: _deleteTransaction,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
@@ -75,9 +84,8 @@ Future<bool> showTransactionDeleteDialog({
       );
     },
   );
-  final deleted = result ?? false;
-  if (deleted) {
-    if (onDeleted != null) onDeleted();
-  }
-  return deleted;
+
+  debugPrint("deleted result from dialog: $result");
+
+  return result ?? false;
 }

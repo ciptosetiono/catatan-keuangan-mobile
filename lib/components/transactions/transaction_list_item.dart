@@ -79,7 +79,6 @@ Future<void> handleTransactionTap({
   Function()? onDeleted,
 }) async {
   final action = await showTransactionActionDialog(context);
-
   if (action == 'detail') {
     final result = await Navigator.push(
       context,
@@ -115,13 +114,16 @@ Future<void> handleTransactionTap({
       ),
     );
   } else if (action == 'delete') {
+    debugPrint("showing delete transaction dilog after click delete");
     final deleted = await showTransactionDeleteDialog(
       context: context,
       transactionId: transaction.id,
     );
 
-    if (deleted == true && onDeleted != null) {
-      onDeleted();
+    if (deleted) {
+      if (onDeleted != null) {
+        onDeleted();
+      }
     }
   }
 }
