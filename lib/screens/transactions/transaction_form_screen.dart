@@ -17,7 +17,7 @@ import 'package:money_note/components/wallets/wallet_dropdown.dart';
 import 'package:money_note/components/forms/category_dropdown.dart';
 import 'package:money_note/components/forms/date_picker_field.dart';
 import 'package:money_note/components/forms/currency_text_field.dart';
-import 'package:money_note/components/alerts/flash_message.dart';
+import 'package:money_note/components/ui/alerts/flash_message.dart';
 import 'package:money_note/components/buttons/submit_button.dart';
 
 class TransactionFormScreen extends StatefulWidget {
@@ -37,6 +37,8 @@ class TransactionFormScreen extends StatefulWidget {
 
 class _TransactionFormScreenState extends State<TransactionFormScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  String _mode = 'add'; // 'add' | 'edit'
 
   String _type = 'expense';
 
@@ -60,6 +62,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   void initState() {
     super.initState();
     if (widget.existingData != null) {
+      _mode = 'edit';
       final data = widget.existingData!;
       _titleController.text = data.title;
 
@@ -174,6 +177,23 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     }
   }
 
+  String? validateAmount(String? val) {
+    if (val == null || val.trim().isEmpty) {
+      return 'Amount is required';
+    }
+    final amount = CurrencyFormatter().decodeAmount(val);
+    final wallet = _wallets.firstWhere((w) => w.id == _selectedWalletId);
+    final availableBalance =
+        _type == 'expense' && _mode == 'edit'
+            ? wallet.currentBalance + widget.existingData!.amount
+            : wallet.currentBalance;
+
+    if (_type == 'expense' && amount > availableBalance) {
+      return 'Amount exceeds wallet balance';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.transactionId != null;
@@ -222,12 +242,17 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                         onChanged:
                             (val) => setState(() => _selectedCategoryId = val),
                       ),
-
                       const SizedBox(height: 16),
                       DatePickerField(
                         selectedDate: _selectedDate,
                         onDatePicked:
                             (picked) => setState(() => _selectedDate = picked),
+                      ),
+                      const SizedBox(height: 16),
+                      CurrencyTextField(
+                        controller: _amountController,
+                        label: 'Amount',
+                        validator: validateAmount,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -236,30 +261,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                           labelText: 'Note',
                           border: OutlineInputBorder(),
                         ),
-                        validator:
-                            (val) =>
-                                val == null || val.trim().isEmpty
-                                    ? 'Note is required'
-                                    : null,
-                      ),
-                      const SizedBox(height: 16),
-                      CurrencyTextField(
-                        controller: _amountController,
-                        label: 'Amount',
-                        validator: (val) {
-                          if (val == null || val.trim().isEmpty) {
-                            return 'Amount is required';
-                          }
-                          final amount = CurrencyFormatter().decodeAmount(val);
-                          final wallet = _wallets.firstWhere(
-                            (w) => w.id == _selectedWalletId,
-                          );
-                          if (_type == 'expense' &&
-                              amount > wallet.currentBalance) {
-                            return 'Amount exceeds wallet balance';
-                          }
-                          return null;
-                        },
                       ),
                       const SizedBox(height: 16),
                       SizedBox(

@@ -12,7 +12,7 @@ import 'package:money_note/services/transfer_service.dart';
 import 'package:money_note/services/wallet_service.dart';
 
 import 'package:money_note/components/forms/date_picker_field.dart';
-import 'package:money_note/components/alerts/flash_message.dart';
+import 'package:money_note/components/ui/alerts/flash_message.dart';
 import 'package:money_note/components/buttons/submit_button.dart';
 
 class TransferFormScreen extends StatefulWidget {
