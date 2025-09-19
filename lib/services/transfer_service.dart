@@ -146,90 +146,137 @@ class TransferService {
     TransactionModel oldData,
     TransactionModel newData,
   ) async {
-    final index = _localCache.indexWhere((tx) => tx.id == oldData.id);
-    if (index != -1) {
-      final oldTx = _localCache[index];
-      _localCache[index] = newData;
+    final batch = FirebaseFirestore.instance.batch();
 
-      // Update wallet balances
-      final oldFromWallet = await _walletService.getWalletById(
-        oldTx.fromWalletId!,
-      );
-      final oldToWallet = await _walletService.getWalletById(oldTx.toWalletId!);
-      final newFromWallet = await _walletService.getWalletById(
-        newData.fromWalletId!,
-      );
-      final newToWallet = await _walletService.getWalletById(
-        newData.toWalletId!,
-      );
-
-      // Rollback saldo lama
-      await _walletService.updateWallet(
-        oldFromWallet.copyWith(
-          currentBalance: oldFromWallet.currentBalance + oldTx.amount,
-        ),
-      );
-      await _walletService.updateWallet(
-        oldToWallet.copyWith(
-          currentBalance: oldToWallet.currentBalance - oldTx.amount,
-        ),
-      );
-
-      // Apply saldo baru
-      await _walletService.updateWallet(
-        newFromWallet.copyWith(
-          currentBalance: newFromWallet.currentBalance - newData.amount,
-        ),
-      );
-      await _walletService.updateWallet(
-        newToWallet.copyWith(
-          currentBalance: newToWallet.currentBalance + newData.amount,
-        ),
-      );
-    }
-
-    // Update Firestore
     try {
-      await transfersRef.doc(oldData.id).update(newData.toMap());
-      debugPrint("✅ Transfer ${oldData.id} updated on Firestore and cache");
+      // 1. Ambil wallet lama (sudah terpotong old transfer)
+      final oldFromWallet = await _walletService.getWalletById(
+        oldData.fromWalletId!,
+      );
+      final oldToWallet = await _walletService.getWalletById(
+        oldData.toWalletId!,
+      );
+
+      // 2. Rollback saldo lama (balik ke kondisi sebelum old transfer)
+      var rollbackFromBalance = oldFromWallet.currentBalance + oldData.amount;
+      var rollbackToBalance = oldToWallet.currentBalance - oldData.amount;
+
+      // 3. Siapkan map wallet untuk update saldo (biar tidak dobel query)
+      final Map<String, double> walletBalances = {
+        oldFromWallet.id!: rollbackFromBalance,
+        oldToWallet.id!: rollbackToBalance,
+      };
+
+      // 4. Apply transaksi baru di atas saldo rollback
+      walletBalances[newData.fromWalletId!] =
+          (walletBalances[newData.fromWalletId!] ??
+              (await _walletService.getWalletById(
+                newData.fromWalletId!,
+              )).currentBalance) -
+          newData.amount;
+
+      walletBalances[newData.toWalletId!] =
+          (walletBalances[newData.toWalletId!] ??
+              (await _walletService.getWalletById(
+                newData.toWalletId!,
+              )).currentBalance) +
+          newData.amount;
+
+      // 5. Push update semua wallet ke batch
+      for (final entry in walletBalances.entries) {
+        final wallet = await _walletService.getWalletById(entry.key);
+        _walletService.updateWalletBatch(
+          batch,
+          wallet.copyWith(currentBalance: entry.value),
+        );
+      }
+
+      // 6. Update dokumen transfer
+      batch.update(transfersRef.doc(oldData.id), newData.toMap());
+
+      // 7. Commit batch (atomic)
+      await batch.commit();
+
+      // 8. Update cache lokal
+      final index = _localCache.indexWhere((tx) => tx.id == oldData.id);
+      if (index != -1) {
+        _localCache[index] = newData;
+      }
+
+      debugPrint(
+        "✅ Transfer ${oldData.id} updated with rollback+apply correctly",
+      );
     } catch (e) {
       debugPrint("⚠️ Failed to update transfer: $e");
+      rethrow;
     }
   }
 
   Future<void> deleteTransfer(String id) async {
-    final index = _localCache.indexWhere((tx) => tx.id == id);
-    if (index == -1) {
-      try {
-        await transfersRef.doc(id).delete();
-        return;
-      } catch (e) {
-        debugPrint("⚠️ Failed to delete transfer $id from Firestore: $e");
-        return;
-      }
-    }
+    final batch = FirebaseFirestore.instance.batch();
 
-    final tx = _localCache.removeAt(index);
-
-    // Adjust wallet balances
-    final fromWallet = await _walletService.getWalletById(tx.fromWalletId!);
-    final toWallet = await _walletService.getWalletById(tx.toWalletId!);
-
-    await _walletService.updateWallet(
-      fromWallet.copyWith(
-        currentBalance: fromWallet.currentBalance + tx.amount,
-      ),
-    );
-    await _walletService.updateWallet(
-      toWallet.copyWith(currentBalance: toWallet.currentBalance - tx.amount),
-    );
-
-    // Firestore
     try {
-      await transfersRef.doc(id).delete();
-      debugPrint("✅ Transfer $id deleted from Firestore and cache");
+      // 1. Ambil transfer dari cache
+      TransactionModel? tx;
+      final index = _localCache.indexWhere((t) => t.id == id);
+      if (index != -1) {
+        tx = _localCache.removeAt(index);
+        debugPrint("✅ Removed transfer from cache");
+      } else {
+        // Ambil dari Firestore kalau tidak ada di cache
+        final doc = await transfersRef.doc(id).get();
+        if (!doc.exists) {
+          debugPrint("⚠️ Transfer $id not found anywhere, skip");
+          return;
+        }
+
+        final data = doc.data();
+        if (data == null) {
+          debugPrint("⚠️ Transfer $id doc is empty, skip rollback");
+          return;
+        }
+        tx = TransactionModel.fromMap(data as Map<String, dynamic>);
+
+        debugPrint("✅ Transfer $id loaded from Firestore for rollback");
+      }
+
+      // 2. Rollback wallet "from" & "to" (jika ada)
+      try {
+        final fromWallet = await _walletService.getWalletById(tx.fromWalletId!);
+        if (fromWallet != null) {
+          _walletService.updateWalletBatch(
+            batch,
+            fromWallet.copyWith(
+              currentBalance: fromWallet.currentBalance + tx.amount,
+            ),
+          );
+          debugPrint("✅ fromWallet rollbacked");
+        }
+      } catch (_) {}
+
+      try {
+        final toWallet = await _walletService.getWalletById(tx.toWalletId!);
+        if (toWallet != null) {
+          _walletService.updateWalletBatch(
+            batch,
+            toWallet.copyWith(
+              currentBalance: toWallet.currentBalance - tx.amount,
+            ),
+          );
+          debugPrint("✅ toWallet rollbacked");
+        }
+      } catch (_) {}
+
+      // 3. Hapus dokumen transfer
+      batch.delete(transfersRef.doc(id));
+
+      // 4. Commit batch
+      await batch.commit();
+
+      debugPrint("✅ Transfer $id deleted with wallet rollback if possible");
     } catch (e) {
-      debugPrint("⚠️ Failed to delete transfer $id from Firestore: $e");
+      debugPrint("⚠️ Failed to delete transfer: $e");
+      rethrow;
     }
   }
 

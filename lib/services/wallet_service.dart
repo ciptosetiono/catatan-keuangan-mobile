@@ -93,6 +93,29 @@ class WalletService {
     }
   }
 
+  // ✅ Update langsung (akan di-queue Firestore kalau offline)
+  Future<void> updateWalletDirect(
+    String walletId,
+    Map<String, dynamic> data,
+  ) async {
+    final docRef = walletsRef.doc(walletId);
+    await docRef.update(data);
+  }
+
+  void updateWalletBatch(WriteBatch batch, Wallet wallet) {
+    final docRef = walletsRef.doc(wallet.id);
+    batch.update(docRef, wallet.toMap());
+  }
+
+  void updateLocalCache(Wallet wallet) {
+    final index = _localCache.indexWhere((w) => w.id == wallet.id);
+    if (index != -1) {
+      _localCache[index] = wallet;
+    } else {
+      _localCache.add(wallet);
+    }
+  }
+
   /// Delete wallet
   Future<void> deleteWallet(String id) async {
     _localCache.removeWhere((w) => w.id == id);

@@ -45,9 +45,7 @@ class BudgetList extends StatelessWidget {
                 .toList();
 
         if (filteredBudgets.isEmpty) {
-          return const Center(
-            child: Text("No budgets match your selected category."),
-          );
+          return const Center(child: Text("No budgets found."));
         }
 
         final filteredCategoryIds =

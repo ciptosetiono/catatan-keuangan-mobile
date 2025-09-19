@@ -11,6 +11,7 @@ import 'package:money_note/models/wallet_model.dart';
 import 'package:money_note/services/transfer_service.dart';
 import 'package:money_note/services/wallet_service.dart';
 
+import 'package:money_note/components/wallets/wallet_dropdown.dart';
 import 'package:money_note/components/forms/date_picker_field.dart';
 import 'package:money_note/components/ui/alerts/flash_message.dart';
 import 'package:money_note/components/buttons/submit_button.dart';
@@ -91,17 +92,19 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      if (!_formKey.currentState!.validate() ||
-          _fromWallet == null ||
-          _toWallet == null) {
+      if (!_formKey.currentState!.validate()) {
         return;
       }
 
-      final amount = _parseAmount(_amountController.text);
-      final note =
-          _noteController.text.trim().isEmpty
-              ? 'Transfer'
-              : _noteController.text.trim();
+      if (_fromWallet == null) {
+        _showAlert('From Wallet is required');
+        return;
+      }
+
+      if (_toWallet == null) {
+        _showAlert('To Wallet is required');
+        return;
+      }
 
       if (_fromWallet!.id == _toWallet!.id) {
         _showAlert('Cannot transfer to the same wallet.');
@@ -114,10 +117,21 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
         return;
       }
 
+      final amount = _parseAmount(_amountController.text);
+      if (amount <= 0) {
+        _showAlert('Amount is required');
+        return;
+      }
+
       if (_fromWallet!.currentBalance < amount && !isEdit) {
         _showAlert('Insufficient balance in source wallet.');
         return;
       }
+
+      final note =
+          _noteController.text.trim().isEmpty
+              ? 'Transfer'
+              : _noteController.text.trim();
 
       final transfer = TransactionModel(
         id: isEdit ? widget.transfer!.id : '',
@@ -139,7 +153,29 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
       }
 
       if (!mounted) return;
+      _showSuccessMessage();
 
+      // ⛔️ Harus setelah semua selesai dan sebelum return
+      Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        _showAlert(e.toString());
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  void _showAlert(String message) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(FlashMessage(color: Colors.red, message: message));
+    });
+  }
+
+  void _showSuccessMessage() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         FlashMessage(
           color: Colors.green,
@@ -149,35 +185,7 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
                   : 'Transfer added successfully',
         ),
       );
-
-      // ⛔️ Harus setelah semua selesai dan sebelum return
-      Navigator.pop(context);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(FlashMessage(color: Colors.red, message: e.toString()));
-      }
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
-  }
-
-  void _showAlert(String message) {
-    showDialog(
-      context: context,
-      builder:
-          (_) => AlertDialog(
-            title: const Text('Warning'),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-    );
+    });
   }
 
   @override
@@ -193,40 +201,31 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      DropdownButtonFormField<Wallet>(
-                        initialValue: _fromWallet,
-                        items:
-                            _wallets
-                                .map(
-                                  (wallet) => DropdownMenuItem(
-                                    value: wallet,
-                                    child: Text(wallet.name),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (val) => setState(() => _fromWallet = val),
-                        decoration: const InputDecoration(
-                          labelText: 'From Wallet',
-                        ),
-                        validator: (val) => val == null ? 'Required' : null,
+                      WalletDropdown(
+                        label: 'From Wallet',
+                        value: _fromWallet?.id,
+                        onChanged: (walletId) {
+                          final wallet =
+                              _wallets
+                                  .where((w) => w.id == walletId)
+                                  .cast<Wallet?>()
+                                  .firstOrNull;
+                          setState(() => _fromWallet = wallet);
+                        },
                       ),
+
                       const SizedBox(height: 12),
-                      DropdownButtonFormField<Wallet>(
-                        initialValue: _toWallet,
-                        items:
-                            _wallets
-                                .map(
-                                  (wallet) => DropdownMenuItem(
-                                    value: wallet,
-                                    child: Text(wallet.name),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: (val) => setState(() => _toWallet = val),
-                        decoration: const InputDecoration(
-                          labelText: 'To Wallet',
-                        ),
-                        validator: (val) => val == null ? 'Required' : null,
+                      WalletDropdown(
+                        label: 'To Wallet',
+                        value: _toWallet?.id,
+                        onChanged: (walletId) {
+                          final wallet =
+                              _wallets
+                                  .where((w) => w.id == walletId)
+                                  .cast<Wallet?>()
+                                  .firstOrNull;
+                          setState(() => _toWallet = wallet);
+                        },
                       ),
                       const SizedBox(height: 12),
                       TextFormField(

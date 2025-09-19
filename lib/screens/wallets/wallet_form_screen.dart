@@ -63,7 +63,7 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
             (_) => AlertDialog(
               title: const Text('Invalid Balance'),
               content: const Text(
-                'Current balance tidak boleh negatif.\nSilakan periksa nilai saldo awal.',
+                'Current balance can not be negative.\nPlease check the Start Balance.',
               ),
               actions: [
                 TextButton(

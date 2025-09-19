@@ -7,11 +7,13 @@ import '../../utils/currency_formatter.dart'; // untuk format currency
 
 class WalletDropdown extends StatelessWidget {
   final String? value;
+  final String? label;
   final Function(String?) onChanged;
 
   const WalletDropdown({
     super.key,
     required this.value,
+    this.label = 'Select Wallet',
     required this.onChanged,
   });
 
@@ -25,7 +27,7 @@ class WalletDropdown extends StatelessWidget {
         return DropdownButtonFormField<String>(
           value: value,
           decoration: InputDecoration(
-            labelText: 'Select Wallet',
+            labelText: label,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             filled: true,
             fillColor: Colors.grey[100],

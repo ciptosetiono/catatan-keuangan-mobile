@@ -42,23 +42,29 @@ Future<bool> showTransferDeleteDialog({
                           setState(() => isLoading = true);
                           try {
                             await transferService.deleteTransfer(transferId);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Transaction deleted succesfully!',
+
+                            if (onDeleted != null) onDeleted();
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Transaction deleted succesfully!',
+                                  ),
+                                  backgroundColor: Colors.green,
                                 ),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                            Navigator.pop(ctx, true);
+                              );
+                            }
+                            if (ctx.mounted) Navigator.pop(ctx, true);
                           } catch (e) {
                             setState(() => isLoading = false);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Failed to delete'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to delete'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -73,9 +79,5 @@ Future<bool> showTransferDeleteDialog({
       );
     },
   );
-  final deleted = result ?? false;
-  if (deleted) {
-    if (onDeleted != null) onDeleted();
-  }
-  return deleted;
+  return result ?? false;
 }

@@ -86,7 +86,5 @@ Future<bool> showTransactionDeleteDialog({
     },
   );
 
-  debugPrint("deleted result from dialog: $result");
-
   return result ?? false;
 }
