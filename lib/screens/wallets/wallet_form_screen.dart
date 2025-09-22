@@ -82,8 +82,8 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
       name: name,
       icon: 'wallet',
       color: '#2196F3',
-      startBalance: balance,
-      currentBalance: currentBalance,
+      startBalance: balance.toDouble(),
+      currentBalance: currentBalance.toDouble(),
       createdAt: widget.wallet?.createdAt ?? DateTime.now(),
     );
 

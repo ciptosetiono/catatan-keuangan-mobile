@@ -1,39 +1,49 @@
-// lib/services/transaction_service.dart
-// ignore_for_file: avoid_types_as_parameter_names
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/transaction_model.dart';
 import '../models/wallet_model.dart';
 import 'wallet_service.dart';
 
 class TransactionService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final CollectionReference transactionsRef = FirebaseFirestore.instance
-      .collection('transactions');
-  final String? userId = FirebaseAuth.instance.currentUser?.uid;
+  // ignore: unused_field
   final WalletService _walletService = WalletService();
+  final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
-  // Cache lokal
-  List<TransactionModel> _localCache = [];
+  final CollectionReference<TransactionModel> _transactionsRef =
+      FirebaseFirestore.instance
+          .collection('transactions')
+          .withConverter<TransactionModel>(
+            fromFirestore: (snap, _) => TransactionModel.fromFirestore(snap),
+            toFirestore: (tx, _) => tx.toMap(),
+          );
 
-  Query<Map<String, dynamic>> _buildQuery({
+  final _walletsRef = FirebaseFirestore.instance.collection('wallets');
+
+  TransactionService() {
+    _db.settings = const Settings(
+      persistenceEnabled: true,
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+    );
+  }
+
+  // ======================= Core Query Builder =======================
+  Query<TransactionModel> _buildQuery({
     DateTime? fromDate,
     DateTime? toDate,
     String? type,
-    String? title,
     String? walletId,
     String? categoryId,
+    String? title,
     String orderByField = 'date',
     bool descending = true,
   }) {
-    Query<Map<String, dynamic>> query = _db
-        .collection('transactions')
-        .where('userId', isEqualTo: userId)
-        .where('type', whereIn: ['income', 'expense']);
+    Query<TransactionModel> query = _transactionsRef.where(
+      'userId',
+      isEqualTo: userId,
+    );
 
-    // Date filters
     if (fromDate != null) {
       query = query.where(
         'date',
@@ -43,52 +53,42 @@ class TransactionService {
     if (toDate != null) {
       query = query.where('date', isLessThan: Timestamp.fromDate(toDate));
     }
-
-    // Filters
-    if (type != null && type.isNotEmpty) {
-      query = query.where('type', isEqualTo: type as Object);
+    if (type != null) query = query.where('type', isEqualTo: type);
+    if (walletId != null) query = query.where('walletId', isEqualTo: walletId);
+    if (categoryId != null) {
+      query = query.where('categoryId', isEqualTo: categoryId);
     }
-    if (walletId != null && walletId.isNotEmpty) {
-      query = query.where('walletId', isEqualTo: walletId as Object);
-    }
-    if (categoryId != null && categoryId.isNotEmpty) {
-      query = query.where('categoryId', isEqualTo: categoryId as Object);
-    }
-    if (title != null && title.isNotEmpty) {
-      query = query.where('title', isEqualTo: title as Object);
-    }
+    if (title != null) query = query.where('title', isEqualTo: title);
 
     return query.orderBy(orderByField, descending: descending);
   }
 
-  // ======================= Stream / Get Transactions =======================
+  // ======================= Streams =======================
   Stream<List<TransactionModel>> getTransactionsStream({
     DateTime? fromDate,
     DateTime? toDate,
     String? type,
-    String? title,
     String? walletId,
     String? categoryId,
-  }) async* {
+    String? title,
+  }) {
     final query = _buildQuery(
       fromDate: fromDate,
       toDate: toDate,
       type: type,
-      title: title,
       walletId: walletId,
       categoryId: categoryId,
+      title: title,
     );
-    // Listen to snapshots
-    await for (var snap in query.snapshots(includeMetadataChanges: true)) {
-      _localCache =
-          snap.docs.map((doc) => TransactionModel.fromFirestore(doc)).toList();
-      yield _localCache; // use yield, not return
-    }
+
+    return query
+        .snapshots(includeMetadataChanges: true)
+        .map((snap) => snap.docs.map((doc) => doc.data()).toList());
   }
 
-  Future<QuerySnapshot<Map<String, dynamic>>> getTransactionsPaginated({
+  Future<QuerySnapshot<TransactionModel>> getTransactionsPaginated({
     required int limit,
-    DocumentSnapshot? startAfter,
+    DocumentSnapshot<TransactionModel>? startAfter,
     DateTime? fromDate,
     DateTime? toDate,
     String? type,
@@ -96,8 +96,7 @@ class TransactionService {
     String? walletId,
     String? categoryId,
   }) async {
-    // Build base query with filters
-    var query = _buildQuery(
+    Query<TransactionModel> query = _buildQuery(
       fromDate: fromDate,
       toDate: toDate,
       type: type,
@@ -106,218 +105,104 @@ class TransactionService {
       categoryId: categoryId,
     );
 
-    // Apply pagination if needed
     if (startAfter != null) {
       query = query.startAfterDocument(startAfter);
     }
 
-    // Limit the number of documents
     query = query.limit(limit);
 
-    // Execute query
-    final snapshot = await query.get();
-
-    // Update local cache, avoid duplicates
-    final fetched =
-        snapshot.docs
-            .map((doc) => TransactionModel.fromFirestore(doc))
-            .toList();
-
-    for (var tx in fetched) {
-      if (!_localCache.any((e) => e.id == tx.id)) {
-        _localCache.add(tx);
-      }
-    }
-
-    return snapshot;
+    return await query.get();
   }
 
-  Future<Map<String, num>> getSummary({
-    DateTime? fromDate,
-    DateTime? toDate,
-    String? type,
-    String? walletId,
-    String? categoryId,
-    String? title,
-  }) async {
-    // Build query
-    final query = _buildQuery(
-      fromDate: fromDate,
-      toDate: toDate,
-      type: type,
-      title: title,
+  Stream<List<TransactionModel>> getTransactionsByWallet(String walletId) {
+    return _buildQuery(
       walletId: walletId,
-      categoryId: categoryId,
-    );
-
-    try {
-      // Fetch from Firestore
-      final snapshot = await query.get();
-
-      // Update local cache
-      final fetched =
-          snapshot.docs
-              .map((doc) => TransactionModel.fromFirestore(doc))
-              .toList();
-
-      for (var tx in fetched) {
-        if (!_localCache.any((e) => e.id == tx.id)) {
-          _localCache.add(tx);
-        }
-      }
-
-      // Calculate summary
-      num income = 0;
-      num expense = 0;
-
-      for (var trx in fetched) {
-        if (trx.type == 'income') {
-          income += trx.amount;
-        } else if (trx.type == 'expense') {
-          expense += trx.amount;
-        }
-      }
-
-      return {
-        'income': income,
-        'expense': expense,
-        'balance': income - expense,
-      };
-    } catch (_) {
-      // Offline mode: use local cache
-      final filtered = _localCache.where((trx) {
-        if (type != null && trx.type != type) return false;
-        if (walletId != null && trx.walletId != walletId) return false;
-        if (categoryId != null && trx.categoryId != categoryId) return false;
-        if (title != null && trx.title != title) return false;
-        if (fromDate != null && trx.date.isBefore(fromDate)) return false;
-        if (toDate != null && trx.date.isAfter(toDate)) return false;
-        return true;
-      });
-
-      num income = 0;
-      num expense = 0;
-
-      for (var trx in filtered) {
-        if (trx.type == 'income') {
-          income += trx.amount;
-        } else if (trx.type == 'expense') {
-          expense += trx.amount;
-        }
-      }
-
-      return {
-        'income': income,
-        'expense': expense,
-        'balance': income - expense,
-      };
-    }
+    ).snapshots().map((snap) => snap.docs.map((doc) => doc.data()).toList());
   }
 
-  // ======================= Add / Update / Delete =======================
-  Future<TransactionModel> addTransaction(
-    Map<String, dynamic> newTransaction,
-  ) async {
-    if (userId == null) {
-      throw Exception("User not logged in");
-    }
+  // ======================= CRUD Operations =======================
+  Future<TransactionModel> addTransaction(Map<String, dynamic> data) async {
+    if (userId == null) throw Exception("User not logged in");
 
-    final txMap = Map<String, dynamic>.from(newTransaction);
-    txMap['userId'] = userId;
-
-    // 🔥 Generate Firestore doc ref first
-    final docRef = transactionsRef.doc();
+    final docRef = _transactionsRef.doc();
     late TransactionModel txModel;
 
-    try {
-      await FirebaseFirestore.instance.runTransaction((tx) async {
-        // --- 1. Buat model transaksi ---
-        txModel = TransactionModel.fromMap(txMap).copyWith(id: docRef.id);
+    await _db.runTransaction((tx) async {
+      txModel = TransactionModel.fromMap(
+        data,
+      ).copyWith(id: docRef.id, userId: userId!);
 
-        // --- 2. Update wallet saldo ---
-        if (txModel.walletId != null) {
-          final walletRef = _walletService.walletsRef.doc(txModel.walletId!);
-          final walletSnapshot = await tx.get(walletRef);
+      debugPrint('add txmodel : $txModel');
 
-          final walletData = walletSnapshot.data();
-          if (walletData == null || walletData is! Map<String, dynamic>) {
-            throw Exception("Wallet ${txModel.walletId} data invalid");
-          }
-
-          final wallet = Wallet.fromMap(walletSnapshot.id, walletData);
+      // 🔹 Update wallet balance pakai tx.get (bukan service di luar transaction)
+      if (txModel.walletId != null) {
+        final walletDoc = await tx.get(_walletsRef.doc(txModel.walletId!));
+        if (walletDoc.exists) {
+          final wallet = Wallet.fromMap(walletDoc.id, walletDoc.data()!);
           final newBalance =
               txModel.type == 'income'
                   ? wallet.currentBalance + txModel.amount
                   : wallet.currentBalance - txModel.amount;
 
-          tx.update(walletRef, {'currentBalance': newBalance.toDouble()});
-          debugPrint(
-            "🔥 Wallet ${wallet.id} balance adjusted by ${txModel.amount}",
+          tx.update(
+            walletDoc.reference,
+            wallet.copyWith(currentBalance: newBalance).toMap(),
           );
         }
+      }
 
-        // --- 3. Tambah transaksi ke Firestore ---
-        tx.set(docRef, txModel.toMap());
-        debugPrint("✅ Transaction will be added with ID: ${txModel.id}");
-      });
+      // 🔹 Simpan transaksi
+      tx.set(docRef, txModel);
+    });
 
-      // --- 4. Update cache lokal setelah transaction berhasil ---
-      _localCache.add(txModel);
-
-      return txModel;
-    } catch (e, st) {
-      debugPrint("❌ Failed to add transaction atomically: $e");
-      debugPrint(st.toString());
-      rethrow;
-    }
+    return txModel;
   }
 
   Future<TransactionModel> updateTransaction(
     String id,
     Map<String, dynamic> newData,
   ) async {
-    try {
-      late TransactionModel updatedTx;
+    late TransactionModel updatedTx;
 
-      await FirebaseFirestore.instance.runTransaction((tx) async {
-        // Ambil snapshot transaksi lama
-        final docRef = transactionsRef.doc(id);
-        final snapshot = await tx.get(docRef);
+    await _db.runTransaction((tx) async {
+      final trxRef = _transactionsRef.doc(id);
+      final trxSnap = await tx.get(trxRef);
+      if (!trxSnap.exists) throw Exception("Transaction not found");
 
-        if (!snapshot.exists) throw Exception("Transaction $id not found");
+      final oldTx = trxSnap.data()!;
+      updatedTx = oldTx.copyWith(
+        amount: (newData['amount'] ?? oldTx.amount).toDouble(),
+        type: newData['type'] ?? oldTx.type,
+        walletId: newData['walletId'] ?? oldTx.walletId,
+        categoryId: newData['categoryId'] ?? oldTx.categoryId,
+        title: newData['title'] ?? oldTx.title,
+        date: newData['date'] ?? oldTx.date,
+      );
 
-        // Safe cast data
-        final snapshotData = snapshot.data();
-        if (snapshotData == null || snapshotData is! Map<String, dynamic>) {
-          throw Exception("Transaction data invalid");
+      // same wallet → update once
+      if (oldTx.walletId == updatedTx.walletId && oldTx.walletId != null) {
+        final walletRef = _walletsRef.doc(oldTx.walletId!);
+        final walletSnap = await tx.get(walletRef);
+        if (walletSnap.exists) {
+          final wallet = Wallet.fromMap(walletSnap.id, walletSnap.data()!);
+          final oldChange =
+              oldTx.type == 'income' ? oldTx.amount : -oldTx.amount;
+          final newChange =
+              updatedTx.type == 'income' ? updatedTx.amount : -updatedTx.amount;
+          final delta = newChange - oldChange;
+          tx.update(walletRef, {
+            'currentBalance': wallet.currentBalance + delta,
+          });
         }
-
-        final oldTx = TransactionModel.fromMap(snapshotData).copyWith(id: id);
-
-        // Buat updated transaction
-        updatedTx = oldTx.copyWith(
-          amount: (newData['amount'] ?? oldTx.amount).toDouble(),
-          type: newData['type'] ?? oldTx.type,
-          walletId: newData['walletId'] ?? oldTx.walletId,
-          categoryId: newData['categoryId'] ?? oldTx.categoryId,
-          title: newData['title'] ?? oldTx.title,
-          date: newData['date'] ?? oldTx.date,
-        );
-
-        // --- Update wallet(s) ---
-        if (oldTx.walletId != updatedTx.walletId) {
-          // Wallet berganti
-          if (oldTx.walletId != null) {
-            final oldWalletRef = _walletService.walletsRef.doc(oldTx.walletId!);
-            final oldWalletSnapshot = await tx.get(oldWalletRef);
-            final oldWalletData = oldWalletSnapshot.data();
-            if (oldWalletData == null ||
-                oldWalletData is! Map<String, dynamic>) {
-              throw Exception("Old wallet data invalid");
-            }
+      } else {
+        // rollback old wallet
+        if (oldTx.walletId != null) {
+          final oldWalletRef = _walletsRef.doc(oldTx.walletId!);
+          final oldWalletSnap = await tx.get(oldWalletRef);
+          if (oldWalletSnap.exists) {
             final oldWallet = Wallet.fromMap(
-              oldWalletSnapshot.id,
-              oldWalletData,
+              oldWalletSnap.id,
+              oldWalletSnap.data()!,
             );
             final rollback =
                 oldTx.type == 'income' ? -oldTx.amount : oldTx.amount;
@@ -325,171 +210,96 @@ class TransactionService {
               'currentBalance': oldWallet.currentBalance + rollback,
             });
           }
-          if (updatedTx.walletId != null) {
-            final newWalletRef = _walletService.walletsRef.doc(
-              updatedTx.walletId!,
-            );
-            final newWalletSnapshot = await tx.get(newWalletRef);
-            final newWalletData = newWalletSnapshot.data();
-            if (newWalletData == null ||
-                newWalletData is! Map<String, dynamic>) {
-              throw Exception("New wallet data invalid");
-            }
+        }
+
+        // apply to new wallet
+        if (updatedTx.walletId != null) {
+          final newWalletRef = _walletsRef.doc(updatedTx.walletId!);
+          final newWalletSnap = await tx.get(newWalletRef);
+          if (newWalletSnap.exists) {
             final newWallet = Wallet.fromMap(
-              newWalletSnapshot.id,
-              newWalletData,
+              newWalletSnap.id,
+              newWalletSnap.data()!,
             );
-            final apply =
+            final adjust =
                 updatedTx.type == 'income'
                     ? updatedTx.amount
                     : -updatedTx.amount;
             tx.update(newWalletRef, {
-              'currentBalance': newWallet.currentBalance + apply,
+              'currentBalance': newWallet.currentBalance + adjust,
             });
           }
-        } else if (updatedTx.walletId != null) {
-          // Wallet sama
-          final walletRef = _walletService.walletsRef.doc(updatedTx.walletId!);
-          final walletSnapshot = await tx.get(walletRef);
-          final walletData = walletSnapshot.data();
-          if (walletData == null || walletData is! Map<String, dynamic>) {
-            throw Exception("Wallet data invalid");
-          }
-          final wallet = Wallet.fromMap(walletSnapshot.id, walletData);
-          final rollback =
-              oldTx.type == 'income' ? -oldTx.amount : oldTx.amount;
-          final apply =
-              updatedTx.type == 'income' ? updatedTx.amount : -updatedTx.amount;
-          tx.update(walletRef, {
-            'currentBalance': wallet.currentBalance + rollback + apply,
-          });
         }
+      }
 
-        // --- Update transaksi ---
-        tx.update(docRef, updatedTx.toMap());
-      });
+      tx.update(trxRef, updatedTx.toMap());
+    });
 
-      // --- Update cache jika perlu ---
-      final index = _localCache.indexWhere((tx) => tx.id == id);
-      if (index != -1) _localCache[index] = updatedTx;
-
-      debugPrint("✅ Transaction $id updated atomically with wallet");
-      return updatedTx;
-    } catch (e, st) {
-      debugPrint("❌ Failed to update transaction $id atomically: $e");
-      debugPrint(st.toString());
-      rethrow;
-    }
+    return updatedTx;
   }
 
-  Future<bool> deleteTransaction(TransactionModel transaction) async {
-    try {
-      await FirebaseFirestore.instance.runTransaction((tx) async {
-        final docRef = transactionsRef.doc(transaction.id);
+  Future<void> deleteTransaction(TransactionModel transaction) async {
+    await _db.runTransaction((tx) async {
+      final docRef = _transactionsRef.doc(transaction.id);
 
-        // --- 1. Ambil transaksi dari Firestore ---
-        final snapshot = await tx.get(docRef);
-        if (!snapshot.exists) {
-          throw Exception(
-            "Transaction ${transaction.id} not found in Firestore",
-          );
-        }
-
-        // --- 2. Update wallet saldo ---
-        if (transaction.walletId != null) {
-          final walletRef = _walletService.walletsRef.doc(
-            transaction.walletId!,
-          );
-          final walletSnapshot = await tx.get(walletRef);
-
-          final walletData = walletSnapshot.data();
-          if (walletData == null || walletData is! Map<String, dynamic>) {
-            throw Exception("Wallet ${transaction.walletId} data invalid");
-          }
-
-          final wallet = Wallet.fromMap(walletSnapshot.id, walletData);
+      if (transaction.walletId != null) {
+        final walletRef = _walletsRef.doc(transaction.walletId!);
+        final walletSnap = await tx.get(walletRef);
+        if (walletSnap.exists) {
+          final wallet = Wallet.fromMap(walletSnap.id, walletSnap.data()!);
           final adjust =
               transaction.type == 'income'
                   ? -transaction.amount
                   : transaction.amount;
-
           tx.update(walletRef, {
             'currentBalance': wallet.currentBalance + adjust,
           });
-          debugPrint("🔥 Wallet ${wallet.id} balance adjusted by $adjust");
         }
+      }
 
-        // --- 3. Hapus transaksi di Firestore ---
-        tx.delete(docRef);
-        debugPrint("✅ Transaction ${transaction.id} deleted from Firestore");
-      });
-
-      // --- 4. Hapus dari cache lokal ---
-      final index = _localCache.indexWhere((t) => t.id == transaction.id);
-      if (index != -1) _localCache.removeAt(index);
-
-      return true;
-    } catch (e, st) {
-      debugPrint(
-        "❌ Failed to delete transaction ${transaction.id} atomically: $e",
-      );
-      debugPrint(st.toString());
-      return false;
-    }
+      tx.delete(docRef);
+    });
   }
 
-  Future<TransactionModel> getTransactionById(String id) async {
-    // Search manually
-    for (var tx in _localCache) {
-      if (tx.id == id) return tx;
-    }
-
-    // Fetch from Firestore
-    final doc = await transactionsRef.doc(id).get();
-    if (doc.exists) {
-      final fetchedTx = TransactionModel.fromFirestore(doc);
-      _localCache.add(fetchedTx);
-      return fetchedTx;
-    }
-
-    throw Exception('Transaction not found');
+  Future<TransactionModel?> getTransactionById(String id) async {
+    final doc = await _transactionsRef
+        .doc(id)
+        .get(GetOptions(source: Source.cache));
+    if (doc.exists) return doc.data();
+    final serverDoc = await _transactionsRef
+        .doc(id)
+        .get(GetOptions(source: Source.server));
+    if (serverDoc.exists) return serverDoc.data();
+    return null;
   }
 
-  // ======================= Aggregation Examples =======================
-
-  /// Total pengeluaran dalam satu bulan
+  // ======================= Aggregations =======================
   Future<double> getTotalSpentByMonth(DateTime month) async {
     final from = DateTime(month.year, month.month);
     final to = DateTime(month.year, month.month + 1);
 
     final query = _buildQuery(fromDate: from, toDate: to, type: 'expense');
-
-    final snapshot = await query.get();
-    final total = snapshot.docs.fold<double>(
+    final snapshot = await query.get(GetOptions(source: Source.cache));
+    return snapshot.docs.fold<double>(
       0.0,
+      // ignore: avoid_types_as_parameter_names
       (sum, doc) => sum + (doc['amount'] as num).toDouble(),
     );
-
-    return total;
   }
 
-  /// Total pemasukan dalam satu bulan
   Future<double> getTotalIncomeByMonth(DateTime month) async {
     final from = DateTime(month.year, month.month);
     final to = DateTime(month.year, month.month + 1);
 
     final query = _buildQuery(fromDate: from, toDate: to, type: 'income');
-
-    final snapshot = await query.get();
-    final total = snapshot.docs.fold<double>(
+    final snapshot = await query.get(GetOptions(source: Source.cache));
+    return snapshot.docs.fold<double>(
       0.0,
+      // ignore: avoid_types_as_parameter_names
       (sum, doc) => sum + (doc['amount'] as num).toDouble(),
     );
-
-    return total;
   }
 
-  /// Total pengeluaran per kategori dalam satu bulan
   Future<Map<String, double>> getTotalSpentByCategories({
     required List<String> categoryIds,
     required DateTime month,
@@ -498,7 +308,6 @@ class TransactionService {
     final to = DateTime(month.year, month.month + 1);
 
     Map<String, double> totals = {};
-
     for (var categoryId in categoryIds) {
       final query = _buildQuery(
         fromDate: from,
@@ -506,27 +315,53 @@ class TransactionService {
         type: 'expense',
         categoryId: categoryId,
       );
-
-      final snapshot = await query.get();
-      final total = snapshot.docs.fold<double>(
+      final snapshot = await query.get(GetOptions(source: Source.cache));
+      totals[categoryId] = snapshot.docs.fold<double>(
         0.0,
+        // ignore: avoid_types_as_parameter_names
         (sum, doc) => sum + (doc['amount'] as num).toDouble(),
       );
-
-      totals[categoryId] = total;
     }
-
     return totals;
   }
 
-  /// Stream transaksi berdasarkan wallet
-  Stream<List<TransactionModel>> getTransactionsByWallet(String walletId) {
-    final query = _buildQuery(walletId: walletId);
+  Stream<Map<String, num>> getSummary({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? type,
+    String? walletId,
+    String? categoryId,
+    String? title,
+  }) async* {
+    // ambil snapshot realtime dari query Firestore
+    final query = _buildQuery(
+      fromDate: fromDate,
+      toDate: toDate,
+      type: type,
+      walletId: walletId,
+      categoryId: categoryId,
+      title: title,
+    );
 
-    return query.snapshots().map((snap) {
-      _localCache =
-          snap.docs.map((doc) => TransactionModel.fromFirestore(doc)).toList();
-      return _localCache;
-    });
+    await for (final snapshot in query.snapshots(
+      includeMetadataChanges: true,
+    )) {
+      num income = 0;
+      num expense = 0;
+
+      for (var doc in snapshot.docs) {
+        final trx = doc.data();
+        // ignore: unnecessary_null_comparison
+        if (trx == null) continue;
+
+        if (trx.type == 'income') {
+          income += trx.amount;
+        } else if (trx.type == 'expense') {
+          expense += trx.amount;
+        }
+      }
+
+      yield {'income': income, 'expense': expense, 'balance': income - expense};
+    }
   }
 }

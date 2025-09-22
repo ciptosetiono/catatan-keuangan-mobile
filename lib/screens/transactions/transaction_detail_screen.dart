@@ -43,9 +43,11 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   }
 
   Future<String> getWalletName(String? walletId) async {
-    if (walletId == null) return '-';
-    final Wallet wallet = await WalletService().getWalletById(walletId);
-    if (wallet.id.isEmpty) return '-';
+    if (walletId == null || walletId.isEmpty) return '-';
+
+    final Wallet? wallet = await WalletService().getWalletById(walletId);
+
+    if (wallet == null || wallet.id.isEmpty) return '-';
     return wallet.name.isNotEmpty ? wallet.name : '-';
   }
 

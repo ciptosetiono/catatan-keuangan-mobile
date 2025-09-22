@@ -125,15 +125,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     };
 
     try {
-      TransactionModel updatedTransaction;
+      TransactionModel? savedTransaction;
 
       if (widget.transactionId != null) {
-        await TransactionService().updateTransaction(
+        savedTransaction = await TransactionService().updateTransaction(
           widget.transactionId!,
           trx,
-        );
-        updatedTransaction = await TransactionService().getTransactionById(
-          widget.transactionId!,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -143,7 +140,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           ),
         );
       } else {
-        updatedTransaction = await TransactionService().addTransaction(trx);
+        savedTransaction = await TransactionService().addTransaction(trx);
 
         _titleController.clear();
         _amountController.clear();
@@ -157,7 +154,10 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       }
 
       if (widget.onSaved != null) {
-        widget.onSaved!(updatedTransaction);
+        // ignore: unnecessary_null_comparison
+        if (savedTransaction != null) {
+          widget.onSaved!(savedTransaction);
+        }
       }
 
       /*
@@ -166,10 +166,15 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         updatedTransaction,
       ); // ✅ selalu return TransactionModel
       */
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('Transaction failed $e');
+      debugPrint("📌 Stack: $stack");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          FlashMessage(color: Colors.red, message: 'Transaction action failed'),
+          FlashMessage(
+            color: Colors.red,
+            message: 'Transaction action failed $e',
+          ),
         );
       }
     } finally {

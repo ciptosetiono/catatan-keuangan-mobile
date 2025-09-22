@@ -6,8 +6,8 @@ class Wallet {
   final String id;
   final String userId;
   final String name;
-  final num startBalance;
-  final num currentBalance;
+  final double startBalance;
+  final double currentBalance;
   final String? color;
   final String? icon;
   final DateTime createdAt;
@@ -40,7 +40,7 @@ class Wallet {
       currentBalance: map['currentBalance'] ?? 0,
       icon: map['icon'],
       color: map['color'],
-      createdAt: (Map()['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: _parseTimestamp(map['createdAt']),
     );
   }
 

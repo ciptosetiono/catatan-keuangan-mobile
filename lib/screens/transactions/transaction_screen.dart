@@ -6,13 +6,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:money_note/constants/date_filter_option.dart';
 import 'package:money_note/components/buttons/add_button.dart';
 import 'package:money_note/components/buttons/filter_button.dart';
-
 import 'package:money_note/components/wallets/wallet_filter_dropdown.dart';
 import 'package:money_note/components/forms/date_filter_dropdown.dart';
 import 'package:money_note/components/transactions/unified_filter_dialog.dart';
 import 'package:money_note/components/transactions/transaction_list.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
-
 import 'package:money_note/models/transaction_model.dart';
 import 'package:money_note/services/transaction_service.dart';
 import 'package:money_note/screens/transactions/transaction_form_screen.dart';
@@ -39,11 +37,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
   List<TransactionModel> _transactions = [];
   bool _isLoading = false;
   bool _hasMore = true;
-  DocumentSnapshot? _lastDocument;
-
-  num _income = 0;
-  num _expense = 0;
-  bool _isSummaryLoading = false;
+  DocumentSnapshot<TransactionModel>? _lastDocument;
 
   @override
   void initState() {
@@ -53,7 +47,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
     _to = DateTime(now.year, now.month + 1);
 
     _loadTransactions(reset: true);
-    _loadSummary();
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
@@ -94,10 +87,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       if (snapshot.docs.isNotEmpty) {
         _lastDocument = snapshot.docs.last;
 
-        final newTransactions =
-            snapshot.docs
-                .map((doc) => TransactionModel.fromFirestore(doc))
-                .toList();
+        final newTransactions = snapshot.docs.map((doc) => doc.data()).toList();
 
         setState(() {
           _transactions.addAll(newTransactions);
@@ -110,30 +100,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
       debugPrint("Error loading transactions: $e");
     } finally {
       setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _loadSummary() async {
-    if (!mounted) return;
-    setState(() => _isSummaryLoading = true);
-    try {
-      final result = await TransactionService().getSummary(
-        fromDate: _from,
-        toDate: _to,
-        type: _typeFilter,
-        walletId: _walletFilter,
-        categoryId: _categoryFilter,
-        title: _titleFilter,
-      );
-
-      setState(() {
-        _income = result['income'] ?? 0;
-        _expense = result['expense'] ?? 0;
-      });
-    } catch (e) {
-      debugPrint("Error load summary: $e");
-    } finally {
-      setState(() => _isSummaryLoading = false);
     }
   }
 
@@ -151,7 +117,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
       _to = to;
     });
     _loadTransactions(reset: true);
-    _loadSummary();
   }
 
   void _applyUnifiedFilter({
@@ -168,20 +133,34 @@ class _TransactionScreenState extends State<TransactionScreen> {
       _titleFilter = title;
     });
     _loadTransactions(reset: true);
-    _loadSummary();
   }
 
   Widget _buildSummary() {
-    if (_isSummaryLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(16),
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-    return TransactionSummaryCard(
-      income: _income,
-      expense: _expense,
-      balance: _income - _expense,
+    return StreamBuilder<Map<String, num>>(
+      stream: TransactionService().getSummary(
+        fromDate: _from,
+        toDate: _to,
+        type: _typeFilter,
+        walletId: _walletFilter,
+        categoryId: _categoryFilter,
+        title: _titleFilter,
+      ),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final summary = snapshot.data!;
+        final income = summary['income'] ?? 0;
+        final expense = summary['expense'] ?? 0;
+        return TransactionSummaryCard(
+          income: income,
+          expense: expense,
+          balance: income - expense,
+        );
+      },
     );
   }
 
@@ -196,7 +175,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Row(
               children: [
-                // Date filter dropdown
                 Expanded(
                   child: DateFilterDropdown(
                     selected: _selectedDateFilter,
@@ -204,7 +182,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
                     label: _selectedDateLabel,
                   ),
                 ),
-
                 Expanded(
                   child: WalletFilterDropdown(
                     value: _walletFilter,
@@ -212,11 +189,9 @@ class _TransactionScreenState extends State<TransactionScreen> {
                       if (!mounted) return;
                       setState(() => _walletFilter = val);
                       _loadTransactions(reset: true);
-                      _loadSummary();
                     },
                   ),
                 ),
-                // Custom filter button (format sama seperti dropdown)
                 SizedBox(
                   height: 40,
                   child: FilterButton(
@@ -240,7 +215,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
           ),
         ),
       ),
-
       body: Column(
         children: [
           _buildSummary(),
@@ -252,11 +226,9 @@ class _TransactionScreenState extends State<TransactionScreen> {
                       transactions: _transactions,
                       onItemUpdated: (updatedTransaction) {
                         _loadTransactions(reset: true);
-                        _loadSummary();
                       },
                       onItemDeleted: () {
                         _loadTransactions(reset: true);
-                        _loadSummary();
                       },
                     ),
           ),
@@ -271,7 +243,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
                   (_) => TransactionFormScreen(
                     onSaved: (updatedTransaction) {
                       _loadTransactions(reset: true);
-                      _loadSummary();
                     },
                   ),
             ),

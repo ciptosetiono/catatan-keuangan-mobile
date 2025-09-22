@@ -60,7 +60,7 @@ class TransactionModel {
 
     return TransactionModel(
       id: data['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      userId: data['userId'],
+      userId: '',
       walletId: data['walletId'],
       amount: (data['amount'] ?? 0).toDouble(),
       type: data['type'],

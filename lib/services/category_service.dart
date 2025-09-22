@@ -9,18 +9,22 @@ class CategoryService {
       .collection('categories');
 
   // Cache lokal
-  List<Category> _localCache = [];
+  final List<Category> _localCache = [];
 
   // ======================= Stream / Get Categories =======================
   Stream<List<Category>> getCategoryStream({
     String? query,
     String? type,
   }) async* {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
 
-    Query<Map<String, dynamic>> baseQuery =
-        categoriesRef.where('userId', isEqualTo: uid)
-            as Query<Map<String, dynamic>>;
+    Query<Category> baseQuery = categoriesRef
+        .where('userId', isEqualTo: uid)
+        .withConverter<Category>(
+          fromFirestore: (snap, _) => Category.fromMap(snap.id, snap.data()!),
+          toFirestore: (cat, _) => cat.toMap(),
+        );
 
     if (type != null && type.isNotEmpty && type != 'all') {
       baseQuery = baseQuery.where('type', isEqualTo: type);
@@ -31,13 +35,12 @@ class CategoryService {
     await for (var snapshot in baseQuery.snapshots(
       includeMetadataChanges: true,
     )) {
-      var docs = snapshot.docs;
+      // Update local cache dengan hasil snapshot
+      _localCache
+        ..clear()
+        ..addAll(snapshot.docs.map((doc) => doc.data()));
 
-      // Update local cache
-      _localCache =
-          docs.map((doc) => Category.fromMap(doc.id, doc.data())).toList();
-
-      // Filter by name (client-side)
+      // Apply client-side filter untuk search
       if (query != null && query.trim().isNotEmpty) {
         final q = query.toLowerCase();
         final filtered =
@@ -53,17 +56,21 @@ class CategoryService {
 
   // ======================= Get Category By ID =======================
   Future<Category?> getCategoryById(String id) async {
+    // Check cache first
     try {
-      // Cari di cache dulu
-      final cached =
-          _localCache.where((c) => c.id == id).isNotEmpty
-              ? _localCache.firstWhere((c) => c.id == id)
-              : null;
-      if (cached != null) return cached;
+      final cached = _localCache.firstWhere(
+        (c) => c.id == id,
+        // ignore: cast_from_null_always_fails
+        orElse: () => null as Category,
+      );
+      // ignore: unnecessary_null_comparison
+      if (cached != null) {
+        return cached;
+      }
 
-      // Jika tidak ada, fetch dari Firestore
+      // Fetch from Firestore if not in cache
       final doc = await categoriesRef.doc(id).get();
-      if (doc.exists) {
+      if (doc.exists && doc.data() != null) {
         final cat = Category.fromMap(
           doc.id,
           doc.data() as Map<String, dynamic>,
@@ -71,47 +78,46 @@ class CategoryService {
         _localCache.add(cat);
         return cat;
       }
-      return null;
-    } catch (e) {
-      return null;
-    }
+    } catch (_) {}
+    return null;
   }
 
   // ======================= Add / Update / Delete =======================
-  Future<void> addCategory(Category category) async {
-    final docRef = categoriesRef.doc();
-    final newCategory = category.copyWith(id: docRef.id);
-
-    // Update cache lokal dulu
-    _localCache.add(newCategory);
-
+  Future<Category?> addCategory(Category category) async {
     try {
+      final docRef = categoriesRef.doc();
+      final newCategory = category.copyWith(id: docRef.id);
+      _localCache.add(newCategory);
       await docRef.set(newCategory.toMap());
-    } catch (e) {}
-  }
-
-  Future<void> updateCategory(Category category) async {
-    // Update cache lokal
-    final index = _localCache.indexWhere((c) => c.id == category.id);
-    if (index != -1) {
-      _localCache[index] = category;
+      return newCategory;
+    } catch (_) {
+      return null;
     }
+  }
 
+  Future<bool> updateCategory(Category category) async {
     try {
+      final index = _localCache.indexWhere((c) => c.id == category.id);
+      if (index != -1) _localCache[index] = category;
+
       await categoriesRef.doc(category.id).update(category.toMap());
-    } catch (e) {}
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
-  Future<void> deleteCategory(String id) async {
-    // Hapus dari cache lokal
-    _localCache.removeWhere((c) => c.id == id);
-
+  Future<bool> deleteCategory(String id) async {
     try {
+      _localCache.removeWhere((c) => c.id == id);
       await categoriesRef.doc(id).delete();
-    } catch (e) {}
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
-  // ======================= Search Offline =======================
+  // ======================= Offline Search =======================
   List<Category> searchLocal({String? query, String? type}) {
     return _localCache.where((cat) {
       if (type != null &&

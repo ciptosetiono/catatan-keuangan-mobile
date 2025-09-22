@@ -32,4 +32,20 @@ class Budget {
             ? (map['month'] as Timestamp).toDate()
             : map['month'] as DateTime,
   );
+
+  Budget copyWith({
+    String? id,
+    String? userId,
+    String? categoryId,
+    double? amount,
+    DateTime? month,
+  }) {
+    return Budget(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      categoryId: categoryId ?? this.categoryId,
+      amount: amount ?? this.amount,
+      month: month ?? this.month,
+    );
+  }
 }
