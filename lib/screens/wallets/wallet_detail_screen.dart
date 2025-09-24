@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/constants/date_filter_option.dart';
 
@@ -38,6 +39,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
   List<TransactionModel> _transactions = [];
   List<TransactionModel> _transfers = [];
   List<Wallet> _wallets = [];
+  StreamSubscription? _walletSub;
 
   late TabController _tabController;
 
@@ -54,9 +56,29 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
     _wallet = widget.wallet;
     _tabController = TabController(length: 2, vsync: this);
 
+    // listen perubahan wallet real-time
+    _listenWallet();
     _loadWallets();
     _loadTransactions();
     _loadTransfers();
+  }
+
+  @override
+  void dispose() {
+    _walletSub?.cancel();
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _listenWallet() {
+    _walletSub = _walletService.getWalletStreamById(widget.wallet.id).listen((
+      wallet,
+    ) {
+      if (!mounted) return;
+      setState(() {
+        _wallet = wallet;
+      });
+    });
   }
 
   Future<void> _loadWallets() async {
@@ -80,13 +102,24 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
   }
 
   void _loadTransfers() {
-    _transferService.getTransfersByWallet(widget.wallet.id).listen((data) {
-      if (!mounted) return;
-      setState(() {
-        _transfers = data;
-        _loadingTransfers = false;
-      });
-    });
+    _transferService
+        .getTransfersByWallet(widget.wallet.id)
+        .listen(
+          (data) {
+            if (!mounted) return;
+            setState(() {
+              _transfers = data;
+              _loadingTransfers = false;
+            });
+          },
+          onError: (e) {
+            debugPrint("Error loading transfers: $e");
+            if (!mounted) return;
+            setState(() {
+              _loadingTransfers = false;
+            });
+          },
+        );
   }
 
   String _getWalletName(String? id) {
@@ -153,7 +186,15 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
           expense: expense,
           balance: balance,
         ),
-        Expanded(child: TransactionList(transactions: filteredTransactions)),
+        Expanded(
+          child: TransactionList(
+            transactions: filteredTransactions,
+            onItemUpdated: (updatedTransaction) {
+              //_loadWallet();
+            },
+            // onItemDeleted: _loadWallet,
+          ),
+        ),
       ],
     );
   }
@@ -192,8 +233,8 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
           child: TransferList(
             transfers: filteredTransfers,
             getWalletName: _getWalletName,
-            onItemUpdated: () {},
-            onItemDeleted: () {},
+            // onItemUpdated: _loadWallet, //refresh wallet data
+            // onItemDeleted: _loadWallet, //refresh wallet data
           ),
         ),
       ],
@@ -210,18 +251,14 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
           children: [
             const Text("Filter: "),
             const SizedBox(width: 8),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 300),
+            Flexible(
+              // <-- allows it to shrink
               child: Container(
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey.shade400,
-                  ), // border abu-abu
-                  borderRadius: BorderRadius.circular(8), // radius sudut
+                  border: Border.all(color: Colors.grey.shade400),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                ), // padding dalam
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: DateFilterDropdown(
                   selected: _selectedDateFilter,
                   label: _selectedDateLabel,

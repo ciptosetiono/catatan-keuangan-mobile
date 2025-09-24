@@ -9,9 +9,6 @@ class BudgetService {
 
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
-  // Cache lokal
-  final List<Budget> _localCache = [];
-
   // ======================= Stream / Get Budgets =======================
   Stream<List<Budget>> getBudgets({DateTime? month, String? categoryId}) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -44,23 +41,12 @@ class BudgetService {
   // ======================= Get Budget By ID =======================
   Future<Budget?> getBudget(String id) async {
     try {
-      // Check local cache first
-      final cached = _localCache.firstWhere(
-        (b) => b.id == id,
-        // ignore: cast_from_null_always_fails
-        orElse: () => null as Budget,
-      );
-      // ignore: unnecessary_null_comparison
-      if (cached != null) return cached;
-
-      final doc = await _ref.doc(id).get();
+      // ✅ Firestore handle offline automatically
+      final doc = await _ref
+          .doc(id)
+          .get(const GetOptions(source: Source.serverAndCache));
       if (doc.exists && doc.data() != null) {
-        final budget = Budget.fromMap(
-          doc.id,
-          doc.data() as Map<String, dynamic>,
-        );
-        _localCache.add(budget);
-        return budget;
+        return Budget.fromMap(doc.id, doc.data() as Map<String, dynamic>);
       }
     } catch (_) {}
     return null;
@@ -71,7 +57,6 @@ class BudgetService {
     try {
       final docRef = _ref.doc();
       final newBudget = budget.copyWith(id: docRef.id);
-      _localCache.add(newBudget);
       await docRef.set(newBudget.toMap());
       return newBudget;
     } catch (_) {
@@ -81,8 +66,6 @@ class BudgetService {
 
   Future<bool> updateBudget(Budget budget) async {
     try {
-      final index = _localCache.indexWhere((b) => b.id == budget.id);
-      if (index != -1) _localCache[index] = budget;
       await _ref.doc(budget.id).update(budget.toMap());
       return true;
     } catch (_) {
@@ -92,7 +75,6 @@ class BudgetService {
 
   Future<bool> deleteBudget(String id) async {
     try {
-      _localCache.removeWhere((b) => b.id == id);
       await _ref.doc(id).delete();
       return true;
     } catch (_) {
@@ -116,22 +98,5 @@ class BudgetService {
             .get();
 
     return snapshot.docs.isNotEmpty;
-  }
-
-  // ======================= Offline Search =======================
-  List<Budget> searchLocal({String? categoryId, DateTime? month}) {
-    return _localCache.where((b) {
-      if (categoryId != null &&
-          categoryId.isNotEmpty &&
-          b.categoryId != categoryId) {
-        return false;
-      }
-      if (month != null) {
-        final start = DateTime(month.year, month.month);
-        final end = DateTime(month.year, month.month + 1);
-        if (b.month.isBefore(start) || b.month.isAfter(end)) return false;
-      }
-      return true;
-    }).toList();
   }
 }

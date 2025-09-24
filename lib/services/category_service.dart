@@ -5,19 +5,21 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/category_model.dart';
 
 class CategoryService {
-  final CollectionReference categoriesRef = FirebaseFirestore.instance
-      .collection('categories');
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // Cache lokal
-  final List<Category> _localCache = [];
+  CollectionReference get categoriesRef => _db.collection('categories');
+
+  CategoryService() {
+    _db.settings = const Settings(
+      persistenceEnabled: true, // Enable offline persistence
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+    );
+  }
 
   // ======================= Stream / Get Categories =======================
-  Stream<List<Category>> getCategoryStream({
-    String? query,
-    String? type,
-  }) async* {
+  Stream<List<Category>> getCategoryStream({String? query, String? type}) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
+    if (uid == null) return const Stream.empty();
 
     Query<Category> baseQuery = categoriesRef
         .where('userId', isEqualTo: uid)
@@ -32,53 +34,45 @@ class CategoryService {
 
     baseQuery = baseQuery.orderBy('name');
 
-    await for (var snapshot in baseQuery.snapshots(
-      includeMetadataChanges: true,
-    )) {
-      // Update local cache dengan hasil snapshot
-      _localCache
-        ..clear()
-        ..addAll(snapshot.docs.map((doc) => doc.data()));
+    return baseQuery.snapshots(includeMetadataChanges: true).map((snapshot) {
+      var list = snapshot.docs.map((doc) => doc.data()).toList();
 
-      // Apply client-side filter untuk search
       if (query != null && query.trim().isNotEmpty) {
         final q = query.toLowerCase();
-        final filtered =
-            _localCache
-                .where((cat) => cat.name.toLowerCase().contains(q))
-                .toList();
-        yield filtered;
-      } else {
-        yield _localCache;
+        list = list.where((cat) => cat.name.toLowerCase().contains(q)).toList();
       }
-    }
+
+      return list;
+    });
   }
 
   // ======================= Get Category By ID =======================
   Future<Category?> getCategoryById(String id) async {
-    // Check cache first
     try {
-      final cached = _localCache.firstWhere(
-        (c) => c.id == id,
-        // ignore: cast_from_null_always_fails
-        orElse: () => null as Category,
-      );
-      // ignore: unnecessary_null_comparison
-      if (cached != null) {
-        return cached;
+      // 1️⃣ Try get from cache
+      final cachedDoc = await categoriesRef
+          .doc(id)
+          .get(const GetOptions(source: Source.cache));
+      final data = cachedDoc.data() as Map<String, dynamic>?;
+      if (data != null) {
+        return Category.fromMap(cachedDoc.id, data);
       }
+    } catch (_) {
+      // ignore errors
+    }
 
-      // Fetch from Firestore if not in cache
-      final doc = await categoriesRef.doc(id).get();
-      if (doc.exists && doc.data() != null) {
-        final cat = Category.fromMap(
-          doc.id,
-          doc.data() as Map<String, dynamic>,
-        );
-        _localCache.add(cat);
-        return cat;
+    try {
+      // 2️⃣ Fallback to server if cache not available
+      final serverDoc = await categoriesRef
+          .doc(id)
+          .get(const GetOptions(source: Source.server));
+
+      final data = serverDoc.data() as Map<String, dynamic>?;
+      if (data != null) {
+        return Category.fromMap(serverDoc.id, data);
       }
     } catch (_) {}
+
     return null;
   }
 
@@ -87,7 +81,6 @@ class CategoryService {
     try {
       final docRef = categoriesRef.doc();
       final newCategory = category.copyWith(id: docRef.id);
-      _localCache.add(newCategory);
       await docRef.set(newCategory.toMap());
       return newCategory;
     } catch (_) {
@@ -97,9 +90,6 @@ class CategoryService {
 
   Future<bool> updateCategory(Category category) async {
     try {
-      final index = _localCache.indexWhere((c) => c.id == category.id);
-      if (index != -1) _localCache[index] = category;
-
       await categoriesRef.doc(category.id).update(category.toMap());
       return true;
     } catch (_) {
@@ -109,7 +99,6 @@ class CategoryService {
 
   Future<bool> deleteCategory(String id) async {
     try {
-      _localCache.removeWhere((c) => c.id == id);
       await categoriesRef.doc(id).delete();
       return true;
     } catch (_) {
@@ -117,21 +106,64 @@ class CategoryService {
     }
   }
 
-  // ======================= Offline Search =======================
-  List<Category> searchLocal({String? query, String? type}) {
-    return _localCache.where((cat) {
-      if (type != null &&
-          type.isNotEmpty &&
-          type != 'all' &&
-          cat.type != type) {
-        return false;
+  // ======================= Search / Filter Offline-First =======================
+  Future<List<Category>> searchCategories({String? query, String? type}) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return [];
+
+    List<Category> list = [];
+
+    // 1️⃣ Try cache first
+    try {
+      Query<Category> cacheQuery = categoriesRef
+          .where('userId', isEqualTo: uid)
+          .withConverter<Category>(
+            fromFirestore: (snap, _) => Category.fromMap(snap.id, snap.data()!),
+            toFirestore: (cat, _) => cat.toMap(),
+          );
+
+      if (type != null && type.isNotEmpty && type != 'all') {
+        cacheQuery = cacheQuery.where('type', isEqualTo: type);
       }
-      if (query != null &&
-          query.trim().isNotEmpty &&
-          !cat.name.toLowerCase().contains(query.toLowerCase())) {
-        return false;
-      }
-      return true;
-    }).toList();
+
+      cacheQuery = cacheQuery.orderBy('name');
+
+      final snapshot = await cacheQuery.get(
+        const GetOptions(source: Source.cache),
+      );
+      list = snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (_) {}
+
+    // 2️⃣ If empty, fallback to server
+    if (list.isEmpty) {
+      try {
+        Query<Category> serverQuery = categoriesRef
+            .where('userId', isEqualTo: uid)
+            .withConverter<Category>(
+              fromFirestore:
+                  (snap, _) => Category.fromMap(snap.id, snap.data()!),
+              toFirestore: (cat, _) => cat.toMap(),
+            );
+
+        if (type != null && type.isNotEmpty && type != 'all') {
+          serverQuery = serverQuery.where('type', isEqualTo: type);
+        }
+
+        serverQuery = serverQuery.orderBy('name');
+
+        final snapshot = await serverQuery.get(
+          const GetOptions(source: Source.server),
+        );
+        list = snapshot.docs.map((doc) => doc.data()).toList();
+      } catch (_) {}
+    }
+
+    // Apply client-side search
+    if (query != null && query.trim().isNotEmpty) {
+      final q = query.toLowerCase();
+      list = list.where((cat) => cat.name.toLowerCase().contains(q)).toList();
+    }
+
+    return list;
   }
 }

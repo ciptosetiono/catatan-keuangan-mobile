@@ -63,8 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color.fromARGB(255, 4, 231, 80),
-                  Color.fromARGB(255, 40, 174, 236),
+                  Color.fromARGB(122, 40, 174, 236),
+                  Color.fromARGB(255, 2, 128, 247),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -91,10 +91,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     // ✅ Headline
                     Text(
-                      'Welcome to MoneyNote!',
+                      'Welcome to Your Money Manager!',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
+                        fontSize: 22,
                         color: Colors.white,
                       ),
                     ),

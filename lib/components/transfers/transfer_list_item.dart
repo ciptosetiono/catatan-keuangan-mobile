@@ -82,8 +82,6 @@ Future<void> handleTransferTap({
 
     if (result == 'updated' && onUpdated != null) {
       onUpdated();
-    } else if (result == 'deleted' && onDeleted != null) {
-      onDeleted();
     }
   } else if (action == 'delete') {
     final deleted = await showTransferDeleteDialog(

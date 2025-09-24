@@ -75,7 +75,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
       );
       if (exists) {
         setState(() {
-          _errorText = 'There is no nudget for this category in this month.';
+          _errorText = 'Budget for this category has exist in selected month!';
           _isLoading = false;
         });
         return;
@@ -151,16 +151,6 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
               ),
               const SizedBox(height: 16),
 
-              CurrencyTextField(
-                controller: _amountController,
-                label: 'Amount',
-                validator:
-                    (val) =>
-                        val == null || val.trim().isEmpty
-                            ? 'Amount is required'
-                            : null,
-              ),
-              const SizedBox(height: 16),
               MonthPickerField(
                 selectedMonth: _selectedMonth,
                 onMonthPicked: (picked) {
@@ -171,7 +161,17 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
                 const SizedBox(height: 12),
                 Text(_errorText!, style: const TextStyle(color: Colors.red)),
               ],
-              const Spacer(),
+              const SizedBox(height: 16),
+              CurrencyTextField(
+                controller: _amountController,
+                label: 'Amount',
+                validator:
+                    (val) =>
+                        val == null || val.trim().isEmpty
+                            ? 'Amount is required'
+                            : null,
+              ),
+              const SizedBox(height: 16),
 
               // Tombol simpan
               SizedBox(

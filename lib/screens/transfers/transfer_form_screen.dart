@@ -28,7 +28,6 @@ class TransferFormScreen extends StatefulWidget {
 class _TransferFormScreenState extends State<TransferFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
 
   final _walletService = WalletService();
   final _transferService = TransferService();
@@ -52,7 +51,6 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
   void dispose() {
     _walletSubscription?.cancel();
     _amountController.dispose();
-    _noteController.dispose();
     super.dispose();
   }
 
@@ -65,7 +63,6 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
       selection: TextSelection.collapsed(offset: formattedAmount.length),
     );
 
-    _noteController.text = t.title;
     _selectedDate = t.date;
 
     _fromWallet = await _walletService.getWalletById(t.fromWalletId!);
@@ -128,14 +125,11 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
         return;
       }
 
-      final note =
-          _noteController.text.trim().isEmpty
-              ? 'Transfer'
-              : _noteController.text.trim();
+      final title = 'Transfer from ${_fromWallet!.name} to ${_toWallet!.name}';
 
       final transfer = TransactionModel(
         id: isEdit ? widget.transfer!.id : '',
-        title: note,
+        title: title,
         amount: amount.toDouble(),
         type: 'transfer',
         date: _selectedDate,
@@ -156,7 +150,8 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
       _showSuccessMessage();
 
       // ⛔️ Harus setelah semua selesai dan sebelum return
-      Navigator.pop(context);
+      //Navigator.pop(context);
+      Navigator.pop(context, isEdit ? 'updated' : 'added');
     } catch (e) {
       if (mounted) {
         _showAlert(e.toString());

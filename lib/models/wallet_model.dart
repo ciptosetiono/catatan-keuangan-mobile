@@ -8,8 +8,6 @@ class Wallet {
   final String name;
   final double startBalance;
   final double currentBalance;
-  final String? color;
-  final String? icon;
   final DateTime createdAt;
 
   Wallet({
@@ -18,8 +16,6 @@ class Wallet {
     required this.name,
     required this.startBalance,
     required this.currentBalance,
-    this.icon,
-    this.color,
     required this.createdAt,
   });
 
@@ -36,12 +32,25 @@ class Wallet {
       id: id,
       userId: map['userId'] ?? '',
       name: map['name'] ?? '-',
-      startBalance: map['startBalance'] ?? 0,
-      currentBalance: map['currentBalance'] ?? 0,
-      icon: map['icon'],
-      color: map['color'],
+      startBalance: (map['startBalance'] ?? 0).toDouble(),
+      currentBalance: (map['currentBalance'] ?? 0).toDouble(),
       createdAt: _parseTimestamp(map['createdAt']),
     );
+  }
+
+  factory Wallet.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    final Wallet wallet = Wallet(
+      id: doc.id,
+      userId: data['userId'] ?? '',
+      name: data['name'] ?? '-',
+      startBalance: (data['startBalance'] ?? 0).toDouble(),
+      currentBalance: (data['currentBalance'] ?? 0).toDouble(),
+      createdAt: _parseTimestamp(data['createdAt']),
+    );
+
+    return wallet;
   }
 
   Map<String, dynamic> toMap() {
@@ -50,8 +59,6 @@ class Wallet {
       'name': name,
       'startBalance': startBalance,
       'currentBalance': currentBalance,
-      'icon': icon,
-      'color': color,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -72,8 +79,6 @@ class Wallet {
     String? id,
     String? userId,
     String? name,
-    String? icon,
-    String? color,
     double? startBalance,
     double? currentBalance,
     DateTime? createdAt,
@@ -82,11 +87,14 @@ class Wallet {
       id: id ?? this.id,
       userId: userId ?? this.userId,
       name: name ?? this.name,
-      icon: icon ?? this.icon,
-      color: color ?? this.color,
       startBalance: startBalance ?? this.startBalance,
       currentBalance: currentBalance ?? this.currentBalance,
       createdAt: createdAt ?? this.createdAt,
     );
+  }
+
+  @override
+  String toString() {
+    return 'Wallet(id: $id, name: $name, balance: $currentBalance, userId: $userId)';
   }
 }

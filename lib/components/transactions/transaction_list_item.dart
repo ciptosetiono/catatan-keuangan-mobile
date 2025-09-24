@@ -107,6 +107,7 @@ Future<void> handleTransactionTap({
               existingData: transaction,
               onSaved: (updatedTransaction) {
                 if (onUpdated != null) {
+                  debugPrint('call update triger from list item');
                   onUpdated(updatedTransaction);
                 }
               },

@@ -53,7 +53,14 @@ class TransactionService {
     if (toDate != null) {
       query = query.where('date', isLessThan: Timestamp.fromDate(toDate));
     }
-    if (type != null) query = query.where('type', isEqualTo: type);
+
+    if (type != null) {
+      query = query.where('type', isEqualTo: type);
+    } else {
+      // filter khusus income atau expense, tipe transfer tidak diikutkan
+      query = query.where('type', whereIn: ['income', 'expense']);
+    }
+
     if (walletId != null) query = query.where('walletId', isEqualTo: walletId);
     if (categoryId != null) {
       query = query.where('categoryId', isEqualTo: categoryId);
