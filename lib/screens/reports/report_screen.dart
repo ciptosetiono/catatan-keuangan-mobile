@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:money_note/constants/date_filter_option.dart';
 import 'package:money_note/components/reports/report_chart.dart';
 import 'package:money_note/components/reports/report_filter.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
 import 'package:money_note/components/reports/report_list.dart';
-import 'package:money_note/services/firebase/transaction_service.dart';
-import 'package:money_note/services/firebase/wallet_service.dart';
-import 'package:money_note/services/firebase/category_service.dart';
+import 'package:money_note/services/sqlite/transaction_service.dart';
+import 'package:money_note/services/sqlite/wallet_service.dart';
+import 'package:money_note/services/sqlite/category_service.dart';
 import 'package:money_note/services/export_service.dart';
 
 class ReportScreen extends StatefulWidget {
@@ -99,9 +98,7 @@ class _ReportScreenState extends State<ReportScreen> {
       final rawDate = tx["date"];
       late DateTime date;
 
-      if (rawDate is Timestamp) {
-        date = rawDate.toDate();
-      } else if (rawDate is DateTime) {
+      if (rawDate is DateTime) {
         date = rawDate;
       } else {
         throw Exception("Unknown date type: $rawDate");

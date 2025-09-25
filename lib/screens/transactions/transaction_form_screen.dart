@@ -8,9 +8,9 @@ import 'package:money_note/models/category_model.dart';
 import 'package:money_note/models/wallet_model.dart';
 import 'package:money_note/models/transaction_model.dart';
 
-import 'package:money_note/services/firebase/transaction_service.dart';
-import 'package:money_note/services/firebase/category_service.dart';
-import 'package:money_note/services/firebase/wallet_service.dart';
+import 'package:money_note/services/sqlite/transaction_service.dart';
+import 'package:money_note/services/sqlite/category_service.dart';
+import 'package:money_note/services/sqlite/wallet_service.dart';
 
 import 'package:money_note/components/transactions/transaction_type_selector.dart';
 import 'package:money_note/components/wallets/wallet_dropdown.dart';

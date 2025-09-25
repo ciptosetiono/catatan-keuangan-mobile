@@ -1,7 +1,5 @@
 // ignore_for_file: prefer_collection_literals
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class Wallet {
   final String id;
   final String userId;
@@ -38,37 +36,20 @@ class Wallet {
     );
   }
 
-  factory Wallet.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-
-    final Wallet wallet = Wallet(
-      id: doc.id,
-      userId: data['userId'] ?? '',
-      name: data['name'] ?? '-',
-      startBalance: (data['startBalance'] ?? 0).toDouble(),
-      currentBalance: (data['currentBalance'] ?? 0).toDouble(),
-      createdAt: _parseTimestamp(data['createdAt']),
-    );
-
-    return wallet;
-  }
-
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
       'name': name,
       'startBalance': startBalance,
       'currentBalance': currentBalance,
-      'createdAt': Timestamp.fromDate(createdAt),
+      'createdAt': createdAt,
     };
   }
 
   /// Safe parsing Timestamp from Firestore
   // ignore: unused_element
   static DateTime _parseTimestamp(dynamic value) {
-    if (value is Timestamp) {
-      return value.toDate();
-    } else if (value is DateTime) {
+    if (value is DateTime) {
       return value;
     } else {
       return DateTime.now(); // fallback

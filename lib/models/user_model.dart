@@ -2,22 +2,17 @@ class UserModel {
   final int? id;
   final String firebaseUid;
   final String email;
-  final String password;
+  final String name;
 
   UserModel({
     this.id,
     required this.firebaseUid,
     required this.email,
-    required this.password,
+    required this.name,
   });
 
   Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'firebaseUid': firebaseUid,
-      'email': email,
-      'password': password,
-    };
+    return {'id': id, 'firebaseUid': firebaseUid, 'email': email, 'name': name};
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
@@ -25,7 +20,7 @@ class UserModel {
       id: map['id'],
       firebaseUid: map['firebaseUid'],
       email: map['email'],
-      password: map['password'],
+      name: map['name'],
     );
   }
 }

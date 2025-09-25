@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'package:money_note/models/category_model.dart';
-
-import 'package:money_note/services/firebase/category_service.dart';
-
 import 'package:money_note/components/buttons/add_button.dart';
-
 import 'package:money_note/components/categories/category_list.dart';
 import 'package:money_note/components/categories/category_filter_bar.dart';
 import 'package:money_note/components/categories/category_action_dialog.dart';
 import 'package:money_note/components/categories/category_delete_dialog.dart';
-
 import 'package:money_note/screens/categories/category_detail_screen.dart';
 import 'package:money_note/screens/categories/category_form_screen.dart';
 
@@ -22,7 +17,6 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
-  final CategoryService _categoryService = CategoryService();
   String _searchQuery = '';
   String _filterType = 'all';
 
@@ -83,7 +77,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
         ),
       ),
       body: CategoryList(
-        categoryService: _categoryService,
         searchQuery: _searchQuery,
         filterType: _filterType,
         onCategoryTap: _handleCategoryTap,

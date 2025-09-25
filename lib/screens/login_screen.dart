@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/firebase/user_initializer.dart';
+import '../services/sqlite/user_initializer.dart';
 import 'package:money_note/services/firebase/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {

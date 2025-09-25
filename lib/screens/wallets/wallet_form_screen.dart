@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import '../../models/wallet_model.dart';
-import '../../services/firebase/wallet_service.dart';
+import '../../services/sqlite/wallet_service.dart';
 import '../../utils/currency_formatter.dart';
 import '../../utils/currency_input_formatter.dart';
 import '../../../components/buttons/submit_button.dart';

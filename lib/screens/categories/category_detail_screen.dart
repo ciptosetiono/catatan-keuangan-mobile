@@ -9,8 +9,8 @@ import 'package:money_note/components/categories/category_bottomsheet_menu.dart'
 
 import 'package:money_note/models/category_model.dart';
 import 'package:money_note/models/transaction_model.dart';
-import 'package:money_note/services/firebase/transaction_service.dart';
-import 'package:money_note/services/firebase/category_service.dart';
+import 'package:money_note/services/sqlite/transaction_service.dart';
+import 'package:money_note/services/sqlite/category_service.dart';
 
 class CategoryDetailScreen extends StatefulWidget {
   final Category category;

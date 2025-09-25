@@ -8,8 +8,8 @@ import 'package:money_note/utils/currency_input_formatter.dart';
 import 'package:money_note/models/transaction_model.dart';
 import 'package:money_note/models/wallet_model.dart';
 
-import 'package:money_note/services/firebase/transfer_service.dart';
-import 'package:money_note/services/firebase/wallet_service.dart';
+import 'package:money_note/services/sqlite/transfer_service.dart';
+import 'package:money_note/services/sqlite/wallet_service.dart';
 
 import 'package:money_note/components/wallets/wallet_dropdown.dart';
 import 'package:money_note/components/forms/date_picker_field.dart';
@@ -141,7 +141,7 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
       );
 
       if (isEdit) {
-        await _transferService.updateTransfer(widget.transfer!, transfer);
+        await _transferService.updateTransfer(widget.transfer!.id, transfer);
       } else {
         await _transferService.addTransfer(transfer);
       }

@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, prefer_final_fields
 
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:money_note/constants/date_filter_option.dart';
 import 'package:money_note/components/buttons/add_button.dart';
@@ -12,7 +11,7 @@ import 'package:money_note/components/transactions/unified_filter_dialog.dart';
 import 'package:money_note/components/transactions/transaction_list.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
 import 'package:money_note/models/transaction_model.dart';
-import 'package:money_note/services/firebase/transaction_service.dart';
+import 'package:money_note/services/sqlite/transaction_service.dart';
 import 'package:money_note/screens/transactions/transaction_form_screen.dart';
 
 class TransactionScreen extends StatefulWidget {
@@ -37,7 +36,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
   List<TransactionModel> _transactions = [];
   bool _isLoading = false;
   bool _hasMore = true;
-  DocumentSnapshot<TransactionModel>? _lastDocument;
+  int _offset = 0;
 
   @override
   void initState() {
@@ -65,38 +64,33 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
     if (reset) {
       _transactions.clear();
-      _lastDocument = null;
+      _offset = 0;
       _hasMore = true;
       setState(() {});
     }
 
     try {
       const limit = 20;
-      final snapshot = await TransactionService().getTransactionsPaginated(
-        limit: limit,
-        startAfter: _lastDocument,
-        fromDate: _from,
-        toDate: _to,
-        type: _typeFilter,
-        walletId: _walletFilter,
-        categoryId: _categoryFilter,
-        title: _titleFilter,
-      );
+
+      final newTransactions = await TransactionService()
+          .getTransactionsPaginated(
+            limit: limit,
+            offset: _offset,
+            fromDate: _from,
+            toDate: _to,
+            type: _typeFilter,
+            walletId: _walletFilter,
+            categoryId: _categoryFilter,
+            title: _titleFilter,
+          );
 
       if (!mounted) return;
 
-      if (snapshot.docs.isNotEmpty) {
-        _lastDocument = snapshot.docs.last;
-
-        final newTransactions = snapshot.docs.map((doc) => doc.data()).toList();
-
-        setState(() {
-          _transactions.addAll(newTransactions);
-          if (snapshot.docs.length < limit) _hasMore = false;
-        });
-      } else {
-        setState(() => _hasMore = false);
-      }
+      setState(() {
+        _transactions.addAll(newTransactions);
+        _offset += newTransactions.length;
+        if (newTransactions.length < limit) _hasMore = false;
+      });
     } catch (e) {
       debugPrint("Error loading transactions: $e");
     } finally {
@@ -137,8 +131,8 @@ class _TransactionScreenState extends State<TransactionScreen> {
   }
 
   Widget _buildSummary() {
-    return StreamBuilder<Map<String, num>>(
-      stream: TransactionService().getSummary(
+    return FutureBuilder<Map<String, num>>(
+      future: TransactionService().getSummary(
         fromDate: _from,
         toDate: _to,
         type: _typeFilter,
@@ -153,9 +147,11 @@ class _TransactionScreenState extends State<TransactionScreen> {
             child: Center(child: CircularProgressIndicator()),
           );
         }
+
         final summary = snapshot.data!;
         final income = summary['income'] ?? 0;
         final expense = summary['expense'] ?? 0;
+
         return TransactionSummaryCard(
           income: income,
           expense: expense,

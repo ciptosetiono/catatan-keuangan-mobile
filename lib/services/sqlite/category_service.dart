@@ -7,27 +7,27 @@ class CategoryService {
   final StreamController<List<Category>> _categoryController =
       StreamController<List<Category>>.broadcast();
 
-  String? _currentUserId;
   String? _currentType;
   String? _currentQuery;
 
   // Getter stream untuk UI
   Stream<List<Category>> get categoryStream => _categoryController.stream;
 
+  Stream<List<Category>> getCategoryStream({String? type, String? query}) {
+    // Load first
+    loadCategories(type: type, query: query);
+    return categoryStream;
+  }
+
   // ======================= Load Categories =======================
-  Future<void> loadCategories({
-    required String userId,
-    String? type,
-    String? query,
-  }) async {
-    _currentUserId = userId;
+  Future<void> loadCategories({String? type, String? query}) async {
     _currentType = type;
     _currentQuery = query;
 
     final db = await DBHelper.database;
 
-    String where = "userId = ?";
-    List<dynamic> whereArgs = [userId];
+    String where = "";
+    List<dynamic> whereArgs = [];
 
     if (type != null && type.isNotEmpty && type != 'all') {
       where += " AND type = ?";
@@ -37,7 +37,6 @@ class CategoryService {
     final maps = await db.query(
       'categories',
       where: where,
-      whereArgs: whereArgs,
       orderBy: 'name ASC',
     );
 
@@ -93,13 +92,7 @@ class CategoryService {
 
   // ======================= Reload Query =======================
   Future<void> _reloadLastQuery() async {
-    if (_currentUserId != null) {
-      await loadCategories(
-        userId: _currentUserId!,
-        type: _currentType,
-        query: _currentQuery,
-      );
-    }
+    await loadCategories(type: _currentType, query: _currentQuery);
   }
 
   void dispose() {

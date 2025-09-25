@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:money_note/models/transaction_model.dart';
+import 'package:money_note/services/sqlite/db_helper.dart';
 import 'package:sqflite/sqflite.dart';
-import '../../models/transaction_model.dart';
 import 'wallet_service.dart';
-import 'db_helper.dart';
 
 class TransactionService {
   static final TransactionService _instance = TransactionService._internal();
@@ -11,110 +11,185 @@ class TransactionService {
 
   final WalletService _walletService = WalletService();
 
-  final StreamController<List<TransactionModel>> _transactionController =
+  final StreamController<List<TransactionModel>> _txController =
       StreamController<List<TransactionModel>>.broadcast();
 
-  final StreamController<Map<String, double>> _summaryController =
-      StreamController<Map<String, double>>.broadcast();
-
   // ================= Stream =================
-  Stream<List<TransactionModel>> getTransactionStream({String? userId}) {
-    _loadTransactions(userId: userId);
-    return _transactionController.stream;
+  Stream<List<TransactionModel>> getTransactionsStream({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? type,
+    String? walletId,
+    String? categoryId,
+    String? title,
+  }) {
+    _loadTransactions(
+      fromDate: fromDate,
+      toDate: toDate,
+      type: type,
+      walletId: walletId,
+      categoryId: categoryId,
+      title: title,
+    );
+    return _txController.stream;
   }
 
-  Stream<Map<String, double>> getSummary({String? userId}) {
-    _calculateSummary(userId: userId);
-    return _summaryController.stream;
-  }
-
-  Future<void> _loadTransactions({String? userId}) async {
-    final txs = await getTransactions(userId: userId);
-    _transactionController.add(txs);
-    _calculateSummary(userId: userId);
-  }
-
-  Future<void> _calculateSummary({String? userId}) async {
-    final db = await DBHelper.database;
-    List<String> whereClauses = [];
-    List<dynamic> whereArgs = [];
-
-    if (userId != null) {
-      whereClauses.add('userId = ?');
-      whereArgs.add(userId);
-    }
-
-    final whereString =
-        whereClauses.isNotEmpty ? 'WHERE ${whereClauses.join(' AND ')}' : '';
-
-    final result = await db.rawQuery('''
-      SELECT 
-        SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS income,
-        SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS expense
-      FROM transactions
-      $whereString
-    ''', whereArgs);
-
-    final row = result.first;
-    final income = (row['income'] as num?)?.toDouble() ?? 0.0;
-    final expense = (row['expense'] as num?)?.toDouble() ?? 0.0;
-
-    _summaryController.add({
-      'income': income,
-      'expense': expense,
-      'balance': income - expense,
-    });
+  Future<void> _loadTransactions({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? type,
+    String? walletId,
+    String? categoryId,
+    String? title,
+  }) async {
+    final txs = await getTransactions(
+      fromDate: fromDate,
+      toDate: toDate,
+      type: type,
+      walletId: walletId,
+      categoryId: categoryId,
+      title: title,
+    );
+    _txController.add(txs);
   }
 
   // ================= CRUD =================
-  Future<List<TransactionModel>> getTransactions({String? userId}) async {
+  Future<List<TransactionModel>> getTransactions({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? type,
+    String? walletId,
+    String? categoryId,
+    String? title,
+    int? limit,
+    int? offset,
+  }) async {
     final db = await DBHelper.database;
+    final whereClauses = <String>[];
+    final whereArgs = <dynamic>[];
+
+    if (fromDate != null) {
+      whereClauses.add('date >= ?');
+      whereArgs.add(fromDate.toIso8601String());
+    }
+    if (toDate != null) {
+      whereClauses.add('date < ?');
+      whereArgs.add(toDate.toIso8601String());
+    }
+    if (type != null) {
+      whereClauses.add('type = ?');
+      whereArgs.add(type);
+    }
+    if (walletId != null) {
+      whereClauses.add('walletId = ?');
+      whereArgs.add(walletId);
+    }
+    if (categoryId != null) {
+      whereClauses.add('categoryId = ?');
+      whereArgs.add(categoryId);
+    }
+    if (title != null) {
+      whereClauses.add('title = ?');
+      whereArgs.add(title);
+    }
+
     final maps = await db.query(
       'transactions',
-      where: userId != null ? 'userId = ?' : null,
-      whereArgs: userId != null ? [userId] : null,
+      where: whereClauses.isEmpty ? null : whereClauses.join(' AND '),
+      whereArgs: whereArgs.isEmpty ? null : whereArgs,
       orderBy: 'date DESC',
+      limit: limit,
+      offset: offset,
     );
+
     return maps.map((e) => TransactionModel.fromMap(e)).toList();
   }
 
-  Future<TransactionModel?> getTransactionById(String id) async {
+  Future<TransactionModel> addTransaction(Map<String, dynamic> txData) async {
     final db = await DBHelper.database;
-    final maps = await db.query(
-      'transactions',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-    if (maps.isNotEmpty) return TransactionModel.fromMap(maps.first);
-    return null;
-  }
 
-  Future<TransactionModel> addTransaction(TransactionModel tx) async {
-    final db = await DBHelper.database;
+    // Insert ke database
     await db.insert(
       'transactions',
-      tx.toMap(),
+      txData,
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
+    // Buat object TransactionModel dari map
+    final tx = TransactionModel.fromMap(txData);
+
+    // Update saldo wallet jika ada
     if (tx.walletId != null) {
       if (tx.type == 'income') {
         await _walletService.increaseBalance(tx.walletId!, tx.amount.toInt());
-      } else {
+      } else if (tx.type == 'expense') {
         await _walletService.decreaseBalance(tx.walletId!, tx.amount.toInt());
       }
     }
 
-    await _loadTransactions(userId: tx.userId);
+    // Refresh stream / list transaksi
+    _loadTransactions();
+
     return tx;
   }
 
-  Future<bool> updateTransaction(String id, TransactionModel newTx) async {
+  Future<TransactionModel?> updateTransaction(
+    String id,
+    Map<String, dynamic> newData,
+  ) async {
     final db = await DBHelper.database;
-    final oldTx = await getTransactionById(id);
-    if (oldTx == null) return false;
 
+    // Ambil transaksi lama
+    final oldTxList = await db.query(
+      'transactions',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (oldTxList.isEmpty) return null;
+
+    final oldTx = TransactionModel.fromMap(oldTxList.first);
+
+    // Rollback saldo wallet lama
+    if (oldTx.walletId != null) {
+      if (oldTx.type == 'income') {
+        await _walletService.decreaseBalance(
+          oldTx.walletId!,
+          oldTx.amount.toInt(),
+        );
+      } else if (oldTx.type == 'expense') {
+        await _walletService.increaseBalance(
+          oldTx.walletId!,
+          oldTx.amount.toInt(),
+        );
+      }
+    }
+
+    // Buat TransactionModel baru dari Map, gabungkan id & wallet lama jika perlu
+    final newTx = oldTx.copyWith(
+      amount: (newData['amount'] ?? oldTx.amount).toDouble(),
+      type: newData['type'] ?? oldTx.type,
+      walletId: newData['walletId'] ?? oldTx.walletId,
+      categoryId: newData['categoryId'] ?? oldTx.categoryId,
+      date: newData['date'] ?? oldTx.date,
+      title: newData['title'] ?? oldTx.title,
+    );
+
+    // Update saldo wallet baru
+    if (newTx.walletId != null) {
+      if (newTx.type == 'income') {
+        await _walletService.increaseBalance(
+          newTx.walletId!,
+          newTx.amount.toInt(),
+        );
+      } else if (newTx.type == 'expense') {
+        await _walletService.decreaseBalance(
+          newTx.walletId!,
+          newTx.amount.toInt(),
+        );
+      }
+    }
+
+    // Update transaksi di database
     await db.update(
       'transactions',
       newTx.toMap(),
@@ -122,106 +197,143 @@ class TransactionService {
       whereArgs: [id],
     );
 
-    // revert saldo lama
-    if (oldTx.walletId != null) {
-      if (oldTx.type == 'income') {
-        await _walletService.decreaseBalance(
-          oldTx.walletId!,
-          oldTx.amount.toInt(),
-        );
-      } else {
-        await _walletService.increaseBalance(
-          oldTx.walletId!,
-          oldTx.amount.toInt(),
-        );
-      }
-    }
+    // Refresh stream/list
+    _loadTransactions();
 
-    // apply saldo baru
-    if (newTx.walletId != null) {
-      if (newTx.type == 'income') {
-        await _walletService.increaseBalance(
-          newTx.walletId!,
-          newTx.amount.toInt(),
-        );
-      } else {
-        await _walletService.decreaseBalance(
-          newTx.walletId!,
-          newTx.amount.toInt(),
-        );
-      }
-    }
-
-    await _loadTransactions(userId: newTx.userId);
-    return true;
+    return newTx;
   }
 
   Future<bool> deleteTransaction(TransactionModel tx) async {
     final db = await DBHelper.database;
+
     final count = await db.delete(
       'transactions',
       where: 'id = ?',
       whereArgs: [tx.id],
     );
-
-    if (count > 0 && tx.walletId != null) {
-      if (tx.type == 'income') {
-        await _walletService.decreaseBalance(tx.walletId!, tx.amount.toInt());
-      } else {
-        await _walletService.increaseBalance(tx.walletId!, tx.amount.toInt());
+    if (count > 0) {
+      if (tx.walletId != null) {
+        if (tx.type == 'income') {
+          await _walletService.decreaseBalance(tx.walletId!, tx.amount.toInt());
+        } else if (tx.type == 'expense') {
+          await _walletService.increaseBalance(tx.walletId!, tx.amount.toInt());
+        }
       }
-      await _loadTransactions(userId: tx.userId);
+      _loadTransactions();
       return true;
     }
     return false;
   }
 
-  // ================= Aggregation =================
-  Future<double> getTotalByMonth(String type, DateTime month) async {
-    final db = await DBHelper.database;
-    final from = DateTime(month.year, month.month, 1).millisecondsSinceEpoch;
-    final to = DateTime(month.year, month.month + 1, 1).millisecondsSinceEpoch;
-    final result = await db.rawQuery(
-      '''
-      SELECT SUM(amount) as total FROM transactions
-      WHERE type = ? AND date >= ? AND date < ?
-    ''',
-      [type, from, to],
+  // ================= Summary =================
+  Future<Map<String, num>> getSummary({
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? type,
+    String? walletId,
+    String? categoryId,
+    String? title,
+  }) async {
+    final txs = await getTransactions(
+      fromDate: fromDate,
+      toDate: toDate,
+      type: type,
+      walletId: walletId,
+      categoryId: categoryId,
+      title: title,
     );
-    return result.first['total'] as double? ?? 0.0;
+
+    num income = 0;
+    num expense = 0;
+
+    for (var tx in txs) {
+      if (tx.type == 'income') income += tx.amount;
+      if (tx.type == 'expense') expense += tx.amount;
+    }
+
+    return {'income': income, 'expense': expense, 'balance': income - expense};
   }
 
-  Future<Map<String, double>> getTotalByCategories(
-    List<String> categoryIds,
-    DateTime month,
-  ) async {
-    final db = await DBHelper.database;
-    final from = DateTime(month.year, month.month, 1).millisecondsSinceEpoch;
-    final to = DateTime(month.year, month.month + 1, 1).millisecondsSinceEpoch;
+  // ================= Total per Category =================
+  Future<Map<String, double>> getTotalSpentByCategories({
+    required List<String> categoryIds,
+    required DateTime month,
+  }) async {
+    final from = DateTime(month.year, month.month);
+    final to = DateTime(month.year, month.month + 1);
 
-    final result = await db.query(
-      'transactions',
-      columns: ['categoryId', 'SUM(amount) as total'],
-      where:
-          'type = ? AND categoryId IN (${List.filled(categoryIds.length, '?').join(',')}) AND date >= ? AND date < ?',
-      whereArgs: ['expense', ...categoryIds, from, to],
-      groupBy: 'categoryId',
+    final txs = await getTransactions(
+      fromDate: from,
+      toDate: to,
+      type: 'expense',
     );
 
     Map<String, double> totals = {};
+
     for (var id in categoryIds) {
-      final row = result.firstWhere(
-        (r) => r['categoryId'] == id,
-        orElse: () => {'total': 0.0},
-      );
-      totals[id] = (row['total'] as num?)?.toDouble() ?? 0.0;
+      totals[id] = 0;
     }
+
+    for (var tx in txs) {
+      if (tx.categoryId != null && totals.containsKey(tx.categoryId)) {
+        totals[tx.categoryId!] = (totals[tx.categoryId!] ?? 0) + tx.amount;
+      }
+    }
+
     return totals;
   }
 
-  // ================= Dispose =================
+  // ================= Pagination =================
+  Future<List<TransactionModel>> getTransactionsPaginated({
+    required int limit,
+    int offset = 0,
+    DateTime? fromDate,
+    DateTime? toDate,
+    String? type,
+    String? walletId,
+    String? categoryId,
+    String? title,
+  }) async {
+    return getTransactions(
+      fromDate: fromDate,
+      toDate: toDate,
+      type: type,
+      walletId: walletId,
+      categoryId: categoryId,
+      title: title,
+      limit: limit,
+      offset: offset,
+    );
+  }
+
+  // ======================= Aggregations =======================
+  Future<double> getTotalIncomeByMonth(DateTime month) async {
+    final from = DateTime(month.year, month.month);
+    final to = DateTime(month.year, month.month + 1);
+
+    final db = await DBHelper.database;
+    final result = await db.rawQuery(
+      'SELECT SUM(amount) as total FROM transactions WHERE type = ? AND date >= ? AND date < ?',
+      ['income', from.millisecondsSinceEpoch, to.millisecondsSinceEpoch],
+    );
+
+    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  Future<double> getTotalSpentByMonth(DateTime month) async {
+    final from = DateTime(month.year, month.month);
+    final to = DateTime(month.year, month.month + 1);
+
+    final db = await DBHelper.database;
+    final result = await db.rawQuery(
+      'SELECT SUM(amount) as total FROM transactions WHERE type = ? AND date >= ? AND date < ?',
+      ['expense', from.millisecondsSinceEpoch, to.millisecondsSinceEpoch],
+    );
+
+    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
+  }
+
   void dispose() {
-    _transactionController.close();
-    _summaryController.close();
+    _txController.close();
   }
 }

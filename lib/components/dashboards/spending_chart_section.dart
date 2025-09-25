@@ -7,8 +7,8 @@ import 'package:money_note/utils/currency_formatter.dart';
 
 import 'package:money_note/models/category_model.dart';
 
-import 'package:money_note/services/firebase/category_service.dart';
-import 'package:money_note/services/firebase/transaction_service.dart';
+import 'package:money_note/services/sqlite/category_service.dart';
+import 'package:money_note/services/sqlite/transaction_service.dart';
 import 'package:money_note/screens/categories/category_detail_screen.dart';
 
 import 'section_title.dart';

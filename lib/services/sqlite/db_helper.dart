@@ -14,21 +14,15 @@ class DBHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'money_note.db');
 
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-    );
+    return await openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
   static Future _onCreate(Database db, int version) async {
-
-  await db.execute('''
+    await db.execute('''
     CREATE TABLE users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       firebaseUid TEXT UNIQUE,
       email TEXT,
-      password TEXT
     )
   ''');
 

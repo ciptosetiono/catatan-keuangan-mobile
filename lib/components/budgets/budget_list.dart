@@ -5,8 +5,8 @@ import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/models/budget_model.dart';
 import 'package:money_note/models/category_model.dart';
 
-import 'package:money_note/services/firebase/budget_service.dart';
-import 'package:money_note/services/firebase/transaction_service.dart';
+import 'package:money_note/services/sqlite/budget_service.dart';
+import 'package:money_note/services/sqlite/transaction_service.dart';
 
 import 'package:money_note/components/budgets/budget_item.dart';
 
@@ -23,7 +23,7 @@ class BudgetList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Budget>>(
-      stream: BudgetService().getBudgets(month: selectedMonth),
+      stream: BudgetService().getBudgetStream(month: selectedMonth),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class Budget {
   final String id;
   final String userId;
@@ -27,10 +25,7 @@ class Budget {
     userId: map['userId'] as String,
     categoryId: map['categoryId'] as String,
     amount: (map['amount'] as num).toDouble(),
-    month:
-        map['month'] is Timestamp
-            ? (map['month'] as Timestamp).toDate()
-            : map['month'] as DateTime,
+    month: map['month'] as DateTime,
   );
 
   Budget copyWith({

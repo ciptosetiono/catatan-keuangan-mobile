@@ -8,34 +8,55 @@ class WalletService {
   factory WalletService() => _instance;
   WalletService._internal();
 
-  // StreamController untuk realtime update
-  final StreamController<List<Wallet>> _walletController =
+  // StreamController untuk realtime updates
+  final StreamController<List<Wallet>> _walletsController =
       StreamController<List<Wallet>>.broadcast();
 
-  // ======================= Stream =======================
+  final Map<String, StreamController<Wallet?>> _walletByIdControllers = {};
 
-  Stream<List<Wallet>> getWalletStream({String? userId}) {
-    _loadWallets(userId: userId); // load pertama kali
-    return _walletController.stream;
+  // ================= Stream =================
+
+  /// Stream semua wallet
+  Stream<List<Wallet>> getWalletStream() {
+    _loadWallets();
+    return _walletsController.stream;
   }
 
-  Future<void> _loadWallets({String? userId}) async {
-    final wallets = await getWallets(userId: userId);
-    _walletController.add(wallets);
+  Future<void> _loadWallets() async {
+    final wallets = await getWallets();
+    _walletsController.add(wallets);
+
+    // update setiap controller wallet per ID
+    for (var wallet in wallets) {
+      if (_walletByIdControllers.containsKey(wallet.id)) {
+        _walletByIdControllers[wallet.id]!.add(wallet);
+      }
+    }
   }
 
-  // ======================= CRUD =======================
+  /// Stream wallet by ID
+  Stream<Wallet?> getWalletStreamById(String id) {
+    if (!_walletByIdControllers.containsKey(id)) {
+      _walletByIdControllers[id] = StreamController<Wallet?>.broadcast();
+    }
+    _loadWalletById(id);
+    return _walletByIdControllers[id]!.stream;
+  }
 
-  Future<List<Wallet>> getWallets({String? userId}) async {
+  Future<void> _loadWalletById(String id) async {
+    final wallet = await getWalletById(id);
+    if (_walletByIdControllers.containsKey(id)) {
+      _walletByIdControllers[id]!.add(wallet);
+    }
+  }
+
+  // ================= CRUD =================
+
+  Future<List<Wallet>> getWallets() async {
     final db = await DBHelper.database;
-    final maps = await db.query(
-      'wallets',
-      where: userId != null ? 'userId = ?' : null,
-      whereArgs: userId != null ? [userId] : null,
-      orderBy: 'name ASC',
-    );
+    final maps = await db.query('wallets', orderBy: 'name ASC');
     return maps.map((e) {
-      final id = e['id'].toString(); // ambil id
+      final id = e['id'].toString();
       return Wallet.fromMap(id, e);
     }).toList();
   }
@@ -49,7 +70,7 @@ class WalletService {
       limit: 1,
     );
     if (maps.isNotEmpty) {
-      final id = maps.first['id'].toString(); // ambil id
+      final id = maps.first['id'].toString();
       return Wallet.fromMap(id, maps.first);
     }
     return null;
@@ -62,7 +83,7 @@ class WalletService {
       wallet.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-    await _loadWallets(userId: wallet.userId);
+    await _loadWallets();
     return wallet;
   }
 
@@ -75,61 +96,50 @@ class WalletService {
       whereArgs: [wallet.id],
     );
     if (count > 0) {
-      await _loadWallets(userId: wallet.userId);
+      await _loadWallets();
     }
     return count > 0;
   }
 
-  Future<bool> deleteWallet(String id, {String? userId}) async {
+  Future<bool> deleteWallet(String id) async {
     final db = await DBHelper.database;
     final count = await db.delete('wallets', where: 'id = ?', whereArgs: [id]);
     if (count > 0) {
-      await _loadWallets(userId: userId);
+      await _loadWallets();
     }
     return count > 0;
   }
 
-  // ======================= Balance =======================
+  // ================= Balance =================
 
-  Future<void> increaseBalance(
-    String walletId,
-    int amount, {
-    String? userId,
-  }) async {
+  Future<void> increaseBalance(String walletId, int amount) async {
     final db = await DBHelper.database;
     await db.rawUpdate(
-      '''
-      UPDATE wallets 
-      SET currentBalance = currentBalance + ? 
-      WHERE id = ?
-    ''',
+      'UPDATE wallets SET currentBalance = currentBalance + ? WHERE id = ?',
       [amount, walletId],
     );
-    await _loadWallets(userId: userId);
+    await _loadWalletById(walletId);
+    await _loadWallets();
   }
 
-  Future<void> decreaseBalance(
-    String walletId,
-    int amount, {
-    String? userId,
-  }) async {
-    await increaseBalance(walletId, -amount, userId: userId);
+  Future<void> decreaseBalance(String walletId, int amount) async {
+    await increaseBalance(walletId, -amount);
   }
 
-  Future<int> getTotalBalance({String? userId}) async {
+  Future<int> getTotalBalance() async {
     final db = await DBHelper.database;
     final result = await db.rawQuery(
-      userId != null
-          ? 'SELECT SUM(currentBalance) as total FROM wallets WHERE userId = ?'
-          : 'SELECT SUM(currentBalance) as total FROM wallets',
-      userId != null ? [userId] : [],
+      'SELECT SUM(currentBalance) as total FROM wallets',
     );
     return result.first['total'] as int? ?? 0;
   }
 
-  // ======================= Dispose =======================
+  // ================= Dispose =================
 
   void dispose() {
-    _walletController.close();
+    _walletsController.close();
+    for (var c in _walletByIdControllers.values) {
+      c.close();
+    }
   }
 }

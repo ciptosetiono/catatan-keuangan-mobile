@@ -2,19 +2,17 @@ import 'package:flutter/material.dart';
 
 import 'package:money_note/models/category_model.dart';
 
-import 'package:money_note/services/firebase/category_service.dart';
+import 'package:money_note/services/sqlite/category_service.dart';
 
 import 'package:money_note/components/categories/category_list_item.dart';
 
 class CategoryList extends StatelessWidget {
-  final CategoryService categoryService;
   final String searchQuery;
   final String filterType;
   final void Function(BuildContext, Category) onCategoryTap;
 
   const CategoryList({
     super.key,
-    required this.categoryService,
     required this.searchQuery,
     required this.filterType,
     required this.onCategoryTap,
@@ -22,6 +20,8 @@ class CategoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final CategoryService categoryService = CategoryService();
+
     return StreamBuilder<List<Category>>(
       stream: categoryService.getCategoryStream(
         query: searchQuery,

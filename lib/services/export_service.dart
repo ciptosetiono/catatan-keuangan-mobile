@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:money_note/utils/currency_formatter.dart';
@@ -19,8 +18,6 @@ class ReportExportService {
       trxDate = date;
     } else if (date is String) {
       trxDate = DateTime.tryParse(date) ?? DateTime.now();
-    } else if (date is Timestamp) {
-      trxDate = date.toDate();
     } else {
       trxDate = DateTime.now();
     }

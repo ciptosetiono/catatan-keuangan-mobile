@@ -1,67 +1,64 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:math';
+import 'db_helper.dart';
 
-Future<void> initializeUserDataOffline() async {
-  final dbPath = await getDatabasesPath();
-  final path = join(dbPath, 'money_note.db');
+Future<void> initializeUserData() async {
+  final db = await DBHelper.database;
 
-  final db = await openDatabase(
-    path,
-    version: 1,
-    onCreate: (db, version) async {
-      // Buat table wallets
-      await db.execute('''
-        CREATE TABLE wallets (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT,
-          startBalance REAL,
-          currentBalance REAL
-        )
-      ''');
+  await initializeUsers(db);
+  await initializeWallets(db);
+  await initializeCategories(db);
+}
 
-      // Buat table categories
-      await db.execute('''
-        CREATE TABLE categories (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT,
-          type TEXT
-        )
-      ''');
+/// ---------------- Users ----------------
+Future<void> initializeUsers(Database db) async {
+  final firebaseUser = FirebaseAuth.instance.currentUser;
+  final userId = firebaseUser?.uid ?? generateRandomUserId(8);
 
-      // Buat table transactions
-      await db.execute('''
-        CREATE TABLE transactions (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          walletId INTEGER,
-          categoryId INTEGER,
-          type TEXT,
-          title TEXT,
-          amount REAL,
-          date INTEGER
-        )
-      ''');
-    },
-  );
+  final userCount =
+      (Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM users')) ??
+          0);
 
-  // Cek apakah wallets kosong
-  final walletCount = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM wallets'));
+  if (userCount == 0) {
+    await db.insert('users', {
+      'id': userId,
+      'firebaseUid': firebaseUser?.uid,
+      'email': firebaseUser?.email,
+      'name': firebaseUser?.displayName,
+    });
+  }
+}
+
+/// ---------------- Wallets ----------------
+Future<void> initializeWallets(Database db) async {
+  final walletCount =
+      (Sqflite.firstIntValue(
+            await db.rawQuery('SELECT COUNT(*) FROM wallets'),
+          ) ??
+          0);
 
   if (walletCount == 0) {
-    // 🪙 Tambahkan wallet default
-    await db.insert('wallets', {
-      'name': 'Bank',
-      'startBalance': 0,
-      'currentBalance': 0,
-    });
+    final defaultWallets = [
+      {'name': 'Bank', 'startBalance': 0, 'currentBalance': 0},
+      {'name': 'Cash', 'startBalance': 0, 'currentBalance': 0},
+    ];
 
-    await db.insert('wallets', {
-      'name': 'Cash',
-      'startBalance': 0,
-      'currentBalance': 0,
-    });
+    for (var wallet in defaultWallets) {
+      await db.insert('wallets', wallet);
+    }
+  }
+}
 
-    // 📂 Tambahkan kategori default
+/// ---------------- Categories ----------------
+Future<void> initializeCategories(Database db) async {
+  final categoryCount =
+      (Sqflite.firstIntValue(
+            await db.rawQuery('SELECT COUNT(*) FROM categories'),
+          ) ??
+          0);
+
+  if (categoryCount == 0) {
     final defaultCategories = [
       {'name': 'Salary', 'type': 'income'},
       {'name': 'Bonus', 'type': 'income'},
@@ -74,6 +71,15 @@ Future<void> initializeUserDataOffline() async {
       await db.insert('categories', category);
     }
   }
+}
 
-  await db.close();
+/// ---------------- Helper ----------------
+String generateRandomUserId(int length) {
+  const chars =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  final rand = Random();
+  return List.generate(
+    length,
+    (index) => chars[rand.nextInt(chars.length)],
+  ).join();
 }

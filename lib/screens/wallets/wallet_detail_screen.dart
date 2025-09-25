@@ -13,9 +13,9 @@ import 'package:money_note/components/wallets/wallet_info_card.dart';
 import 'package:money_note/models/wallet_model.dart';
 import 'package:money_note/models/transaction_model.dart';
 
-import 'package:money_note/services/firebase/transaction_service.dart';
-import 'package:money_note/services/firebase/transfer_service.dart';
-import 'package:money_note/services/firebase/wallet_service.dart';
+import 'package:money_note/services/sqlite/transaction_service.dart';
+import 'package:money_note/services/sqlite/transfer_service.dart';
+import 'package:money_note/services/sqlite/wallet_service.dart';
 
 import 'package:money_note/screens/wallets/wallet_form_screen.dart';
 
@@ -90,8 +90,23 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
   }
 
   void _loadTransactions() {
+    _loadingTransactions = true;
+
+    final from =
+        _from ??
+        (_selectedDateFilter != DateFilterOption.all
+            ? _from
+            : null); // opsional: default semua
+    final to =
+        _to ?? (_selectedDateFilter != DateFilterOption.all ? _to : null);
+
     _transactionService
-        .getTransactionsStream(walletId: widget.wallet.id)
+        .getTransactionsStream(
+          walletId: widget.wallet.id,
+          type: null, // ambil semua tipe
+          fromDate: from,
+          toDate: to,
+        )
         .listen((data) {
           if (!mounted) return;
           setState(() {

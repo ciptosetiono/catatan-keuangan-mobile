@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:money_note/utils/currency_formatter.dart';
 import 'package:intl/intl.dart';
 
@@ -37,7 +36,7 @@ class ReportListItem extends StatelessWidget {
                   DateFormat('dd MMM yyyy').format(
                     tx["date"] is DateTime
                         ? tx["date"]
-                        : (tx["date"] as Timestamp).toDate(),
+                        : tx["date"] as DateTime,
                   ),
                 ),
                 trailing: Text(

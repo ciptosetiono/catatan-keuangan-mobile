@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../models/wallet_model.dart';
-import '../../services/firebase/wallet_service.dart';
+import '../../services/sqlite/wallet_service.dart';
 import '../../utils/currency_formatter.dart'; // untuk format currency
 
 class WalletDropdown extends StatelessWidget {
