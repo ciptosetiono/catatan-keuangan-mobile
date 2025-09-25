@@ -3,11 +3,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/budget_model.dart';
 
 class BudgetService {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
   final CollectionReference _ref = FirebaseFirestore.instance.collection(
     'budgets',
   );
 
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
+
+  BudgetService() {
+    _db.settings = const Settings(
+      persistenceEnabled: true, // Enable offline persistence
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+    );
+  }
 
   // ======================= Stream / Get Budgets =======================
   Stream<List<Budget>> getBudgets({DateTime? month, String? categoryId}) {

@@ -37,16 +37,23 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
   }
 
   Future<List<_CategoryTotal>> _loadChartData() async {
-    // 1) fetch all expense categories
-    final categories =
-        await _categoryService.getCategoryStream(type: 'expense').first;
-    if (categories.isEmpty) return [];
+    // 1) fetch all expense categories from stream (offline-first)
 
+       print('fetching categories...');
+    final categories = await _categoryService
+        .getCategoryStream(type: 'expense')
+        .firstWhere((list) => list.isNotEmpty, orElse: () => []);
+
+    print('list categories: $categories');
+    if (categories.isEmpty) return [];
+  print('fetch transaction by categories...');
     // 2) fetch totals per category
     final totals = await _transactionService.getTotalSpentByCategories(
       categoryIds: categories.map((c) => c.id).toList(),
       month: _selectedMonth,
     );
+
+    print('total based categories: $categories');
 
     // 3) build list of nonzero entries
     return categories

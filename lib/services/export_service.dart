@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:money_note/utils/currency_formatter.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ReportExportService {
   CurrencyFormatter currencyFormatter = CurrencyFormatter();
@@ -26,11 +27,8 @@ class ReportExportService {
     return DateFormat('yyyy-MM-dd').format(trxDate);
   }
 
-  /// Export transaksi ke CSV
-  Future<String> exportToCsv({
+  Future<void> exportToCsv({
     required List<Map<String, dynamic>> transactions,
-    // DateTime? start,
-    //DateTime? end,
     String fileName = 'report.csv',
   }) async {
     final csvData = [
@@ -38,14 +36,13 @@ class ReportExportService {
     ];
 
     for (var trx in transactions) {
-      // if (trxDate.isAfter(end) || trxDate.isBefore(start)) continue;
       csvData.add([
         dateFormat(trx['date']),
         trx['title'] ?? '',
         trx['type'] ?? '',
         (trx['amount'] ?? 0).toString(),
-        trx['category'] ?? '',
-        trx['wallet'] ?? '',
+        trx['categoryName'] ?? '',
+        trx['walletName'] ?? '',
       ]);
     }
 
@@ -53,7 +50,9 @@ class ReportExportService {
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/$fileName');
     await file.writeAsString(csvString);
-    return file.path;
+
+    // langsung share
+    await Share.shareXFiles([XFile(file.path)], text: "Moneyger Report");
   }
 
   /// Export transaksi ke PDF
@@ -61,7 +60,7 @@ class ReportExportService {
     required List<Map<String, dynamic>> transactions,
     // required DateTime start,
     //required DateTime end,
-    String fileName = 'report.pdf',
+    String fileName = 'Moneyger-report.pdf',
   }) async {
     final pdf = pw.Document();
 
@@ -72,7 +71,7 @@ class ReportExportService {
         build:
             (context) => [
               pw.Text(
-                'Transaction Report',
+                'Moneyger Report',
                 style: pw.TextStyle(
                   fontSize: 20,
                   fontWeight: pw.FontWeight.bold,
@@ -105,8 +104,8 @@ class ReportExportService {
                         trx['title'] ?? '',
                         trx['type'] ?? '',
                         (trx['amount'] ?? 0).toString(),
-                        trx['category'] ?? '',
-                        trx['wallet'] ?? '',
+                        trx['categoryName'] ?? '',
+                        trx['walletName'] ?? '',
                       ];
                     }).toList(),
               ),

@@ -153,8 +153,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         );
       }
 
-      debugPrint('saved transaction: $savedTransaction');
-
       if (widget.onSaved != null) {
         // ignore: unnecessary_null_comparison
         if (savedTransaction != null) {
@@ -170,11 +168,9 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       ); // ✅ selalu return TransactionModel
       */
     } catch (e, stack) {
-      debugPrint('Transaction failed');
-      debugPrint("📌 Stack: $stack");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          FlashMessage(color: Colors.red, message: 'Transaction action failed'),
+          FlashMessage(color: Colors.red, message: 'Transaction action failed $e'),
         );
       }
     } finally {

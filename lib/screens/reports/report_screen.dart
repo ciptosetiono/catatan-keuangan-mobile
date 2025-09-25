@@ -7,6 +7,8 @@ import 'package:money_note/components/reports/report_filter.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
 import 'package:money_note/components/reports/report_list.dart';
 import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/services/wallet_service.dart';
+import 'package:money_note/services/category_service.dart';
 import 'package:money_note/services/export_service.dart';
 
 class ReportScreen extends StatefulWidget {
@@ -21,9 +23,16 @@ class _ReportScreenState extends State<ReportScreen> {
   DateTime? fromDate;
   DateTime? toDate;
   String? selectedLabel;
-
   String groupBy = "day";
+
+  final TransactionService _transactionService = TransactionService();
   List<Map<String, dynamic>> transactions = [];
+
+  final CategoryService _categoryService = CategoryService();
+  Map<String, String> categoryMap = {};
+
+  final WalletService _walletService = WalletService();
+  Map<String, String> walletMap = {};
 
   double income = 0;
   double expense = 0;
@@ -32,15 +41,39 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   void initState() {
     super.initState();
+    _loadMasterData();
     _loadTransactions();
   }
 
+  Future<void> _loadMasterData() async {
+    _categoryService.getCategoryStream().listen((catList) {
+      setState(() {
+        categoryMap = {for (var cat in catList) cat.id: cat.name};
+      });
+      _loadTransactions(); // refresh transactions with new names
+    });
+
+    _walletService.getWalletStream().listen((walletList) {
+      setState(() {
+        walletMap = {for (var wallet in walletList) wallet.id: wallet.name};
+      });
+      _loadTransactions(); // refresh transactions with new names
+    });
+  }
+
   Future<void> _loadTransactions() async {
-    TransactionService()
+    _transactionService
         .getTransactionsStream(fromDate: fromDate, toDate: toDate)
         .listen((txList) {
           setState(() {
-            transactions = txList.map((tx) => tx.toMap()).toList();
+            transactions =
+                txList.map((tx) {
+                  final txMap = tx.toMap();
+                  txMap['categoryName'] =
+                      categoryMap[tx.categoryId] ?? 'Unknown';
+                  txMap['walletName'] = walletMap[tx.walletId] ?? 'Unknown';
+                  return txMap;
+                }).toList();
             _calculateSummary();
           });
         });
@@ -117,7 +150,7 @@ class _ReportScreenState extends State<ReportScreen> {
   void _export(String type) {
     final exportService = ReportExportService();
 
-    if (type == "excel") exportService.exportToCsv(transactions: transactions);
+    if (type == "csv") exportService.exportToCsv(transactions: transactions);
     if (type == "pdf") exportService.exportToPdf(transactions: transactions);
   }
 
@@ -127,7 +160,7 @@ class _ReportScreenState extends State<ReportScreen> {
       appBar: AppBar(
         title: const Text("Report"), // kosong atau back button
         bottom: ReportFilter(
-          groupBy: "month",
+          groupBy: groupBy,
           selectedRange: DateFilterOption.thisMonth,
           onDateRangePicked: _applyDateFilter,
           onGroupChanged: (group) {
@@ -174,7 +207,7 @@ class _ReportScreenState extends State<ReportScreen> {
           },
           itemBuilder:
               (context) => [
-                PopupMenuItem(value: 'excel', child: Text('Export Excel')),
+                PopupMenuItem(value: 'csv', child: Text('Export CSV')),
                 PopupMenuItem(value: 'pdf', child: Text('Export PDF')),
               ],
         ),

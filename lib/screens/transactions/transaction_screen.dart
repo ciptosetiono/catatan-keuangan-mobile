@@ -57,6 +57,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       }
     });
   }
+  
 
   Future<void> _loadTransactions({bool reset = false}) async {
     if (_isLoading) return;
@@ -67,6 +68,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       _transactions.clear();
       _lastDocument = null;
       _hasMore = true;
+      setState(() {});
     }
 
     try {
