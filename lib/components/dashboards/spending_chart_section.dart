@@ -7,8 +7,8 @@ import 'package:money_note/utils/currency_formatter.dart';
 
 import 'package:money_note/models/category_model.dart';
 
-import 'package:money_note/services/category_service.dart';
-import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/services/firebase/category_service.dart';
+import 'package:money_note/services/firebase/transaction_service.dart';
 import 'package:money_note/screens/categories/category_detail_screen.dart';
 
 import 'section_title.dart';
@@ -39,21 +39,16 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
   Future<List<_CategoryTotal>> _loadChartData() async {
     // 1) fetch all expense categories from stream (offline-first)
 
-       print('fetching categories...');
     final categories = await _categoryService
         .getCategoryStream(type: 'expense')
         .firstWhere((list) => list.isNotEmpty, orElse: () => []);
 
-    print('list categories: $categories');
     if (categories.isEmpty) return [];
-  print('fetch transaction by categories...');
     // 2) fetch totals per category
     final totals = await _transactionService.getTotalSpentByCategories(
       categoryIds: categories.map((c) => c.id).toList(),
       month: _selectedMonth,
     );
-
-    print('total based categories: $categories');
 
     // 3) build list of nonzero entries
     return categories

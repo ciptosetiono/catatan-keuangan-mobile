@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../models/budget_model.dart';
+import '../../models/budget_model.dart';
 
 class BudgetService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;

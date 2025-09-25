@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:money_note/models/transaction_model.dart';
 import 'package:money_note/models/wallet_model.dart';
 import 'package:money_note/models/category_model.dart';
-import 'package:money_note/services/wallet_service.dart';
-import 'package:money_note/services/category_service.dart';
+import 'package:money_note/services/firebase/wallet_service.dart';
+import 'package:money_note/services/firebase/category_service.dart';
 import 'package:money_note/components/transactions/transaction_bottomsheet_menu.dart';
 import 'package:money_note/components/transactions/transaction_detail_tile.dart';
 

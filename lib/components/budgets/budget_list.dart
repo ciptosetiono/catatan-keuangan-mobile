@@ -5,8 +5,8 @@ import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/models/budget_model.dart';
 import 'package:money_note/models/category_model.dart';
 
-import 'package:money_note/services/budget_service.dart';
-import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/services/firebase/budget_service.dart';
+import 'package:money_note/services/firebase/transaction_service.dart';
 
 import 'package:money_note/components/budgets/budget_item.dart';
 

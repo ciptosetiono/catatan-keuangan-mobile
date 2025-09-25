@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../services/auth_service.dart';
+import '../../services/firebase/auth_service.dart';
 import '../categories/category_screen.dart';
 import '../wallets/wallet_screen.dart';
 import '../transfers/transfer_screen.dart';

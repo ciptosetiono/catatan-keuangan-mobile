@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
-import '../models/transaction_model.dart';
-import '../models/wallet_model.dart';
+import '../../models/transaction_model.dart';
+import '../../models/wallet_model.dart';
 
 class TransferService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;

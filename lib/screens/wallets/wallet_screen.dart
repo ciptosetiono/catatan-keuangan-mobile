@@ -6,7 +6,7 @@ import 'package:money_note/components/wallets/wallet_list_item.dart';
 import 'package:money_note/components/wallets/wallet_delete_dialog.dart';
 import 'package:money_note/models/wallet_model.dart';
 
-import 'package:money_note/services/wallet_service.dart';
+import 'package:money_note/services/firebase/wallet_service.dart';
 
 import 'package:money_note/screens/wallets/wallet_form_screen.dart';
 import 'package:money_note/screens/wallets/wallet_detail_screen.dart';

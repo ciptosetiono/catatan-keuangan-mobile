@@ -6,9 +6,9 @@ import 'package:money_note/components/reports/report_chart.dart';
 import 'package:money_note/components/reports/report_filter.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
 import 'package:money_note/components/reports/report_list.dart';
-import 'package:money_note/services/transaction_service.dart';
-import 'package:money_note/services/wallet_service.dart';
-import 'package:money_note/services/category_service.dart';
+import 'package:money_note/services/firebase/transaction_service.dart';
+import 'package:money_note/services/firebase/wallet_service.dart';
+import 'package:money_note/services/firebase/category_service.dart';
 import 'package:money_note/services/export_service.dart';
 
 class ReportScreen extends StatefulWidget {

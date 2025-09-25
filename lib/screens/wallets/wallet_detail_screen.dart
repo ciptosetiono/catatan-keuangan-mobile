@@ -13,9 +13,9 @@ import 'package:money_note/components/wallets/wallet_info_card.dart';
 import 'package:money_note/models/wallet_model.dart';
 import 'package:money_note/models/transaction_model.dart';
 
-import 'package:money_note/services/transaction_service.dart';
-import 'package:money_note/services/transfer_service.dart';
-import 'package:money_note/services/wallet_service.dart';
+import 'package:money_note/services/firebase/transaction_service.dart';
+import 'package:money_note/services/firebase/transfer_service.dart';
+import 'package:money_note/services/firebase/wallet_service.dart';
 
 import 'package:money_note/screens/wallets/wallet_form_screen.dart';
 

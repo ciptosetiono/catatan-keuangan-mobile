@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:money_note/models/category_model.dart';
-import 'package:money_note/services/category_service.dart';
+import 'package:money_note/services/firebase/category_service.dart';
 
 class CategoryDropdown extends StatelessWidget {
   final String? type;

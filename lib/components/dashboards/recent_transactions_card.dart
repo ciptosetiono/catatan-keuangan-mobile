@@ -4,7 +4,7 @@ import 'package:money_note/utils/currency_formatter.dart';
 
 import 'package:money_note/models/transaction_model.dart';
 
-import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/services/firebase/transaction_service.dart';
 
 class RecentTransactionsSection extends StatelessWidget {
   const RecentTransactionsSection({super.key});

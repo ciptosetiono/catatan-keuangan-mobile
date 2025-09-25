@@ -8,8 +8,8 @@ import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/models/budget_model.dart';
 import 'package:money_note/models/category_model.dart';
 
-import 'package:money_note/services/budget_service.dart';
-import 'package:money_note/services/category_service.dart';
+import 'package:money_note/services/firebase/budget_service.dart';
+import 'package:money_note/services/firebase/category_service.dart';
 
 import 'package:money_note/components/forms/currency_text_field.dart';
 import 'package:money_note/components/forms/month_picker_field.dart';

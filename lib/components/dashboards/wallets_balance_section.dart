@@ -4,7 +4,7 @@ import 'package:money_note/utils/currency_formatter.dart';
 
 import 'package:money_note/models/wallet_model.dart';
 
-import 'package:money_note/services/wallet_service.dart';
+import 'package:money_note/services/firebase/wallet_service.dart';
 
 import 'package:money_note/screens/wallets/wallet_detail_screen.dart';
 

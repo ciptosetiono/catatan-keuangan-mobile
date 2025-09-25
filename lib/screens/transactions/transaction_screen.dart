@@ -12,7 +12,7 @@ import 'package:money_note/components/transactions/unified_filter_dialog.dart';
 import 'package:money_note/components/transactions/transaction_list.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
 import 'package:money_note/models/transaction_model.dart';
-import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/services/firebase/transaction_service.dart';
 import 'package:money_note/screens/transactions/transaction_form_screen.dart';
 
 class TransactionScreen extends StatefulWidget {
@@ -57,7 +57,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
       }
     });
   }
-  
 
   Future<void> _loadTransactions({bool reset = false}) async {
     if (_isLoading) return;

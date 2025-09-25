@@ -9,9 +9,9 @@ import 'package:money_note/models/budget_model.dart';
 import 'package:money_note/models/category_model.dart';
 import 'package:money_note/models/transaction_model.dart';
 
-import 'package:money_note/services/budget_service.dart';
-import 'package:money_note/services/category_service.dart';
-import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/services/firebase/budget_service.dart';
+import 'package:money_note/services/firebase/category_service.dart';
+import 'package:money_note/services/firebase/transaction_service.dart';
 
 import 'package:money_note/components/transactions/transaction_list_item.dart';
 import 'package:money_note/components/budgets/budget_delete_dialog.dart';

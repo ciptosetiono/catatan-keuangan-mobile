@@ -8,9 +8,9 @@ import 'package:money_note/models/category_model.dart';
 import 'package:money_note/models/wallet_model.dart';
 import 'package:money_note/models/transaction_model.dart';
 
-import 'package:money_note/services/transaction_service.dart';
-import 'package:money_note/services/category_service.dart';
-import 'package:money_note/services/wallet_service.dart';
+import 'package:money_note/services/firebase/transaction_service.dart';
+import 'package:money_note/services/firebase/category_service.dart';
+import 'package:money_note/services/firebase/wallet_service.dart';
 
 import 'package:money_note/components/transactions/transaction_type_selector.dart';
 import 'package:money_note/components/wallets/wallet_dropdown.dart';
@@ -167,10 +167,13 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         updatedTransaction,
       ); // ✅ selalu return TransactionModel
       */
-    } catch (e, stack) {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          FlashMessage(color: Colors.red, message: 'Transaction action failed $e'),
+          FlashMessage(
+            color: Colors.red,
+            message: 'Transaction action failed $e',
+          ),
         );
       }
     } finally {

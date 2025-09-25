@@ -2,7 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../models/wallet_model.dart';
+import '../../models/wallet_model.dart';
 
 class WalletService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;

@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:money_note/services/transaction_service.dart';
+import 'package:money_note/services/firebase/transaction_service.dart';
 import 'package:money_note/models/transaction_model.dart';
 
 Future<bool> showTransactionDeleteDialog({
