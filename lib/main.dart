@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:month_year_picker/month_year_picker.dart';
-import 'firebase_options.dart';
+import 'config/firebase_options.dart';
 
 import 'package:money_note/screens/login_screen.dart';
 import 'package:money_note/screens/home_screen.dart';

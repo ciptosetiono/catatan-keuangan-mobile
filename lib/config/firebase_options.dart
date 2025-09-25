@@ -64,8 +64,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '875082229669',
     projectId: 'finance-book-dc9ca',
     storageBucket: 'finance-book-dc9ca.firebasestorage.app',
-    androidClientId: '875082229669-hknnd5ndqunmruluji1b7vukkho2lu9b.apps.googleusercontent.com',
-    iosClientId: '875082229669-4j6i5jj069fualvon3580a8pgvjmksml.apps.googleusercontent.com',
+    androidClientId:
+        '875082229669-hknnd5ndqunmruluji1b7vukkho2lu9b.apps.googleusercontent.com',
+    iosClientId:
+        '875082229669-4j6i5jj069fualvon3580a8pgvjmksml.apps.googleusercontent.com',
     iosBundleId: 'com.example.personalFinanceFlutter',
   );
 
@@ -75,8 +77,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '875082229669',
     projectId: 'finance-book-dc9ca',
     storageBucket: 'finance-book-dc9ca.firebasestorage.app',
-    androidClientId: '875082229669-hknnd5ndqunmruluji1b7vukkho2lu9b.apps.googleusercontent.com',
-    iosClientId: '875082229669-4j6i5jj069fualvon3580a8pgvjmksml.apps.googleusercontent.com',
+    androidClientId:
+        '875082229669-hknnd5ndqunmruluji1b7vukkho2lu9b.apps.googleusercontent.com',
+    iosClientId:
+        '875082229669-4j6i5jj069fualvon3580a8pgvjmksml.apps.googleusercontent.com',
     iosBundleId: 'com.example.personalFinanceFlutter',
   );
 
