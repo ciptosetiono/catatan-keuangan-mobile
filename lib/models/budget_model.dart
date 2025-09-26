@@ -3,7 +3,9 @@ class Budget {
   final String userId;
   final String categoryId;
   final double amount;
-  final DateTime month;
+
+  /// Stored in DB as "yyyy-MM"
+  final String month;
 
   Budget({
     required this.id,
@@ -13,27 +15,39 @@ class Budget {
     required this.month,
   });
 
-  Map<String, dynamic> toMap() => {
-    'userId': userId,
-    'categoryId': categoryId,
-    'amount': amount,
-    'month': month,
-  };
+  /// Helper to create "yyyy-MM" string from DateTime
+  static String formatMonth(DateTime date) {
+    return "${date.year}-${date.month.toString().padLeft(2, '0')}";
+  }
 
-  static Budget fromMap(String id, Map<String, dynamic> map) => Budget(
-    id: id,
-    userId: map['userId'] as String,
-    categoryId: map['categoryId'] as String,
-    amount: (map['amount'] as num).toDouble(),
-    month: map['month'] as DateTime,
-  );
+  /// Convert object to map for SQLite
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'userId': userId,
+      'categoryId': categoryId,
+      'amount': amount,
+      'month': month,
+    };
+  }
+
+  /// Convert SQLite row back to Budget object
+  factory Budget.fromMap(Map<String, dynamic> map) {
+    return Budget(
+      id: map['id'].toString(),
+      userId: map['userId'],
+      categoryId: map['categoryId'].toString(),
+      amount: (map['amount'] ?? 0).toDouble(),
+      month: map['month'], // stored as "yyyy-MM"
+    );
+  }
 
   Budget copyWith({
     String? id,
     String? userId,
     String? categoryId,
     double? amount,
-    DateTime? month,
+    String? month,
   }) {
     return Budget(
       id: id ?? this.id,
@@ -42,5 +56,11 @@ class Budget {
       amount: amount ?? this.amount,
       month: month ?? this.month,
     );
+  }
+
+  /// Get DateTime object back (always first day of month)
+  DateTime get monthDate {
+    final parts = month.split('-');
+    return DateTime(int.parse(parts[0]), int.parse(parts[1]));
   }
 }

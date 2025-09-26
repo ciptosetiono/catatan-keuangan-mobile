@@ -56,20 +56,16 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
   }
 
   Future<void> loadTransactions() async {
+    // Ambil kembali DateTime dari string "yyyy-MM"
+    final budgetMonth = widget.budget.monthDate;
+
     final stream = TransactionService().getTransactionsStream(
       categoryId: widget.budget.categoryId,
       type: 'expense',
-      fromDate: DateTime(
-        widget.budget.month.year,
-        widget.budget.month.month,
-        1,
-      ),
-      toDate: DateTime(
-        widget.budget.month.year,
-        widget.budget.month.month + 1,
-        0,
-      ),
+      fromDate: DateTime(budgetMonth.year, budgetMonth.month, 1),
+      toDate: DateTime(budgetMonth.year, budgetMonth.month + 1, 0),
     );
+
     stream.listen((trxList) {
       setState(() {
         transactions = trxList;
@@ -211,7 +207,7 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                         const SizedBox(width: 12),
                         Text(
                           DateFormatter().formatMonth(
-                            _localBudget?.month ?? DateTime.now(),
+                            _localBudget?.monthDate ?? DateTime.now(),
                           ),
                           style: const TextStyle(fontSize: 16),
                         ),

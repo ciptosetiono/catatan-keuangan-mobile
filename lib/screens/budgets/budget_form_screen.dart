@@ -39,7 +39,7 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
     if (widget.budget != null) {
       _selectedCategoryId = widget.budget!.categoryId;
       _amountController.text = widget.budget!.amount.toString();
-      _selectedMonth = widget.budget!.month;
+      _selectedMonth = widget.budget!.monthDate;
     }
   }
 
@@ -64,7 +64,8 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
       id: widget.budget?.id ?? '',
       categoryId: _selectedCategoryId!,
       amount: amount,
-      month: DateTime(_selectedMonth.year, _selectedMonth.month),
+      month:
+          DateTime(_selectedMonth.year, _selectedMonth.month).toIso8601String(),
       userId: userId,
     );
 

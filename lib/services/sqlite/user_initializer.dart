@@ -6,13 +6,13 @@ import 'db_helper.dart';
 Future<void> initializeUserData() async {
   final db = await DBHelper.database;
 
-  await initializeUsers(db);
-  await initializeWallets(db);
-  await initializeCategories(db);
+  final userId = await initializeUsers(db);
+  await initializeWallets(db, userId);
+  await initializeCategories(db, userId);
 }
 
 /// ---------------- Users ----------------
-Future<void> initializeUsers(Database db) async {
+Future<String> initializeUsers(Database db) async {
   final firebaseUser = FirebaseAuth.instance.currentUser;
   final userId = firebaseUser?.uid ?? generateRandomUserId(8);
 
@@ -22,16 +22,17 @@ Future<void> initializeUsers(Database db) async {
 
   if (userCount == 0) {
     await db.insert('users', {
-      'id': userId,
-      'firebaseUid': firebaseUser?.uid,
-      'email': firebaseUser?.email,
-      'name': firebaseUser?.displayName,
+      'firebaseUid': userId,
+      'email': firebaseUser?.email ?? '',
+      'name': firebaseUser?.displayName ?? 'User',
     });
   }
+
+  return userId;
 }
 
 /// ---------------- Wallets ----------------
-Future<void> initializeWallets(Database db) async {
+Future<void> initializeWallets(Database db, String userId) async {
   final walletCount =
       (Sqflite.firstIntValue(
             await db.rawQuery('SELECT COUNT(*) FROM wallets'),
@@ -40,8 +41,20 @@ Future<void> initializeWallets(Database db) async {
 
   if (walletCount == 0) {
     final defaultWallets = [
-      {'name': 'Bank', 'startBalance': 0, 'currentBalance': 0},
-      {'name': 'Cash', 'startBalance': 0, 'currentBalance': 0},
+      {
+        'name': 'Bank',
+        'startBalance': 0,
+        'currentBalance': 0,
+        'userId': userId,
+        'createdAt': DateTime.now().toIso8601String(),
+      },
+      {
+        'name': 'Cash',
+        'startBalance': 0,
+        'currentBalance': 0,
+        'userId': userId,
+        'createdAt': DateTime.now().toIso8601String(),
+      },
     ];
 
     for (var wallet in defaultWallets) {
@@ -51,7 +64,7 @@ Future<void> initializeWallets(Database db) async {
 }
 
 /// ---------------- Categories ----------------
-Future<void> initializeCategories(Database db) async {
+Future<void> initializeCategories(Database db, String userId) async {
   final categoryCount =
       (Sqflite.firstIntValue(
             await db.rawQuery('SELECT COUNT(*) FROM categories'),
@@ -60,11 +73,11 @@ Future<void> initializeCategories(Database db) async {
 
   if (categoryCount == 0) {
     final defaultCategories = [
-      {'name': 'Salary', 'type': 'income'},
-      {'name': 'Bonus', 'type': 'income'},
-      {'name': 'Food', 'type': 'expense'},
-      {'name': 'Transportation', 'type': 'expense'},
-      {'name': 'Education', 'type': 'expense'},
+      {'name': 'Salary', 'type': 'income', 'userId': userId},
+      {'name': 'Bonus', 'type': 'income', 'userId': userId},
+      {'name': 'Food', 'type': 'expense', 'userId': userId},
+      {'name': 'Transportation', 'type': 'expense', 'userId': userId},
+      {'name': 'Education', 'type': 'expense', 'userId': userId},
     ];
 
     for (var category in defaultCategories) {

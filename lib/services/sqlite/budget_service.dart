@@ -30,11 +30,14 @@ class BudgetService {
     List<Object?>? whereArgs = [];
 
     if (month != null) {
-      final start = DateTime(month.year, month.month, 1).millisecondsSinceEpoch;
-      final end =
-          DateTime(month.year, month.month + 1, 1).millisecondsSinceEpoch;
+      final start = DateTime(month.year, month.month, 1);
+      final end = DateTime(month.year, month.month + 1, 1);
+
+      final startStr = start.toIso8601String().split('T').first; // 2025-09-01
+      final endStr = end.toIso8601String().split('T').first; // 2025-10-01
+
       where = 'month >= ? AND month < ?';
-      whereArgs.addAll([start, end]);
+      whereArgs.addAll([startStr, endStr]);
     }
 
     if (categoryId != null && categoryId.isNotEmpty) {
@@ -54,8 +57,7 @@ class BudgetService {
     );
 
     return maps.map((e) {
-      final id = e['id'].toString();
-      return Budget.fromMap(id, e);
+      return Budget.fromMap(e);
     }).toList();
   }
 
@@ -68,7 +70,7 @@ class BudgetService {
       limit: 1,
     );
     if (maps.isNotEmpty) {
-      return Budget.fromMap(maps.first['id'].toString(), maps.first);
+      return Budget.fromMap(maps.first);
     }
     return null;
   }
@@ -111,25 +113,13 @@ class BudgetService {
   }
 
   // ================= Duplicate Check =================
-  Future<bool> checkDuplicateBudget(
-    String categoryId,
-    DateTime month, {
-    String? userId,
-  }) async {
+  Future<bool> checkDuplicateBudget(String categoryId, String month) async {
     final db = await DBHelper.database;
-    final start = DateTime(month.year, month.month, 1).millisecondsSinceEpoch;
-    final end = DateTime(month.year, month.month + 1, 1).millisecondsSinceEpoch;
-
     final result = await db.query(
       'budgets',
-      where:
-          'categoryId = ? AND month >= ? AND month < ?${userId != null ? ' AND userId = ?' : ''}',
-      whereArgs:
-          userId != null
-              ? [categoryId, start, end, userId]
-              : [categoryId, start, end],
+      where: 'categoryId = ? AND month = ?',
+      whereArgs: [categoryId, month],
     );
-
     return result.isNotEmpty;
   }
 

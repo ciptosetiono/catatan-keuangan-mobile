@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:money_note/utils/currency_formatter.dart';
 
@@ -36,6 +37,8 @@ class TransactionFormScreen extends StatefulWidget {
 }
 
 class _TransactionFormScreenState extends State<TransactionFormScreen> {
+  final userId = FirebaseAuth.instance.currentUser!.uid;
+
   final _formKey = GlobalKey<FormState>();
 
   String _mode = 'add'; // 'add' | 'edit'
@@ -116,11 +119,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     if (mounted) setState(() => _isSubmitting = true);
 
     final trx = {
+      'userId': userId,
       'type': _type,
       'walletId': _selectedWalletId,
       'categoryId': _selectedCategoryId,
       'amount': _amount,
-      'date': _selectedDate,
+      'date': _selectedDate.toIso8601String(),
       'title': _title,
     };
 

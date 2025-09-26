@@ -42,7 +42,7 @@ class Wallet {
       'name': name,
       'startBalance': startBalance,
       'currentBalance': currentBalance,
-      'createdAt': createdAt,
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 

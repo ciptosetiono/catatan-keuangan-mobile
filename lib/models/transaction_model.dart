@@ -28,7 +28,6 @@ class TransactionModel {
     DateTime parsedDate;
 
     final rawDate = data['date'];
-
     if (rawDate is DateTime) {
       parsedDate = rawDate;
     } else if (rawDate is String) {
@@ -37,23 +36,32 @@ class TransactionModel {
       parsedDate = DateTime.now(); // fallback
     }
 
+    double parseAmount(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
     return TransactionModel(
-      id: data['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      userId: '',
-      walletId: data['walletId'],
-      amount: (data['amount'] ?? 0).toDouble(),
-      type: data['type'],
-      categoryId: data['categoryId'],
-      title: data['title'],
+      id:
+          data['id']?.toString() ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
+      userId: data['userId']?.toString() ?? '',
+      walletId: data['walletId']?.toString() ?? '',
+      amount: parseAmount(data['amount']),
+      type: data['type']?.toString() ?? '',
+      categoryId: data['categoryId']?.toString() ?? '',
+      title: data['title']?.toString() ?? '',
       date: parsedDate,
-      fromWalletId: data['fromWalletId'],
-      toWalletId: data['toWalletId'],
+      fromWalletId: data['fromWalletId']?.toString() ?? '',
+      toWalletId: data['toWalletId']?.toString() ?? '',
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      //  'id': id,
+      'id': id,
       'title': title,
       'amount': amount,
       'type': type,

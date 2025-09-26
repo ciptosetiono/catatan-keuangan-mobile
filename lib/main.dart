@@ -1,34 +1,18 @@
-// lib/main.dart
-
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:month_year_picker/month_year_picker.dart';
-import 'config/firebase_options.dart';
-
-import 'package:money_note/screens/login_screen.dart';
-import 'package:money_note/screens/home_screen.dart';
-import 'package:money_note/screens/transactions/transaction_screen.dart';
-import 'package:money_note/screens/budgets/budget_screen.dart';
-import 'package:money_note/screens/reports/report_screen.dart';
-import 'package:money_note/screens/settings/setting_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/transactions/transaction_screen.dart';
+import 'screens/budgets/budget_screen.dart';
+import 'screens/reports/report_screen.dart';
+import 'screens/settings/setting_screen.dart';
+import 'screens/splash_screen.dart'; // import splash screen
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await _initializeDateFormatting();
-  await _initializeFirebase();
   runApp(const MyApp());
-}
-
-Future<void> _initializeDateFormatting() async {
-  final locale = WidgetsBinding.instance.platformDispatcher.locale.toString();
-  await initializeDateFormatting(locale, null);
-}
-
-Future<void> _initializeFirebase() async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 }
 
 class MyApp extends StatelessWidget {
@@ -36,60 +20,76 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        return MaterialApp(
-          title: 'MoneyNote',
-          debugShowCheckedModeBanner: false,
-          locale: const Locale('en', 'US'),
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-            MonthYearPickerLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('en', 'US'), Locale('id', 'ID')],
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.lightBlue,
-              brightness: Brightness.light,
-            ),
-            useMaterial3: true,
-            appBarTheme: const AppBarTheme(
-              elevation: 0,
-              backgroundColor: Colors.lightBlue,
-              foregroundColor: Colors.white,
-              centerTitle: false,
-            ),
-            textTheme: const TextTheme(
-              bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              labelLarge: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            scaffoldBackgroundColor: const Color(0xFFF5F6FA),
-            floatingActionButtonTheme: const FloatingActionButtonThemeData(
-              backgroundColor: Colors.lightBlue,
-              foregroundColor: Colors.white,
-            ),
-            inputDecorationTheme: const InputDecorationTheme(
-              border: OutlineInputBorder(),
-            ),
-          ),
-          home:
-              snapshot.connectionState == ConnectionState.waiting
-                  ? const Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
-                  )
-                  : snapshot.hasData
-                  ? const MainPage()
-                  : const LoginScreen(),
-        );
+    return MaterialApp(
+      title: 'MoneyNote',
+      debugShowCheckedModeBanner: false,
+      locale: const Locale('en', 'US'),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        MonthYearPickerLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en', 'US'), Locale('id', 'ID')],
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.lightBlue,
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          elevation: 0,
+          backgroundColor: Colors.lightBlue,
+          foregroundColor: Colors.white,
+          centerTitle: false,
+        ),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          labelLarge: TextStyle(fontSize: 14, color: Colors.grey),
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF5F6FA),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Colors.lightBlue,
+          foregroundColor: Colors.white,
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(),
+        ),
+      ),
+      initialRoute: '/',
+      routes: {
+        '/': (_) => const SplashScreen(),
+        '/auth': (_) => const AuthWrapper(),
       },
     );
   }
 }
 
+// StreamBuilder FirebaseAuth
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        } else if (snapshot.hasData) {
+          return const MainPage();
+        } else {
+          return const LoginScreen();
+        }
+      },
+    );
+  }
+}
+
+// MainPage tetap sama seperti sebelumnya
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
