@@ -68,6 +68,14 @@ class TransactionService {
     final whereClauses = <String>[];
     final whereArgs = <dynamic>[];
 
+    if (type == null) {
+      whereClauses.add('type IN (?, ?)');
+      whereArgs.addAll(['income', 'expense']);
+    } else {
+      whereClauses.add('type = ?');
+      whereArgs.add(type);
+    }
+
     if (fromDate != null) {
       whereClauses.add('date >= ?');
       whereArgs.add(fromDate.toIso8601String());
@@ -76,10 +84,7 @@ class TransactionService {
       whereClauses.add('date < ?');
       whereArgs.add(toDate.toIso8601String());
     }
-    if (type != null) {
-      whereClauses.add('type = ?');
-      whereArgs.add(type);
-    }
+
     if (walletId != null) {
       whereClauses.add('walletId = ?');
       whereArgs.add(walletId);

@@ -22,21 +22,39 @@ class ReportChart extends StatelessWidget {
     final expenseByGroup = <String, double>{};
 
     groupedData.forEach((key, items) {
+      double parseAmount(dynamic amt) {
+        if (amt == null) return 0.0;
+        if (amt is num) return amt.toDouble();
+        return double.tryParse(amt.toString()) ?? 0.0;
+      }
+
       final income = items
           .where((tx) => tx["type"] == "income")
-          .fold(0.0, (sum, tx) => sum + (tx["amount"] as num).toDouble());
+          .fold(0.0, (sum, tx) => sum + parseAmount(tx["amount"]));
 
       final expense = items
           .where((tx) => tx["type"] == "expense")
-          .fold(0.0, (sum, tx) => sum + (tx["amount"] as num).toDouble());
+          .fold(0.0, (sum, tx) => sum + parseAmount(tx["amount"]));
 
       incomeByGroup[key] = income;
       expenseByGroup[key] = expense;
     });
 
     final keys =
-        incomeByGroup.keys.toSet().union(expenseByGroup.keys.toSet()).toList()
-          ..sort();
+        incomeByGroup.keys.toSet().union(expenseByGroup.keys.toSet()).toList();
+
+    // Optional: sorting kronologis jika key format date
+    keys.sort((a, b) {
+      DateTime parseKey(String s) {
+        try {
+          return DateTime.tryParse(s) ?? DateTime.now();
+        } catch (_) {
+          return DateTime.now();
+        }
+      }
+
+      return parseKey(a).compareTo(parseKey(b));
+    });
 
     final barGroups = <BarChartGroupData>[];
 
@@ -48,7 +66,7 @@ class ReportChart extends StatelessWidget {
       barGroups.add(
         BarChartGroupData(
           x: i,
-          barsSpace: 6, // jarak antar batang income & expense
+          barsSpace: 6,
           barRods: [
             BarChartRodData(
               toY: income,
@@ -83,9 +101,12 @@ class ReportChart extends StatelessWidget {
                 if (index < 0 || index >= keys.length) {
                   return const SizedBox.shrink();
                 }
-                return Text(
-                  keys[index], // label bulan/tahun
-                  style: const TextStyle(fontSize: 10),
+                return Transform.rotate(
+                  angle: -0.5,
+                  child: Text(
+                    keys[index],
+                    style: const TextStyle(fontSize: 10),
+                  ),
                 );
               },
             ),

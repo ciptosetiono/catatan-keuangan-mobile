@@ -46,6 +46,7 @@ class _ReportScreenState extends State<ReportScreen> {
 
   Future<void> _loadMasterData() async {
     _categoryService.getCategoryStream().listen((catList) {
+      if (!mounted) return;
       setState(() {
         categoryMap = {for (var cat in catList) cat.id: cat.name};
       });
@@ -53,6 +54,7 @@ class _ReportScreenState extends State<ReportScreen> {
     });
 
     _walletService.getWalletStream().listen((walletList) {
+      if (!mounted) return;
       setState(() {
         walletMap = {for (var wallet in walletList) wallet.id: wallet.name};
       });
@@ -64,6 +66,7 @@ class _ReportScreenState extends State<ReportScreen> {
     _transactionService
         .getTransactionsStream(fromDate: fromDate, toDate: toDate)
         .listen((txList) {
+          if (!mounted) return;
           setState(() {
             transactions =
                 txList.map((tx) {
@@ -96,10 +99,12 @@ class _ReportScreenState extends State<ReportScreen> {
 
     for (var tx in transactions) {
       final rawDate = tx["date"];
-      late DateTime date;
 
+      late DateTime date;
       if (rawDate is DateTime) {
         date = rawDate;
+      } else if (rawDate is String) {
+        date = DateTime.tryParse(rawDate) ?? DateTime.now();
       } else {
         throw Exception("Unknown date type: $rawDate");
       }
@@ -122,6 +127,9 @@ class _ReportScreenState extends State<ReportScreen> {
           key = DateFormat("dd MMM yyyy").format(date);
       }
 
+      if (tx["amount"] is String) {
+        tx["amount"] = double.tryParse(tx["amount"]) ?? 0.0;
+      }
       grouped.putIfAbsent(key, () => []);
       grouped[key]!.add(tx);
     }
@@ -135,6 +143,7 @@ class _ReportScreenState extends State<ReportScreen> {
     DateTime? to,
     String? label,
   }) {
+    if (!mounted) return;
     setState(() {
       selectedRange = option;
       selectedLabel = label;
@@ -146,7 +155,6 @@ class _ReportScreenState extends State<ReportScreen> {
 
   void _export(String type) {
     final exportService = ReportExportService();
-
     if (type == "csv") exportService.exportToCsv(transactions: transactions);
     if (type == "pdf") exportService.exportToPdf(transactions: transactions);
   }
@@ -155,12 +163,13 @@ class _ReportScreenState extends State<ReportScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Report"), // kosong atau back button
+        title: const Text("Report"),
         bottom: ReportFilter(
           groupBy: groupBy,
           selectedRange: DateFilterOption.thisMonth,
           onDateRangePicked: _applyDateFilter,
           onGroupChanged: (group) {
+            if (!mounted) return;
             setState(() {
               groupBy = group;
             });
@@ -194,18 +203,16 @@ class _ReportScreenState extends State<ReportScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Leave empty because PopupMenuButton handles tap
-        },
+        onPressed: () {},
         child: PopupMenuButton<String>(
-          icon: Icon(Icons.more_vert), // Icon inside FAB
+          icon: const Icon(Icons.more_vert),
           onSelected: (value) {
             _export(value);
           },
           itemBuilder:
               (context) => [
-                PopupMenuItem(value: 'csv', child: Text('Export CSV')),
-                PopupMenuItem(value: 'pdf', child: Text('Export PDF')),
+                const PopupMenuItem(value: 'csv', child: Text('Export CSV')),
+                const PopupMenuItem(value: 'pdf', child: Text('Export PDF')),
               ],
         ),
       ),
@@ -214,5 +221,8 @@ class _ReportScreenState extends State<ReportScreen> {
 }
 
 extension DayOfYear on DateTime {
-  int get dayOfYear => int.parse(DateFormat("D").format(this));
+  int get dayOfYear {
+    final start = DateTime(year, 1, 1);
+    return difference(start).inDays + 1;
+  }
 }

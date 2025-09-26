@@ -30,15 +30,15 @@ class ReportListItem extends StatelessWidget {
         subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
         children:
             items.map((tx) {
+              final DateTime date =
+                  tx["date"] is DateTime
+                      ? tx["date"]
+                      : DateTime.tryParse(tx["date"].toString()) ??
+                          DateTime.now();
+
               return ListTile(
                 title: Text(tx["title"] ?? "-"),
-                subtitle: Text(
-                  DateFormat('dd MMM yyyy').format(
-                    tx["date"] is DateTime
-                        ? tx["date"]
-                        : tx["date"] as DateTime,
-                  ),
-                ),
+                subtitle: Text(DateFormat('dd MMM yyyy').format(date)),
                 trailing: Text(
                   currencyFormatter.encode(tx["amount"] as num),
                   style: TextStyle(

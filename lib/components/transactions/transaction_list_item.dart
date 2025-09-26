@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:money_note/utils/currency_formatter.dart';
@@ -40,6 +42,7 @@ class TransactionListItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.05),
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -108,6 +111,8 @@ Future<void> handleTransactionTap({
   final action = await showTransactionActionDialog(context);
   if (action == 'detail') {
     final result = await Navigator.push(
+      // ignore: duplicate_ignore
+      // ignore: use_build_context_synchronously
       context,
       MaterialPageRoute(
         builder: (_) => TransactionDetailScreen(transaction: transaction),

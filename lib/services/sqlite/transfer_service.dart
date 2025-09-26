@@ -38,6 +38,9 @@ class TransferService {
       final whereClauses = <String>[];
       final whereArgs = <dynamic>[];
 
+      whereClauses.add('type = ?');
+      whereArgs.add('transfer');
+
       if (fromWalletId != null) {
         whereClauses.add('fromWalletId = ?');
         whereArgs.add(fromWalletId);

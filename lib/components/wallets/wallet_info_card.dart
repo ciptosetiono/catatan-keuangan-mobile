@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/models/wallet_model.dart';
