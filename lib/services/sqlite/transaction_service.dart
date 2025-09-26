@@ -313,26 +313,38 @@ class TransactionService {
 
   // ======================= Aggregations =======================
   Future<double> getTotalIncomeByMonth(DateTime month) async {
-    final from = DateTime(month.year, month.month);
-    final to = DateTime(month.year, month.month + 1);
+    final from = DateTime(month.year, month.month, 1);
+    final to = DateTime(month.year, month.month + 1, 1);
 
     final db = await DBHelper.database;
     final result = await db.rawQuery(
-      'SELECT SUM(amount) as total FROM transactions WHERE type = ? AND date >= ? AND date < ?',
-      ['income', from.millisecondsSinceEpoch, to.millisecondsSinceEpoch],
+      '''
+    SELECT SUM(amount) as total
+    FROM transactions
+    WHERE type = ?
+      AND date >= ?
+      AND date < ?
+    ''',
+      ['income', from.toIso8601String(), to.toIso8601String()],
     );
 
     return (result.first['total'] as num?)?.toDouble() ?? 0.0;
   }
 
   Future<double> getTotalSpentByMonth(DateTime month) async {
-    final from = DateTime(month.year, month.month);
-    final to = DateTime(month.year, month.month + 1);
+    final from = DateTime(month.year, month.month, 1);
+    final to = DateTime(month.year, month.month + 1, 1);
 
     final db = await DBHelper.database;
     final result = await db.rawQuery(
-      'SELECT SUM(amount) as total FROM transactions WHERE type = ? AND date >= ? AND date < ?',
-      ['expense', from.millisecondsSinceEpoch, to.millisecondsSinceEpoch],
+      '''
+    SELECT SUM(amount) as total
+    FROM transactions
+    WHERE type = ?
+      AND date >= ?
+      AND date < ?
+    ''',
+      ['expense', from.toIso8601String(), to.toIso8601String()],
     );
 
     return (result.first['total'] as num?)?.toDouble() ?? 0.0;

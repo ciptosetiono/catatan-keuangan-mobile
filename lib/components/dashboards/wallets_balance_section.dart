@@ -46,7 +46,7 @@ class WalletsBalanceSection extends StatelessWidget {
                     limitedWallets.map((wallet) {
                       return Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
                           child: _WalletCard(
                             wallet: wallet,
                             onTap: () {
