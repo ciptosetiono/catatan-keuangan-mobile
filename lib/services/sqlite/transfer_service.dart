@@ -59,7 +59,7 @@ class TransferService {
           whereClauses.isNotEmpty ? whereClauses.join(' AND ') : null;
 
       final result = await db.query(
-        'transfers',
+        'transactions',
         where: whereString,
         whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
         orderBy: 'date DESC',
@@ -72,7 +72,7 @@ class TransferService {
   Future<TransactionModel?> getTransferById(String id) async {
     final db = await DBHelper.database;
     final maps = await db.query(
-      'transfers',
+      'transactions',
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -81,7 +81,9 @@ class TransferService {
     return null;
   }
 
-  Future<TransactionModel> addTransfer(TransactionModel tx) async {
+  Future<TransactionModel> addTransfer(Map<String, dynamic> txData) async {
+    final tx = TransactionModel.fromMap(txData);
+
     if (tx.fromWalletId == null || tx.toWalletId == null) {
       throw Exception('Wallet ID cannot be null');
     }
@@ -91,8 +93,8 @@ class TransferService {
 
     final db = await DBHelper.database;
     await db.insert(
-      'transfers',
-      tx.toMap(),
+      'transactions',
+      txData,
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
@@ -103,18 +105,11 @@ class TransferService {
     return tx;
   }
 
-  Future<bool> updateTransfer(String id, TransactionModel newTx) async {
+  Future<bool> updateTransfer(String id, Map<String, dynamic> newData) async {
     final db = await DBHelper.database;
     final oldTx = await getTransferById(id);
+
     if (oldTx == null) return false;
-
-    await db.update(
-      'transfers',
-      newTx.toMap(),
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
     await _walletService.increaseBalance(
       oldTx.fromWalletId!,
       oldTx.amount.toInt(),
@@ -122,6 +117,19 @@ class TransferService {
     await _walletService.decreaseBalance(
       oldTx.toWalletId!,
       oldTx.amount.toInt(),
+    );
+
+    await db.update('transactions', newData, where: 'id = ?', whereArgs: [id]);
+
+    final newTx = oldTx.copyWith(
+      amount: (newData['amount'] ?? oldTx.amount).toDouble(),
+      type: newData['type'] ?? oldTx.type,
+      walletId: newData['walletId'] ?? oldTx.walletId,
+      categoryId: newData['categoryId'] ?? oldTx.categoryId,
+      date: newData['date'] ?? oldTx.date,
+      title: newData['title'] ?? oldTx.title,
+      fromWalletId: newData['fromWalletId'] ?? oldTx.fromWalletId,
+      toWalletId: newData['toWalletId'] ?? oldTx.toWalletId,
     );
 
     await _walletService.decreaseBalance(
@@ -146,7 +154,7 @@ class TransferService {
 
     // Hapus dari database
     final count = await db.delete(
-      'transfers',
+      'transactions',
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -167,7 +175,7 @@ class TransferService {
   Stream<List<TransactionModel>> getTransfersByWallet(String walletId) async* {
     final db = await DBHelper.database;
     final maps = await db.query(
-      'transfers',
+      'transactions',
       where: 'fromWalletId = ? OR toWalletId = ?',
       whereArgs: [walletId, walletId],
       orderBy: 'date DESC',

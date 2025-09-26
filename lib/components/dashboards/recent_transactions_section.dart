@@ -1,6 +1,4 @@
 // lib/components/dashboard/recent_transactions_section.dart
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -27,7 +25,12 @@ class RecentTransactionsSection extends StatelessWidget {
           stream: _transactionService.getTransactionsStream(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: CircularProgressIndicator(),
+                ),
+              );
             }
             if (snapshot.hasError) {
               return Padding(
@@ -49,48 +52,85 @@ class RecentTransactionsSection extends StatelessWidget {
 
             final latest = transactions.take(5).toList();
 
-            return ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: latest.length,
-              separatorBuilder: (context, index) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final trx = latest[index];
-                final isIncome = trx.type == 'income';
-                final color = isIncome ? Colors.green : Colors.red;
-                final icon =
-                    isIncome ? Icons.arrow_downward : Icons.arrow_upward;
+            return Column(
+              children:
+                  latest.map((trx) {
+                    final isIncome = trx.type == 'income';
+                    final color = isIncome ? Colors.green : Colors.red;
+                    final icon =
+                        isIncome ? Icons.arrow_downward : Icons.arrow_upward;
 
-                return InkWell(
-                  onTap: () => onTapItem?.call(trx),
-                  borderRadius: BorderRadius.circular(12),
-                  child: ListTile(
-                    contentPadding:
-                        EdgeInsets.zero, // hilangkan padding default
-                    leading: CircleAvatar(
-                      backgroundColor: color.withOpacity(0.1),
-                      child: Icon(icon, color: color),
-                    ),
-                    title: Text(
-                      trx.title,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      DateFormat.yMMMMd().format(trx.date),
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                    trailing: Text(
-                      (isIncome ? '+ ' : '- ') +
-                          CurrencyFormatter().encode(trx.amount),
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                    return InkWell(
+                      onTap: () => onTapItem?.call(trx),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                          vertical: 4,
+                          horizontal: 4,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: color.withOpacity(0.1),
+                              child: Icon(icon, color: color, size: 18),
+                            ),
+                            const SizedBox(width: 12),
+
+                            // judul + tanggal
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    trx.title,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    DateFormat('dd MMM yyyy').format(trx.date),
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // jumlah
+                            Text(
+                              (isIncome ? '+ ' : '- ') +
+                                  CurrencyFormatter().encode(trx.amount),
+                              style: TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              },
+                    );
+                  }).toList(),
             );
           },
         ),

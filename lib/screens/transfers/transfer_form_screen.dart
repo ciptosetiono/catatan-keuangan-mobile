@@ -127,18 +127,17 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
 
       final title = 'Transfer from ${_fromWallet!.name} to ${_toWallet!.name}';
 
-      final transfer = TransactionModel(
-        id: isEdit ? widget.transfer!.id : '',
-        title: title,
-        amount: amount.toDouble(),
-        type: 'transfer',
-        date: _selectedDate,
-        userId: currentUserId,
-        walletId: null,
-        categoryId: null,
-        fromWalletId: _fromWallet!.id,
-        toWalletId: _toWallet!.id,
-      );
+      final transfer = {
+        'title': title,
+        'amount': amount.toDouble(),
+        'type': 'transfer',
+        'date': _selectedDate.toIso8601String(),
+        'categoryId': null,
+        'userId': currentUserId,
+        'walletId': _fromWallet!.id, //set fromWalletId ad walletId
+        'fromWalletId': _fromWallet!.id,
+        'toWalletId': _toWallet!.id,
+      };
 
       if (isEdit) {
         await _transferService.updateTransfer(widget.transfer!.id, transfer);
@@ -154,7 +153,7 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
       Navigator.pop(context, isEdit ? 'updated' : 'added');
     } catch (e) {
       if (mounted) {
-        _showAlert(e.toString());
+        _showAlert('Transfer failed!');
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

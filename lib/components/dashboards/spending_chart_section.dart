@@ -1,12 +1,11 @@
 // lib/components/dashboard/spending_chart_section.dart
+// ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import 'package:money_note/utils/currency_formatter.dart';
-
 import 'package:money_note/models/category_model.dart';
-
 import 'package:money_note/services/sqlite/category_service.dart';
 import 'package:money_note/services/sqlite/transaction_service.dart';
 import 'package:money_note/screens/categories/category_detail_screen.dart';
@@ -37,20 +36,16 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
   }
 
   Future<List<_CategoryTotal>> _loadChartData() async {
-    // 1) fetch all expense categories from stream (offline-first)
-
-    final categories = await _categoryService
-        .getCategoryStream(type: 'expense')
-        .firstWhere((list) => list.isNotEmpty, orElse: () => []);
+    final categories =
+        await _categoryService.getCategoryStream(type: 'expense').first;
 
     if (categories.isEmpty) return [];
-    // 2) fetch totals per category
+
     final totals = await _transactionService.getTotalSpentByCategories(
       categoryIds: categories.map((c) => c.id).toList(),
       month: _selectedMonth,
     );
 
-    // 3) build list of nonzero entries
     return categories
         .where((c) => (totals[c.id] ?? 0) > 0)
         .map((c) => _CategoryTotal(c, totals[c.id] ?? 0))
@@ -62,6 +57,7 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
     return Colors.primaries[idx].shade400;
   }
 
+  // ignore: unused_element
   void _openCategoryDetail(Category category) {
     Navigator.push(
       context,
@@ -76,92 +72,126 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionTitle(title: 'Expenses By Category', onSeeAll: widget.onSeeAll),
+        SectionTitle(title: 'Expenses by Category', onSeeAll: widget.onSeeAll),
         const SizedBox(height: 12),
         FutureBuilder<List<_CategoryTotal>>(
           future: _chartDataFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: CircularProgressIndicator(),
+                ),
+              );
             }
             if (snapshot.hasError) {
               return Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
                   'Failed to get categories data!',
-                  style: TextStyle(color: Colors.red),
+                  style: const TextStyle(color: Colors.red),
                 ),
               );
             }
-            final data = snapshot.data!;
+            final data = snapshot.data ?? [];
             if (data.isEmpty) {
               return const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
-                child: Text('There is no spent by category on this month!.'),
+                child: Text('No spending by category this month.'),
               );
             }
 
             final totalAll = data.fold<double>(0, (sum, e) => sum + e.amount);
 
-            return Column(
-              children: [
-                SizedBox(
-                  height: 220,
-                  child: PieChart(
-                    PieChartData(
-                      sectionsSpace: 2,
-                      centerSpaceRadius: 40,
-                      sections:
-                          data.map((entry) {
-                            final percent =
-                                totalAll == 0
-                                    ? 0.0
-                                    : entry.amount / totalAll * 100;
-                            return PieChartSectionData(
-                              value: entry.amount,
-                              title: '${percent.toStringAsFixed(1)}%',
-                              color: _getColor(entry.category.name),
-                              radius: 60,
-                              titleStyle: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            );
-                          }).toList(),
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 200,
+                    child: PieChart(
+                      PieChartData(
+                        sectionsSpace: 2,
+                        centerSpaceRadius: 40,
+                        sections:
+                            data.map((entry) {
+                              final percent =
+                                  totalAll == 0
+                                      ? 0.0
+                                      : entry.amount / totalAll * 100;
+                              return PieChartSectionData(
+                                value: entry.amount,
+                                title: '${percent.toStringAsFixed(1)}%',
+                                color: _getColor(entry.category.name),
+                                radius: 58,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              );
+                            }).toList(),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                ...data.map((entry) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: ListTile(
-                      dense: true, // makes the tile more compact
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 0,
-                      ), // reduce padding
-                      leading: CircleAvatar(
-                        backgroundColor: _getColor(
-                          entry.category.name,
-                          // ignore: deprecated_member_use
-                        ).withOpacity(0.3),
-                      ),
-                      title: Text(entry.category.name),
-                      trailing: Text(
-                        CurrencyFormatter().encode(entry.amount),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      onTap: () => _openCategoryDetail(entry.category),
-                    ),
-                  );
-                  // ignore: unnecessary_to_list_in_spreads
-                }).toList(),
-              ],
+                  const SizedBox(height: 16),
+                  Column(
+                    children:
+                        data.map((entry) {
+                          final color = _getColor(entry.category.name);
+                          return Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 6,
+                              horizontal: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: color.withOpacity(0.05),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 14,
+                                  backgroundColor: color.withOpacity(0.2),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    entry.category.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  CurrencyFormatter().encode(entry.amount),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                  ),
+                ],
+              ),
             );
           },
         ),

@@ -65,7 +65,7 @@ class TransactionModel {
       'title': title,
       'amount': amount,
       'type': type,
-      'date': date,
+      'date': date.toIso8601String(),
       'userId': userId,
       'walletId': walletId,
       if (categoryId != null) 'categoryId': categoryId,

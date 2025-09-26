@@ -8,141 +8,168 @@ import '../transfers/transfer_screen.dart';
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
 
+  Widget _buildMenuTile({
+    required BuildContext context,
+    required IconData icon,
+    required Color color,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: color.withOpacity(0.15),
+          child: Icon(icon, color: color),
+        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+        onTap: onTap,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        title: const Text('Settings'),
+        centerTitle: true,
+        elevation: 0,
+      ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
-          // Informasi user
           if (user != null)
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 12,
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundImage: NetworkImage(user.photoURL ?? ''),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user.displayName ?? '-',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundImage:
+                        user.photoURL != null
+                            ? NetworkImage(user.photoURL!)
+                            : null,
+                    child:
+                        user.photoURL == null
+                            ? const Icon(Icons.person, size: 32)
+                            : null,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.displayName ?? 'User',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            user.email ?? '',
-                            style: const TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          user.email ?? '',
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
 
-          const SizedBox(height: 24),
-          // menu wallets
-          Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              leading: const Icon(Icons.account_balance_wallet),
-              title: const Text('Wallets'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const WalletScreen()),
-                );
-              },
-            ),
+          const SizedBox(height: 8),
+
+          // Wallets
+          _buildMenuTile(
+            context: context,
+            icon: Icons.account_balance_wallet,
+            color: Colors.blue,
+            title: 'Wallets',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const WalletScreen()),
+              );
+            },
           ),
-          const SizedBox(height: 12),
-          // menu transfer
-          Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              leading: const Icon(Icons.compare_arrows_rounded),
-              title: const Text('Transfers'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const TransferScreen()),
-                );
-              },
-            ),
+
+          // Transfers
+          _buildMenuTile(
+            context: context,
+            icon: Icons.compare_arrows_rounded,
+            color: Colors.orange,
+            title: 'Transfers',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const TransferScreen()),
+              );
+            },
           ),
-          const SizedBox(height: 12),
-          // menu categories
-          Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              leading: const Icon(Icons.category),
-              title: const Text('Categories'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CategoryScreen()),
-                );
-              },
-            ),
+
+          // Categories
+          _buildMenuTile(
+            context: context,
+            icon: Icons.category,
+            color: Colors.green,
+            title: 'Categories',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CategoryScreen()),
+              );
+            },
           ),
-          /*
-          const SizedBox(height: 12),
-          // menu export
-          Card(
-            shape: RoundedRectangleBorder(
+
+          const SizedBox(height: 16),
+
+          // Logout
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
               borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              leading: const Icon(Icons.download),
-              title: const Text('Backups'),
-              trailing: const Icon(Icons.download),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CategoryScreen()),
-                );
-              },
-            ),
-          ),
-          */
-          const SizedBox(height: 12),
-          // Tombol logout
-          Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.red.shade100),
             ),
             child: ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Exit', style: TextStyle(color: Colors.red)),
+              title: const Text(
+                'Exit',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
+                ),
+              ),
               onTap: () async {
                 await AuthService().signOut();
                 // ignore: use_build_context_synchronously

@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math';
 import 'db_helper.dart';
+import 'wallet_service.dart';
 
 Future<void> initializeUserData() async {
   final db = await DBHelper.database;
@@ -60,6 +61,11 @@ Future<void> initializeWallets(Database db, String userId) async {
     for (var wallet in defaultWallets) {
       await db.insert('wallets', wallet);
     }
+
+    //ensure wallet data is write to disk
+    WalletService().getWallets().then((wallets) {
+      WalletService().getWalletStream(); // memaksa refresh stream
+    });
   }
 }
 

@@ -267,18 +267,10 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
             const Text("Filter: "),
             const SizedBox(width: 8),
             Flexible(
-              // <-- allows it to shrink
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade400),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: DateFilterDropdown(
-                  selected: _selectedDateFilter,
-                  label: _selectedDateLabel,
-                  onFilterApplied: _applyDateFilter,
-                ),
+              child: DateFilterDropdown(
+                selected: _selectedDateFilter,
+                label: _selectedDateLabel,
+                onFilterApplied: _applyDateFilter,
               ),
             ),
           ],
