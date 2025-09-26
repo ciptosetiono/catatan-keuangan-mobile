@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-
 import 'package:money_note/utils/currency_formatter.dart';
-
 import 'package:money_note/models/budget_model.dart';
 import 'package:money_note/models/category_model.dart';
-
 import 'package:money_note/services/sqlite/budget_service.dart';
 import 'package:money_note/services/sqlite/transaction_service.dart';
-
 import 'package:money_note/components/budgets/budget_item.dart';
 
 class BudgetList extends StatelessWidget {
@@ -30,14 +26,10 @@ class BudgetList extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          return const Center(
-            child: Text("Oops, something went wrong! Please try again later."),
-          );
+          return const Center(child: Text("Oops, something went wrong!"));
         }
 
         final allBudgets = snapshot.data ?? [];
-
-        // Filter budgets based on filtered categories
         final categoryIds = categories.map((c) => c.id).toSet();
         final filteredBudgets =
             allBudgets
@@ -62,24 +54,20 @@ class BudgetList extends StatelessWidget {
             }
 
             final usedMap = trxSnapshot.data ?? {};
-
             final totalBudget = filteredBudgets.fold<double>(
               0.0,
               (sum, b) => sum + b.amount,
             );
-
             final totalUsed = usedMap.values.fold<double>(
               0.0,
               (sum, used) => sum + used,
             );
-
             final remaining = totalBudget - totalUsed;
             final percentUsed =
                 totalBudget == 0
                     ? 0.0
                     : (totalUsed / totalBudget).clamp(0.0, 1.0);
 
-            // Map categoryId to Category for fast lookup
             final categoryMap = {for (var c in categories) c.id: c};
 
             return Column(
@@ -90,16 +78,25 @@ class BudgetList extends StatelessWidget {
                     vertical: 8,
                   ),
                   child: Card(
+                    color: Colors.white,
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: Padding(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
                             'Total Budget',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Text(
                             CurrencyFormatter().encode(totalBudget),
                             style: const TextStyle(
@@ -108,19 +105,31 @@ class BudgetList extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Text(
-                            'Total Expense: ${CurrencyFormatter().encode(totalUsed)}',
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total Expense: ${CurrencyFormatter().encode(totalUsed)}',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                              Text(
+                                'Remaining: ${CurrencyFormatter().encode(remaining)}',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 8),
                           LinearProgressIndicator(
                             value: percentUsed,
-                            backgroundColor: Colors.grey[300],
-                            color: Colors.redAccent,
+                            backgroundColor: Colors.grey.shade300,
+                            color: Colors.redAccent.shade400,
                             minHeight: 8,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Remaining Budget: ${CurrencyFormatter().encode(remaining)}',
                           ),
                         ],
                       ),

@@ -29,7 +29,10 @@ class WalletFilterDropdown extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Row(
         children: [
-          const Icon(Icons.account_balance_wallet, color: Colors.black),
+          const Icon(
+            Icons.account_balance_wallet,
+            color: Color.fromARGB(255, 119, 119, 119),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: StreamBuilder<List<Wallet>>(

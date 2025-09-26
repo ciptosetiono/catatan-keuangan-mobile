@@ -16,28 +16,29 @@ class TransactionSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.grey.shade100,
+      color: Colors.white, // lebih clean
+      elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.all(12),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _buildSummaryItem(
               label: 'Income',
               value: income,
-              color: Colors.green,
+              color: Colors.green.shade700,
             ),
             _buildSummaryItem(
               label: 'Expense',
               value: expense,
-              color: Colors.red,
+              color: Colors.red.shade700,
             ),
             _buildSummaryItem(
               label: 'Balance',
               value: balance,
-              color: Colors.blue,
+              color: Colors.blue.shade700,
             ),
           ],
         ),
@@ -55,13 +56,17 @@ class TransactionSummaryCard extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: Colors.black54),
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           CurrencyFormatter().encode(value),
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             color: color,
           ),

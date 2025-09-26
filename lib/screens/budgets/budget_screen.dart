@@ -53,8 +53,6 @@ class _BudgetScreenState extends State<BudgetScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Budgets'),
-        backgroundColor: Colors.lightBlue,
-        foregroundColor: Colors.white,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(70),
           child: Container(

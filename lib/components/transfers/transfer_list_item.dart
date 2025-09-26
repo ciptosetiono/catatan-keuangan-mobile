@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/transaction_model.dart';
@@ -29,9 +27,11 @@ class TransferListItem extends StatelessWidget {
     final toWalletName = getWalletName(transfer.toWalletId);
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
       child: InkWell(
+        borderRadius: BorderRadius.circular(12),
         onTap:
             () => handleTransferTap(
               context: context,
@@ -39,24 +39,60 @@ class TransferListItem extends StatelessWidget {
               onUpdated: onUpdated,
               onDeleted: onDeleted,
             ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-          title: Text(
-            '$fromWalletName → $toWalletName',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Text(transfer.title),
-          trailing: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
             children: [
+              // icon transfer
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.teal.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.swap_horiz, color: Colors.teal),
+              ),
+              const SizedBox(width: 12),
+              // info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$fromWalletName → $toWalletName',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      transfer.title.isNotEmpty ? transfer.title : 'Transfer',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      dateStr,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // amount
               Text(
                 CurrencyFormatter().encode(transfer.amount),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.teal,
+                  fontSize: 16,
                 ),
               ),
-              Text(dateStr),
             ],
           ),
         ),

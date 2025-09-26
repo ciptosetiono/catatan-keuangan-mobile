@@ -19,8 +19,14 @@ class FilterButton extends StatelessWidget {
           ), // nilai lebih kecil → radius lebih kecil
         ),
       ),
-      icon: const Icon(Icons.filter_list),
-      label: Text(label),
+      icon: const Icon(
+        Icons.filter_list,
+        color: Color.fromARGB(255, 78, 78, 78),
+      ),
+      label: Text(
+        label,
+        style: TextStyle(color: Color.fromARGB(255, 78, 78, 78)),
+      ),
       onPressed: onPressed,
     );
   }
