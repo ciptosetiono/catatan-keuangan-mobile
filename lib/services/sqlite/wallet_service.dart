@@ -95,6 +95,23 @@ class WalletService {
     return null;
   }
 
+  Future<Wallet?> _fetchWalletFromDB(String id) async {
+    final db = await DBHelper.database;
+    final maps = await db.query(
+      'wallets',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (maps.isNotEmpty) {
+      final wallet = Wallet.fromMap(maps.first['id'].toString(), maps.first);
+      _walletCache[id] = wallet; // update cache juga
+      return wallet;
+    }
+    return null;
+  }
+
   Future<Wallet?> addWallet(Wallet wallet) async {
     final db = await DBHelper.database;
 
@@ -156,7 +173,7 @@ class WalletService {
     );
 
     // update cache dan stream
-    final wallet = await getWalletById(walletId);
+    final wallet = await _fetchWalletFromDB(walletId);
     if (wallet != null) {
       _walletCache[walletId] = wallet;
       _notifyWalletsUpdate();

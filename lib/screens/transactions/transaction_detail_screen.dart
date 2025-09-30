@@ -12,8 +12,13 @@ import 'package:money_note/components/transactions/transaction_detail_tile.dart'
 
 class TransactionDetailScreen extends StatefulWidget {
   final TransactionModel transaction;
+  final void Function(TransactionModel)? onUpdated;
 
-  const TransactionDetailScreen({super.key, required this.transaction});
+  const TransactionDetailScreen({
+    super.key,
+    required this.transaction,
+    this.onUpdated,
+  });
 
   @override
   State<TransactionDetailScreen> createState() =>
@@ -143,14 +148,12 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               context: context,
               transaction: _transaction!,
               onUpdated: (updatedTransaction) {
-                debugPrint(
-                  "Triggering onSaved callback from TransactioDetailScreen",
-                );
                 setState(() {
                   _transaction = updatedTransaction;
                 });
                 loadNames(); // refresh wallet & category
-                Navigator.pop(context, 'updated');
+
+                widget.onUpdated?.call(updatedTransaction);
               },
               onDeleted: () {
                 Navigator.pop(context, 'deleted');

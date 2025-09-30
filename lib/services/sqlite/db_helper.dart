@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 class DBHelper {
   DBHelper._internal();
+
   static final DBHelper instance = DBHelper._internal();
 
   static Database? _db;
@@ -18,27 +19,8 @@ class DBHelper {
   }
 
   static Future<Database> _initDB(String fileName) async {
-    if (kIsWeb) {
-      // ---------- WEB ----------
-      throw UnimplementedError(
-        'Web version not implemented yet. Use sembast_web or indexedDB.',
-      );
-      // Example with sembast_web:
-      // final factory = databaseFactoryWeb;
-      // final db = await factory.openDatabase(fileName);
-      // return db;
-    } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      // ---------- DESKTOP ----------
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
-
-      final dbPath = join(await _getDatabasesPath(), fileName);
-      return await openDatabase(dbPath, version: 1, onCreate: _onCreate);
-    } else {
-      // ---------- MOBILE (iOS/Android) ----------
-      final dbPath = join(await _getDatabasesPath(), fileName);
-      return await openDatabase(dbPath, version: 1, onCreate: _onCreate);
-    }
+    final dbPath = join(await _getDatabasesPath(), fileName);
+    return await openDatabase(dbPath, version: 1, onCreate: _onCreate);
   }
 
   static Future<String> _getDatabasesPath() async {
@@ -51,8 +33,31 @@ class DBHelper {
     }
   }
 
+  static Future<void> close() async {
+    if (_db != null) {
+      await _db!.close();
+      _db = null;
+    }
+  }
+
+  static Future<void> reopen() async {
+    await close();
+    await database; // trigger open ulang
+  }
+
   static Future _onCreate(Database db, int version) async {
-    // --- Users table ---
+    await createUsersTable(db);
+    await createWalletsTable(db);
+    await createCategoriesTable(db);
+    await createShoppingPlansTable(db);
+    await createShoppingPlanItemsTable(db);
+    await createTransactionsTable(db);
+    await createBudgetsTable(db);
+
+    await db.execute('PRAGMA foreign_keys = ON;');
+  }
+
+  static Future createUsersTable(Database db) async {
     await db.execute('''
     CREATE TABLE users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,7 +66,9 @@ class DBHelper {
       name TEXT NOT NULL
     )
   ''');
+  }
 
+  static Future createWalletsTable(Database db) async {
     // --- Wallets table ---
     await db.execute('''
     CREATE TABLE wallets (
@@ -74,8 +81,9 @@ class DBHelper {
       FOREIGN KEY (userId) REFERENCES users(firebaseUid)
     )
   ''');
+  }
 
-    // --- Categories table ---
+  static Future createCategoriesTable(Database db) async {
     await db.execute('''
     CREATE TABLE categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,8 +93,43 @@ class DBHelper {
       FOREIGN KEY (userId) REFERENCES users(firebaseUid)
     )
   ''');
+  }
 
-    // --- Transactions table ---
+  // --- shopping_plans Table table --
+  static Future createShoppingPlansTable(Database db) async {
+    await db.execute('''
+   CREATE TABLE shopping_plans (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    userId TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
+)
+  ''');
+  }
+
+  // --- shopping_plan_items table ---
+  static Future createShoppingPlanItemsTable(Database db) async {
+    await db.execute('''
+   CREATE TABLE shopping_plan_items (
+    id TEXT PRIMARY KEY,
+    planId TEXT NOT NULL,
+    name TEXT NOT NULL,
+    category TEXT,
+    quantity INTEGER DEFAULT 1,
+    estimatedPrice REAL DEFAULT 0.0,
+    bought INTEGER DEFAULT 0,
+    actualQuantity INTEGER,
+    actualPrice REAL,
+    notes TEXT,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL,
+    FOREIGN KEY(planId) REFERENCES shopping_plans(id) ON DELETE CASCADE
+)
+  ''');
+  }
+
+  static Future createTransactionsTable(Database db) async {
     await db.execute('''
     CREATE TABLE transactions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,18 +138,21 @@ class DBHelper {
       fromWalletId INTEGER,
       toWalletId INTEGER,
       categoryId INTEGER,
+      shoppingPlanItemId TEXT, 
       amount REAL NOT NULL,
       type TEXT NOT NULL,
       date TEXT NOT NULL,
       title TEXT,
-      FOREIGN KEY (walletId) REFERENCES wallets(id),
-      FOREIGN KEY (fromWalletId) REFERENCES wallets(id),
-      FOREIGN KEY (toWalletId) REFERENCES wallets(id),
-      FOREIGN KEY (categoryId) REFERENCES categories(id)
+      FOREIGN KEY (walletId) REFERENCES wallets(id) ON DELETE SET NULL,
+      FOREIGN KEY (fromWalletId) REFERENCES wallets(id) ON DELETE SET NULL,
+      FOREIGN KEY (toWalletId) REFERENCES wallets(id) ON DELETE SET NULL,
+      FOREIGN KEY (categoryId) REFERENCES categories(id) ON DELETE SET NULL,
+      FOREIGN KEY(shoppingPlanItemId) REFERENCES shopping_plan_items(id) ON DELETE SET NULL
     )
   ''');
+  }
 
-    // --- Budgets table ---
+  static Future createBudgetsTable(Database db) async {
     await db.execute('''
     CREATE TABLE budgets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

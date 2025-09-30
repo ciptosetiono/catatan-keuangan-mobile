@@ -170,12 +170,17 @@ class TransactionService {
     }
 
     // Buat TransactionModel baru dari Map, gabungkan id & wallet lama jika perlu
+    final newDate =
+        newData['date'] is String
+            ? DateTime.tryParse(newData['date']) ?? oldTx.date
+            : newData['date'] ?? oldTx.date;
+
     final newTx = oldTx.copyWith(
       amount: (newData['amount'] ?? oldTx.amount).toDouble(),
       type: newData['type'] ?? oldTx.type,
       walletId: newData['walletId'] ?? oldTx.walletId,
       categoryId: newData['categoryId'] ?? oldTx.categoryId,
-      date: newData['date'] ?? oldTx.date,
+      date: newDate,
       title: newData['title'] ?? oldTx.title,
     );
 

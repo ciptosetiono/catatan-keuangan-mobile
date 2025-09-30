@@ -2,14 +2,14 @@ class TransactionModel {
   final String id;
   final String title;
   final double amount;
-  final String type; // 'income' or 'expense'
+  final String type; // 'income' ,  'expense' or 'transfer'
   final DateTime date;
-  final String? walletId;
+  final String? walletId; //for type "income or expense"
+  final String? fromWalletId; //for type "transfer"
+  final String? toWalletId; //for type "transfer"
   final String? categoryId;
+  String? shoppingPlanItemId;
   final String userId;
-
-  final String? fromWalletId;
-  final String? toWalletId;
 
   TransactionModel({
     required this.id,
@@ -19,9 +19,10 @@ class TransactionModel {
     required this.date,
     required this.userId,
     required this.walletId,
-    this.categoryId,
     this.fromWalletId,
     this.toWalletId,
+    this.categoryId,
+    this.shoppingPlanItemId,
   });
 
   factory TransactionModel.fromMap(Map<String, dynamic> data) {
@@ -52,6 +53,7 @@ class TransactionModel {
       amount: parseAmount(data['amount']),
       type: data['type']?.toString() ?? '',
       categoryId: data['categoryId']?.toString() ?? '',
+      shoppingPlanItemId: data['shoppingPlanItemId']?.toString() ?? '',
       title: data['title']?.toString() ?? '',
       date: parsedDate,
       fromWalletId: data['fromWalletId']?.toString() ?? '',
@@ -69,6 +71,7 @@ class TransactionModel {
       'userId': userId,
       'walletId': walletId,
       if (categoryId != null) 'categoryId': categoryId,
+      if (shoppingPlanItemId != null) 'shoppingPlanItemId': shoppingPlanItemId,
       if (fromWalletId != null) 'fromWalletId': fromWalletId,
       if (toWalletId != null) 'toWalletId': toWalletId,
     };
@@ -82,6 +85,7 @@ class TransactionModel {
     DateTime? date,
     String? walletId,
     String? categoryId,
+    String? shoppingPlanItemId,
     String? userId,
     String? fromWalletId,
     String? toWalletId,
@@ -94,6 +98,7 @@ class TransactionModel {
       date: date ?? this.date,
       walletId: walletId ?? this.walletId,
       categoryId: categoryId ?? this.categoryId,
+      shoppingPlanItemId: shoppingPlanItemId ?? shoppingPlanItemId,
       userId: userId ?? this.userId,
       fromWalletId: fromWalletId ?? this.fromWalletId,
       toWalletId: toWalletId ?? this.toWalletId,

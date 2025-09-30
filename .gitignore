@@ -47,3 +47,7 @@ android/app/google-services.json"android/app/google-services.json"
 
 # dotenv (optional)
 .env
+
+#keys
+*.jks
+key.properties

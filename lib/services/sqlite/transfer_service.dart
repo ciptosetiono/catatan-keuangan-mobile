@@ -124,12 +124,17 @@ class TransferService {
 
     await db.update('transactions', newData, where: 'id = ?', whereArgs: [id]);
 
+    final newDate =
+        newData['date'] is String
+            ? DateTime.tryParse(newData['date']) ?? oldTx.date
+            : newData['date'] ?? oldTx.date;
+
     final newTx = oldTx.copyWith(
       amount: (newData['amount'] ?? oldTx.amount).toDouble(),
       type: newData['type'] ?? oldTx.type,
       walletId: newData['walletId'] ?? oldTx.walletId,
       categoryId: newData['categoryId'] ?? oldTx.categoryId,
-      date: newData['date'] ?? oldTx.date,
+      date: newDate,
       title: newData['title'] ?? oldTx.title,
       fromWalletId: newData['fromWalletId'] ?? oldTx.fromWalletId,
       toWalletId: newData['toWalletId'] ?? oldTx.toWalletId,
@@ -175,16 +180,18 @@ class TransferService {
   }
 
   // ---------------- Wallet-specific Stream ----------------
-  Stream<List<TransactionModel>> getTransfersByWallet(String walletId) async* {
-    final db = await DBHelper.database;
-    final maps = await db.query(
-      'transactions',
-      where: 'fromWalletId = ? OR toWalletId = ?',
-      whereArgs: [walletId, walletId],
-      orderBy: 'date DESC',
+  Stream<List<TransactionModel>> getTransfersByWallet(String walletId) {
+    // pastikan controller ada data
+    _loadTransfers();
+    return _transferController.stream.map(
+      (list) =>
+          list
+              .where(
+                (tx) =>
+                    tx.fromWalletId == walletId || tx.toWalletId == walletId,
+              )
+              .toList(),
     );
-    final transfers = maps.map((e) => TransactionModel.fromMap(e)).toList();
-    yield transfers;
   }
 
   void dispose() {

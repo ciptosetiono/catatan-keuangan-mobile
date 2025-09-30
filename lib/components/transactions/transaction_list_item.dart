@@ -115,13 +115,15 @@ Future<void> handleTransactionTap({
       // ignore: use_build_context_synchronously
       context,
       MaterialPageRoute(
-        builder: (_) => TransactionDetailScreen(transaction: transaction),
+        builder:
+            (_) => TransactionDetailScreen(
+              transaction: transaction,
+              onUpdated: onUpdated,
+            ),
       ),
     );
 
-    if (result is TransactionModel && onUpdated != null) {
-      onUpdated(result);
-    } else if (result == 'deleted' && onDeleted != null) {
+    if (result == 'deleted' && onDeleted != null) {
       onDeleted();
     }
   } else if (action == 'edit') {

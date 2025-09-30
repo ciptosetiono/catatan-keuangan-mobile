@@ -6,6 +6,8 @@ import '../../services/firebase/auth_service.dart';
 import '../categories/category_screen.dart';
 import '../wallets/wallet_screen.dart';
 import '../transfers/transfer_screen.dart';
+import '../../services/sqlite/backup_service.dart';
+import 'package:money_note/components/ui/alerts/flash_message.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -150,6 +152,83 @@ class SettingScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(builder: (_) => const CategoryScreen()),
               );
+            },
+          ),
+
+          // Backup
+          _buildMenuTile(
+            context: context,
+            icon: Icons.backup,
+            color: Colors.purple,
+            title: 'Backup Database',
+            onTap: () async {
+              try {
+                final file = await BackupService.backupDatabase();
+
+                final success = file != null;
+                // ignore: use_build_context_synchronously
+                ScaffoldMessenger.of(context).showSnackBar(
+                  FlashMessage(
+                    color: success ? Colors.green : Colors.red,
+                    message:
+                        success
+                            ? 'Backup success!\nSaved to Directory: Downloads ' // tampilkan path file
+                            : 'Backup failed. Please try again.',
+                  ),
+                );
+
+                // ignore: avoid_print
+                if (!success) print('Backup returned null');
+              } catch (e) {
+                // ignore: use_build_context_synchronously
+                ScaffoldMessenger.of(context).showSnackBar(
+                  FlashMessage(
+                    color: Colors.red,
+                    message:
+                        'Something went wrong during backup. Please contact support.',
+                  ),
+                );
+              }
+            },
+          ),
+
+          // Restore
+          _buildMenuTile(
+            context: context,
+            icon: Icons.restore,
+            color: Colors.teal,
+            title: 'Restore Database',
+            onTap: () async {
+              try {
+                final success = await BackupService.restoreDatabaseWithPicker();
+
+                if (success) {
+                  // ignore: use_build_context_synchronously
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    FlashMessage(
+                      color: Colors.green,
+                      message: 'Restore success! Restart app to apply.',
+                    ),
+                  );
+                } else {
+                  // ignore: use_build_context_synchronously
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    FlashMessage(
+                      color: Colors.red,
+                      message:
+                          'Restore failed. Please select a valid backup file.',
+                    ),
+                  );
+                }
+              } catch (e) {
+                // ignore: use_build_context_synchronously
+                ScaffoldMessenger.of(context).showSnackBar(
+                  FlashMessage(
+                    color: Colors.red,
+                    message: 'Something went wrong. Please contact support.',
+                  ),
+                );
+              }
             },
           ),
 

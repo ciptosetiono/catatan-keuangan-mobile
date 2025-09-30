@@ -140,7 +140,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
-            message: 'Transaction updated successfully',
+            message: 'Transaction updated successfully!',
           ),
         );
       } else {
@@ -157,6 +157,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         );
       }
 
+      debugPrint('transaction save, try to call triger ........');
+
       if (widget.onSaved != null) {
         // ignore: unnecessary_null_comparison
         if (savedTransaction != null) {
@@ -164,13 +166,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           widget.onSaved!(savedTransaction);
         }
       }
-
-      /*
-      Navigator.pop(
-        context,
-        updatedTransaction,
-      ); // ✅ selalu return TransactionModel
-      */
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
