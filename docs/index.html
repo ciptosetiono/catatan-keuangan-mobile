@@ -3,97 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My App - Profile</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f7fa;
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-    header {
-      background: #4a90e2;
-      color: white;
-      text-align: center;
-      padding: 2rem 1rem;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 2rem;
-    }
-    header p {
-      margin: 0.5rem 0 0;
-    }
-    main {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 1rem;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    section {
-      margin-bottom: 2rem;
-    }
-    h2 {
-      color: #4a90e2;
-      margin-bottom: 0.5rem;
-    }
-    footer {
-      text-align: center;
-      padding: 1rem;
-      background: #f0f0f0;
-      font-size: 0.9rem;
-      color: #666;
-    }
-    a {
-      color: #4a90e2;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
+  <title>Moneyger - Profile</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-  <header>
-    <h1>Moneyger</h1>
-    <p>Smart & Simple Money Manager</p>
+<body class="bg-light text-dark">
+
+  <!-- Header -->
+  <header class="bg-primary text-white text-center py-5 shadow-sm">
+    <div class="container">
+      <img src="https://img.icons8.com/color/120/money-bag.png" alt="App Logo" 
+           class="rounded-circle border border-3 border-white mb-3 bg-white p-2">
+      <h1 class="fw-bold">Moneyger</h1>
+      <p class="lead mb-0">Smart &amp; Simple Money Manager</p>
+    </div>
   </header>
 
-  <main>
-    <section>
-      <h2>About the App</h2>
-      <p>
-        >Moneyger is a simple and powerful money manager. Track your income,
-        expenses, and budgets with ease. Designed to help you understand and
-        control your money better.
-      </p>
-    </section>
+  <!-- Main Content -->
+  <main class="container my-5">
+    <!-- About -->
+    <div class="card shadow-sm border-0 rounded-4 p-4 mb-4">
+      <div class="row g-4 align-items-center">
+        <div class="col-md-8">
+          <h2 class="text-primary fw-semibold mb-3">About the App</h2>
+          <p>
+            Moneyger is a simple and powerful money manager. Track your income,
+            expenses, and budgets with ease. Designed to help you understand and
+            control your money better.
+          </p>
+        </div>
+      </div>
+    </div>
 
-    <section>
-      <h2>Key Features</h2>
-      <ul>
-        <li>Track income & expenses</li>
-        <li>Create budgets and goals</li>
-        <li>Visual reports & insights</li>
-        <li>Offline Mode</li>
-        <li>backup and restore</li>
-      </ul>
-    </section>
+    <!-- Features -->
+    <div class="card shadow-sm border-0 rounded-4 p-4 mb-4">
+      <h2 class="text-primary fw-semibold mb-3">Key Features</h2>
+      <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="col d-flex">
+          <img src="https://img.icons8.com/color/60/receive-cash.png" class="me-3" alt="Track income & expenses">
+          <div>Track income &amp; expenses</div>
+        </div>
+        <div class="col d-flex">
+          <img src="https://img.icons8.com/color/60/budget.png" class="me-3" alt="Budget goals">
+          <div>Create budgets and goals</div>
+        </div>
+        <div class="col d-flex">
+          <img src="https://img.icons8.com/color/60/combo-chart.png" class="me-3" alt="Reports">
+          <div>Visual reports &amp; insights</div>
+        </div>
+        <div class="col d-flex">
+          <img src="https://img.icons8.com/color/60/disconnected.png" class="me-3" alt="Offline Mode">
+          <div>Offline Mode</div>
+        </div>
+        <div class="col d-flex">
+          <img src="https://img.icons8.com/color/60/cloud-backup-restore.png" class="me-3" alt="Backup and Restore">
+          <div>Backup and restore</div>
+        </div>
+      </div>
+    </div>
 
-    <section>
-      <h2>Helpful Links</h2>
-      <ul>
-        <li><a href="privacy.html">Privacy Policy</a></li>
-        <li><a href="account-deletion.html">Account Deletion</a></li>
+    <!-- Helpful Links -->
+    <div class="card shadow-sm border-0 rounded-4 p-4">
+      <h2 class="text-primary fw-semibold mb-3">Helpful Links</h2>
+      <ul class="list-unstyled">
+        <li><a href="privacy.html" class="text-decoration-none text-primary">📑 Privacy Policy</a></li>
+        <li><a href="account-deletion.html" class="text-decoration-none text-primary">🗑️ Account Deletion</a></li>
       </ul>
-    </section>
+    </div>
   </main>
 
-  <footer>
-    &copy; 2025 My App. All rights reserved.
+  <!-- Footer -->
+  <footer class="text-center py-4 bg-white border-top small text-muted">
+    &copy; 2025 Moneyger. All rights reserved.
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
