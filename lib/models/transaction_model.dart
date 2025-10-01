@@ -9,7 +9,7 @@ class TransactionModel {
   final String? toWalletId; //for type "transfer"
   final String? categoryId;
   String? shoppingPlanItemId;
-  final String userId;
+  final String? userId;
 
   TransactionModel({
     required this.id,
@@ -17,12 +17,12 @@ class TransactionModel {
     required this.amount,
     required this.type,
     required this.date,
-    required this.userId,
     required this.walletId,
     this.fromWalletId,
     this.toWalletId,
     this.categoryId,
     this.shoppingPlanItemId,
+    this.userId,
   });
 
   factory TransactionModel.fromMap(Map<String, dynamic> data) {
@@ -68,8 +68,8 @@ class TransactionModel {
       'amount': amount,
       'type': type,
       'date': date.toIso8601String(),
-      'userId': userId,
       'walletId': walletId,
+      if (userId != null) 'userId': userId,
       if (categoryId != null) 'categoryId': categoryId,
       if (shoppingPlanItemId != null) 'shoppingPlanItemId': shoppingPlanItemId,
       if (fromWalletId != null) 'fromWalletId': fromWalletId,

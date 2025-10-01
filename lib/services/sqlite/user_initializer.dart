@@ -1,5 +1,4 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math';
 import 'db_helper.dart';
 import 'wallet_service.dart';
@@ -14,9 +13,9 @@ Future<void> initializeUserData() async {
 
 /// ---------------- Users ----------------
 Future<String> initializeUsers(Database db) async {
-  final firebaseUser = FirebaseAuth.instance.currentUser;
-  final userId = firebaseUser?.uid ?? generateRandomUserId(8);
-
+  final userId = generateRandomUserId(8);
+  final String email = 'guest@exmaple.com';
+  final String name = 'guest';
   final userCount =
       (Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM users')) ??
           0);
@@ -24,8 +23,8 @@ Future<String> initializeUsers(Database db) async {
   if (userCount == 0) {
     await db.insert('users', {
       'firebaseUid': userId,
-      'email': firebaseUser?.email ?? '',
-      'name': firebaseUser?.displayName ?? 'User',
+      'email': email,
+      'name': name,
     });
   }
 

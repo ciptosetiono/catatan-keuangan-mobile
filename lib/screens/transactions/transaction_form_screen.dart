@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:money_note/utils/currency_formatter.dart';
 
@@ -37,8 +36,6 @@ class TransactionFormScreen extends StatefulWidget {
 }
 
 class _TransactionFormScreenState extends State<TransactionFormScreen> {
-  final userId = FirebaseAuth.instance.currentUser!.uid;
-
   final _formKey = GlobalKey<FormState>();
 
   String _mode = 'add'; // 'add' | 'edit'
@@ -119,7 +116,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     if (mounted) setState(() => _isSubmitting = true);
 
     final trx = {
-      'userId': userId,
       'type': _type,
       'walletId': _selectedWalletId,
       'categoryId': _selectedCategoryId,
@@ -157,12 +153,9 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         );
       }
 
-      debugPrint('transaction save, try to call triger ........');
-
       if (widget.onSaved != null) {
         // ignore: unnecessary_null_comparison
         if (savedTransaction != null) {
-          debugPrint('call update triger from form transaction');
           widget.onSaved!(savedTransaction);
         }
       }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 
 import 'package:money_note/utils/currency_formatter.dart';
@@ -108,12 +107,6 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
         return;
       }
 
-      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-      if (currentUserId == null) {
-        _showAlert('User not authenticated.');
-        return;
-      }
-
       final amount = _parseAmount(_amountController.text);
       if (amount <= 0) {
         _showAlert('Amount is required');
@@ -133,7 +126,6 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
         'type': 'transfer',
         'date': _selectedDate.toIso8601String(),
         'categoryId': null,
-        'userId': currentUserId,
         'walletId': _fromWallet!.id, //set fromWalletId ad walletId
         'fromWalletId': _fromWallet!.id,
         'toWalletId': _toWallet!.id,

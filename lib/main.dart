@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:month_year_picker/month_year_picker.dart';
-import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/transactions/transaction_screen.dart';
 import 'screens/budgets/budget_screen.dart';
@@ -10,9 +8,8 @@ import 'screens/reports/report_screen.dart';
 import 'screens/settings/setting_screen.dart';
 import 'screens/splash_screen.dart'; // import splash screen
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
   runApp(const MyApp());
 }
 
@@ -61,30 +58,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (_) => const SplashScreen(),
-        '/auth': (_) => const AuthWrapper(),
-      },
-    );
-  }
-}
-
-// StreamBuilder FirebaseAuth
-class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        } else if (snapshot.hasData) {
-          return const MainPage();
-        } else {
-          return const LoginScreen();
-        }
+        '/main': (_) => const MainPage(),
       },
     );
   }

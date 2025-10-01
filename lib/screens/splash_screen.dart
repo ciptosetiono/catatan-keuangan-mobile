@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-//import 'package:google_mobile_ads/google_mobile_ads.dart';
-import '../config/firebase_options.dart';
 import 'dart:async';
 import 'package:intl/date_symbol_data_local.dart';
+import '../services/sqlite/user_initializer.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -22,12 +20,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   double progress = 0.0;
 
-  //InterstitialAd? _interstitialAd;
-
   @override
   void initState() {
     super.initState();
-
     _setupAnimations();
     _initializeApp();
   }
@@ -58,73 +53,35 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _initializeApp() async {
     try {
-      // Run Firebase & DateFormatting in parallel
-      List<Future<void>> tasks = [_initFirebase(), _initializeDateFormatting()];
+      // Initialize date formatting
+      final locale =
+          WidgetsBinding.instance.platformDispatcher.locale.toString();
+      await initializeDateFormatting(locale, null);
 
-      for (int i = 0; i < tasks.length; i++) {
-        await tasks[i];
-        setState(() {
-          progress = (i + 1) / (tasks.length + 1); // +1 for Ads
-        });
+      await initializeUserData();
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Simulate app loading progress
+      for (int i = 1; i <= 3; i++) {
         await Future.delayed(const Duration(milliseconds: 300));
+        setState(() {
+          progress = i / 3;
+        });
       }
-
-      // Initialize Google Mobile Ads
-      // await MobileAds.instance.initialize();
-
-      // Update progress
-      setState(() {
-        progress = 1.0;
-      });
-
-      // Preload Interstitial Ad
-      _preloadInterstitialAd();
 
       // Navigate to main screen
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/auth');
+        Navigator.pushReplacementNamed(context, '/main');
       }
     } catch (e) {
-      // Optionally, navigate anyway or show error
+      // Optionally handle errors
     }
-  }
-
-  Future<void> _initFirebase() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    await Future.delayed(const Duration(milliseconds: 500));
-  }
-
-  Future<void> _initializeDateFormatting() async {
-    final locale = WidgetsBinding.instance.platformDispatcher.locale.toString();
-    await initializeDateFormatting(locale, null);
-    await Future.delayed(const Duration(milliseconds: 500));
-  }
-
-  void _preloadInterstitialAd() {
-    /*
-    InterstitialAd.load(
-      adUnitId: 'ca-app-pub-3940256099942544/1033173712', // Test ID
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          _interstitialAd = ad;
-          print("Interstitial preloaded");
-        },
-        onAdFailedToLoad: (error) {
-          print("Failed to preload interstitial: $error");
-        },
-      ),
-    );
-    */
   }
 
   @override
   void dispose() {
     _logoController.dispose();
     _textController.dispose();
-    //_interstitialAd?.dispose();
     super.dispose();
   }
 

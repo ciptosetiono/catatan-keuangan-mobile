@@ -105,7 +105,7 @@ class BudgetService {
     return count > 0;
   }
 
-  Future<bool> deleteBudget(String id, {String? userId}) async {
+  Future<bool> deleteBudget(String id) async {
     final db = await DBHelper.database;
     final count = await db.delete('budgets', where: 'id = ?', whereArgs: [id]);
     if (count > 0) await _loadBudgets();

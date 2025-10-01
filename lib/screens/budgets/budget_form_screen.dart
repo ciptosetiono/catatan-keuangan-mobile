@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:money_note/utils/currency_formatter.dart';
 
@@ -59,14 +58,12 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
 
     final amount = CurrencyFormatter().decodeAmount(_amountController.text);
 
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? 'demoUser';
     final budget = Budget(
       id: widget.budget?.id ?? '',
       categoryId: _selectedCategoryId!,
       amount: amount,
       month:
           DateTime(_selectedMonth.year, _selectedMonth.month).toIso8601String(),
-      userId: userId,
     );
 
     if (widget.budget == null) {

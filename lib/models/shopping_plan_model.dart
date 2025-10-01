@@ -1,14 +1,14 @@
 class ShoppingPlan {
   String id;
   String title;
-  String userId;
+  String? userId;
   DateTime createdAt;
   DateTime updatedAt;
 
   ShoppingPlan({
     required this.id,
     required this.title,
-    required this.userId,
+    this.userId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -27,7 +27,7 @@ class ShoppingPlan {
     return {
       'id': id,
       'title': title,
-      'userId': userId,
+      if (userId != null) 'userId': userId,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };

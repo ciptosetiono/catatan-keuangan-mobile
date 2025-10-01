@@ -2,7 +2,7 @@
 
 class Wallet {
   final String id;
-  final String userId;
+  final String? userId;
   final String name;
   final double startBalance;
   final double currentBalance;
@@ -10,7 +10,7 @@ class Wallet {
 
   Wallet({
     required this.id,
-    required this.userId,
+    this.userId,
     required this.name,
     required this.startBalance,
     required this.currentBalance,
@@ -38,7 +38,7 @@ class Wallet {
 
   Map<String, dynamic> toMap() {
     return {
-      'userId': userId,
+      if (userId != null) 'userId': userId,
       'name': name,
       'startBalance': startBalance,
       'currentBalance': currentBalance,

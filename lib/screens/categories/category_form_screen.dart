@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:money_note/models/category_model.dart';
+
 import 'package:money_note/services/sqlite/category_service.dart';
 
 import 'package:money_note/components/buttons/submit_button.dart';
@@ -37,12 +37,10 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
 
     setState(() => _isSubmitting = true);
 
-    final userId = FirebaseAuth.instance.currentUser!.uid;
     final newCategory = Category(
       id: widget.category?.id ?? '',
       name: name,
       type: _type,
-      userId: userId,
     );
 
     if (widget.category != null) {

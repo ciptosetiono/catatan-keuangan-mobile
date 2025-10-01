@@ -73,12 +73,11 @@ class DBHelper {
     await db.execute('''
     CREATE TABLE wallets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      userId TEXT NOT NULL,
+      userId TEXT,
       name TEXT NOT NULL,
       startBalance REAL NOT NULL,
       currentBalance REAL NOT NULL,
-      createdAt TEXT NOT NULL,
-      FOREIGN KEY (userId) REFERENCES users(firebaseUid)
+      createdAt TEXT NOT NULL
     )
   ''');
   }
@@ -87,10 +86,9 @@ class DBHelper {
     await db.execute('''
     CREATE TABLE categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      userId TEXT NOT NULL,
+      userId TEXT,
       name TEXT NOT NULL,
-      type TEXT NOT NULL,
-      FOREIGN KEY (userId) REFERENCES users(firebaseUid)
+      type TEXT NOT NULL
     )
   ''');
   }
@@ -101,7 +99,7 @@ class DBHelper {
    CREATE TABLE shopping_plans (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
-    userId TEXT NOT NULL,
+    userId TEXT,
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL
 )
@@ -133,7 +131,7 @@ class DBHelper {
     await db.execute('''
     CREATE TABLE transactions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      userId TEXT NOT NULL,
+      userId TEXT,
       walletId INTEGER NOT NULL,
       fromWalletId INTEGER,
       toWalletId INTEGER,
@@ -156,11 +154,10 @@ class DBHelper {
     await db.execute('''
     CREATE TABLE budgets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      userId TEXT NOT NULL,
+      userId TEXT,
       categoryId INTEGER,
       amount REAL NOT NULL,
       month TEXT NOT NULL,
-      FOREIGN KEY (userId) REFERENCES users(firebaseUid),
       FOREIGN KEY (categoryId) REFERENCES categories(id)
   )
   ''');
