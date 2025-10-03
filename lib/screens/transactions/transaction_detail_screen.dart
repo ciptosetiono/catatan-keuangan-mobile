@@ -3,10 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:money_note/models/transaction_model.dart';
-import 'package:money_note/models/wallet_model.dart';
-import 'package:money_note/models/category_model.dart';
-import 'package:money_note/services/sqlite/wallet_service.dart';
-import 'package:money_note/services/sqlite/category_service.dart';
+
 import 'package:money_note/components/transactions/transaction_bottomsheet_menu.dart';
 import 'package:money_note/components/transactions/transaction_detail_tile.dart';
 
@@ -27,42 +24,11 @@ class TransactionDetailScreen extends StatefulWidget {
 
 class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   TransactionModel? _transaction;
-  String walletName = '-';
-  String categoryName = '-';
 
   @override
   void initState() {
     super.initState();
     _transaction = widget.transaction;
-    loadNames();
-  }
-
-  Future<void> loadNames() async {
-    final wallet = await getWalletName(widget.transaction.walletId);
-    final category = await getCategoryName(widget.transaction.categoryId);
-
-    setState(() {
-      walletName = wallet;
-      categoryName = category;
-    });
-  }
-
-  Future<String> getWalletName(String? walletId) async {
-    if (walletId == null || walletId.isEmpty) return '-';
-
-    final Wallet? wallet = await WalletService().getWalletById(walletId);
-
-    if (wallet == null || wallet.id.isEmpty) return '-';
-    return wallet.name.isNotEmpty ? wallet.name : '-';
-  }
-
-  Future<String> getCategoryName(String? categoryId) async {
-    if (categoryId == null) return '-';
-    final Category? category = await CategoryService().getCategoryById(
-      categoryId,
-    );
-    if (category == null || category.id.isEmpty) return '-';
-    return category.name.isNotEmpty ? category.name : '-';
   }
 
   @override
@@ -126,12 +92,12 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
             TransactionDetailTile(
               icon: Icons.account_balance_wallet,
               label: 'Wallet',
-              value: walletName,
+              value: _transaction?.walletName ?? '-',
             ),
             TransactionDetailTile(
               icon: Icons.category,
               label: 'Category',
-              value: categoryName,
+              value: _transaction?.categoryName ?? '-',
             ),
             TransactionDetailTile(
               icon: Icons.note,
@@ -151,8 +117,6 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                 setState(() {
                   _transaction = updatedTransaction;
                 });
-                loadNames(); // refresh wallet & category
-
                 widget.onUpdated?.call(updatedTransaction);
               },
               onDeleted: () {

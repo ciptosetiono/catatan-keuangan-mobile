@@ -5,9 +5,11 @@ class TransactionModel {
   final String type; // 'income' ,  'expense' or 'transfer'
   final DateTime date;
   final String? walletId; //for type "income or expense"
+  final String? walletName;
   final String? fromWalletId; //for type "transfer"
   final String? toWalletId; //for type "transfer"
   final String? categoryId;
+  final String? categoryName;
   String? shoppingPlanItemId;
   final String? userId;
 
@@ -18,9 +20,11 @@ class TransactionModel {
     required this.type,
     required this.date,
     required this.walletId,
+    this.walletName,
     this.fromWalletId,
     this.toWalletId,
     this.categoryId,
+    this.categoryName,
     this.shoppingPlanItemId,
     this.userId,
   });
@@ -50,9 +54,11 @@ class TransactionModel {
           DateTime.now().millisecondsSinceEpoch.toString(),
       userId: data['userId']?.toString() ?? '',
       walletId: data['walletId']?.toString() ?? '',
+      walletName: data['walletName']?.toString() ?? '',
       amount: parseAmount(data['amount']),
       type: data['type']?.toString() ?? '',
       categoryId: data['categoryId']?.toString() ?? '',
+      categoryName: data['categoryName']?.toString() ?? '',
       shoppingPlanItemId: data['shoppingPlanItemId']?.toString() ?? '',
       title: data['title']?.toString() ?? '',
       date: parsedDate,
@@ -69,8 +75,10 @@ class TransactionModel {
       'type': type,
       'date': date.toIso8601String(),
       'walletId': walletId,
+      if (walletName != null) 'walletName': walletName,
       if (userId != null) 'userId': userId,
       if (categoryId != null) 'categoryId': categoryId,
+      if (categoryName != null) 'categoryName': categoryName,
       if (shoppingPlanItemId != null) 'shoppingPlanItemId': shoppingPlanItemId,
       if (fromWalletId != null) 'fromWalletId': fromWalletId,
       if (toWalletId != null) 'toWalletId': toWalletId,
@@ -84,7 +92,9 @@ class TransactionModel {
     String? type,
     DateTime? date,
     String? walletId,
+    String? walletName,
     String? categoryId,
+    String? categoryName,
     String? shoppingPlanItemId,
     String? userId,
     String? fromWalletId,
@@ -97,7 +107,9 @@ class TransactionModel {
       type: type ?? this.type,
       date: date ?? this.date,
       walletId: walletId ?? this.walletId,
+      walletName: walletName ?? this.walletName,
       categoryId: categoryId ?? this.categoryId,
+      categoryName: categoryName ?? this.categoryName,
       shoppingPlanItemId: shoppingPlanItemId ?? shoppingPlanItemId,
       userId: userId ?? this.userId,
       fromWalletId: fromWalletId ?? this.fromWalletId,

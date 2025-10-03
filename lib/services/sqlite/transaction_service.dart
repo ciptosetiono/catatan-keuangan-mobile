@@ -69,42 +69,52 @@ class TransactionService {
     final whereArgs = <dynamic>[];
 
     if (type == null) {
-      whereClauses.add('type IN (?, ?)');
+      whereClauses.add('t.type IN (?, ?)');
       whereArgs.addAll(['income', 'expense']);
     } else {
-      whereClauses.add('type = ?');
+      whereClauses.add('t.type = ?');
       whereArgs.add(type);
     }
 
     if (fromDate != null) {
-      whereClauses.add('date >= ?');
+      whereClauses.add('t.date >= ?');
       whereArgs.add(fromDate.toIso8601String());
     }
     if (toDate != null) {
-      whereClauses.add('date < ?');
+      whereClauses.add('t.date < ?');
       whereArgs.add(toDate.toIso8601String());
     }
 
     if (walletId != null) {
-      whereClauses.add('walletId = ?');
+      whereClauses.add('t.walletId = ?');
       whereArgs.add(walletId);
     }
     if (categoryId != null) {
-      whereClauses.add('categoryId = ?');
+      whereClauses.add('t.categoryId = ?');
       whereArgs.add(categoryId);
     }
     if (title != null) {
-      whereClauses.add('title = ?');
+      whereClauses.add('t.title = ?');
       whereArgs.add(title);
     }
 
-    final maps = await db.query(
-      'transactions',
-      where: whereClauses.isEmpty ? null : whereClauses.join(' AND '),
-      whereArgs: whereArgs.isEmpty ? null : whereArgs,
-      orderBy: 'date DESC',
-      limit: limit,
-      offset: offset,
+    final queryLimit = limit ?? -1;
+    final queryOffset = offset ?? 0;
+
+    final maps = await db.rawQuery(
+      '''
+    SELECT 
+      t.*, 
+      c.name AS categoryName,
+      w.name AS walletName
+    FROM transactions t
+    LEFT JOIN categories c ON t.categoryId = c.id
+    LEFT JOIN wallets w ON t.walletId = w.id
+    ${whereClauses.isEmpty ? '' : 'WHERE ${whereClauses.join(' AND ')}'}
+    ORDER BY t.date DESC
+    LIMIT ? OFFSET ?
+    ''',
+      [...whereArgs, queryLimit, queryOffset],
     );
 
     return maps.map((e) => TransactionModel.fromMap(e)).toList();
