@@ -175,31 +175,6 @@ class SettingScreen extends StatelessWidget {
           ),
 
           const SizedBox(height: 16),
-
-          // Logout
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.red.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.red.shade100),
-            ),
-            child: ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text(
-                'Exit',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.red,
-                ),
-              ),
-              onTap: () async {
-                await AuthService().signOut();
-                // ignore: use_build_context_synchronously
-                Navigator.pushReplacementNamed(context, '/');
-              },
-            ),
-          ),
         ],
       ),
     );
