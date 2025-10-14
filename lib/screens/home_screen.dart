@@ -1,5 +1,3 @@
-// lib/screens/home_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:money_note/components/dashboards/wallets_balance_section.dart';
 import 'package:money_note/components/dashboards/summary_section.dart';
@@ -10,6 +8,7 @@ import 'package:money_note/screens/wallets/wallet_screen.dart';
 import 'package:money_note/screens/categories/category_screen.dart';
 import 'package:money_note/screens/transactions/transaction_screen.dart';
 import 'package:money_note/screens/transactions/transaction_detail_screen.dart';
+import 'package:money_note/components/ads/banner_ad_widget.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -52,24 +51,34 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            WalletsBalanceSection(onSeeAll: () => _goToWallets(context)),
-            const SizedBox(height: 24),
-            SummarySection(onSeeAll: () => _goToTransactions(context)),
-            const SizedBox(height: 24),
-            SpendingChartSection(onSeeAll: () => _goToSpendingChart(context)),
-            const SizedBox(height: 24),
-            RecentTransactionsSection(
-              onSeeAll: () => _goToTransactions(context),
-              onTapItem: (trx) => _goToDetailTransaction(trx, context),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  WalletsBalanceSection(onSeeAll: () => _goToWallets(context)),
+                  const SizedBox(height: 24),
+                  SummarySection(onSeeAll: () => _goToTransactions(context)),
+                  const SizedBox(height: 24),
+                  SpendingChartSection(
+                    onSeeAll: () => _goToSpendingChart(context),
+                  ),
+                  const SizedBox(height: 24),
+                  RecentTransactionsSection(
+                    onSeeAll: () => _goToTransactions(context),
+                    onTapItem: (trx) => _goToDetailTransaction(trx, context),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
-            const SizedBox(height: 40),
-          ],
-        ),
+          ),
+          // 👇 Add the banner ad at the bottom
+          const BannerAdWidget(),
+        ],
       ),
     );
   }

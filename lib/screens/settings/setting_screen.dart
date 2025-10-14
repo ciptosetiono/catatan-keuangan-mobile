@@ -1,12 +1,12 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import '../../services/firebase/auth_service.dart';
 import '../categories/category_screen.dart';
 import '../wallets/wallet_screen.dart';
 import '../transfers/transfer_screen.dart';
 import '../../services/sqlite/backup_service.dart';
 import 'package:money_note/components/ui/alerts/flash_message.dart';
+import 'package:money_note/components/ads/banner_ad_widget.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -49,7 +49,7 @@ class SettingScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
-        centerTitle: true,
+        centerTitle: false,
         elevation: 0,
       ),
       body: ListView(
@@ -177,6 +177,7 @@ class SettingScreen extends StatelessWidget {
           const SizedBox(height: 16),
         ],
       ),
+      bottomNavigationBar: const BannerAdWidget(),
     );
   }
 }

@@ -13,6 +13,7 @@ import 'package:money_note/services/sqlite/category_service.dart';
 import 'package:money_note/components/forms/currency_text_field.dart';
 import 'package:money_note/components/forms/month_picker_field.dart';
 import 'package:money_note/components/buttons/submit_button.dart';
+import 'package:money_note/services/ad_service.dart';
 
 class BudgetFormScreen extends StatefulWidget {
   final Budget? budget;
@@ -99,7 +100,15 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
       setState(() {
         _isLoading = false;
       });
-      Navigator.pop(context, true);
+
+      Future.delayed(const Duration(seconds: 1), () {
+        AdService.showInterstitialAd();
+
+        // Add another short delay to ensure ad is visible before navigating
+        Future.delayed(const Duration(seconds: 2), () {
+          Navigator.pop(context, true);
+        });
+      });
     } else {
       setState(() {
         _isLoading = false;

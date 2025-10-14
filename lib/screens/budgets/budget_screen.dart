@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:money_note/models/category_model.dart';
 
 import 'package:money_note/services/sqlite/category_service.dart';
-
+import 'package:money_note/components/ads/banner_ad_widget.dart';
 import 'package:money_note/components/buttons/add_button.dart';
 import 'package:money_note/components/budgets/budget_list.dart';
 import 'package:money_note/components/budgets/budget_month_dropdown.dart';
 import 'package:money_note/components/budgets/budget_category_name_filter.dart';
-
 import 'package:money_note/screens/budgets/budget_form_screen.dart';
 
 class BudgetScreen extends StatefulWidget {
@@ -89,7 +88,24 @@ class _BudgetScreenState extends State<BudgetScreen> {
           ),
         ),
       ),
-      body: BudgetList(selectedMonth: _selectedMonth, categories: _categories),
+      body: Stack(
+        children: [
+          // main content
+          Padding(
+            padding: const EdgeInsets.only(bottom: 60), // space for ad
+            child: BudgetList(
+              selectedMonth: _selectedMonth,
+              categories: _categories,
+            ),
+          ),
+
+          // ✅ Fixed banner ad at bottom
+          const Align(
+            alignment: Alignment.bottomCenter,
+            child: BannerAdWidget(),
+          ),
+        ],
+      ),
       floatingActionButton: AddButton(
         onPressed: () {
           Navigator.push(

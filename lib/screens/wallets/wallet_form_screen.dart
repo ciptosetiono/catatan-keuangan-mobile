@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
+//import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import '../../models/wallet_model.dart';
 import '../../services/sqlite/wallet_service.dart';
 import '../../utils/currency_formatter.dart';
 import '../../utils/currency_input_formatter.dart';
 import '../../../components/buttons/submit_button.dart';
+import 'package:money_note/services/ad_service.dart';
+import 'package:money_note/components/ui/alerts/flash_message.dart';
 
 class WalletFormScreen extends StatefulWidget {
   final Wallet? wallet;
@@ -48,7 +51,8 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
 
     final name = _nameController.text.trim();
     final balance = _parseCurrency(_balanceController.text);
-    final userId = FirebaseAuth.instance.currentUser!.uid;
+    //final userId = FirebaseAuth.instance.currentUser!.uid;
+    final userId = '1';
 
     int oldStartBalance = (widget.wallet?.startBalance ?? 0).toInt();
     int oldCurrentBalance = (widget.wallet?.currentBalance ?? 0).toInt();
@@ -95,8 +99,18 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
 
     setState(() => _isSubmitting = false);
 
-    // ignore: use_build_context_synchronously
-    Navigator.pop(context, wallet); //kirim sinyal berhasil disimpan
+    ScaffoldMessenger.of(context).showSnackBar(
+      FlashMessage(color: Colors.green, message: 'Wallet saved successfully'),
+    );
+
+    Future.delayed(const Duration(seconds: 1), () {
+      AdService.showInterstitialAd();
+
+      // Add another short delay to ensure ad is visible before navigating
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.pop(context, wallet);
+      });
+    });
   }
 
   @override

@@ -26,7 +26,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   DateTime? _from;
   DateTime? _to;
   DateFilterOption _selectedDateFilter = DateFilterOption.thisMonth;
-  String? _selectedDateLabel;
+
   void _applyDateFilter(
     DateFilterOption option, {
     DateTime? from,
@@ -37,7 +37,6 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
       _selectedDateFilter = option;
       _from = from;
       _to = to;
-      _selectedDateLabel = label;
     });
   }
 
@@ -164,34 +163,19 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
           children: [
             // Filter row
             Row(
+              mainAxisAlignment: MainAxisAlignment.end, // ratakan ke kanan
               children: [
-                const Expanded(
-                  child: Text(
-                    "Transactions",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
                 SizedBox(
-                  width: 200,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade400),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 0,
-                      vertical: 0,
-                    ),
-                    child: DateFilterDropdown(
-                      selected: _selectedDateFilter,
-                      label: _selectedDateLabel,
-                      onFilterApplied: _applyDateFilter,
-                    ),
+                  width: 150,
+                  child: DateFilterDropdown(
+                    selected: _selectedDateFilter,
+                    onFilterApplied: _applyDateFilter,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+
+            const SizedBox(height: 8),
             // Transactions section
             Expanded(child: _buildTransactionsSection()),
           ],

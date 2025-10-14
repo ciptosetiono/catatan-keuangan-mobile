@@ -10,6 +10,7 @@ import 'package:money_note/components/forms/date_filter_dropdown.dart';
 import 'package:money_note/components/transactions/unified_filter_dialog.dart';
 import 'package:money_note/components/transactions/transaction_list.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
+import 'package:money_note/components/ads/banner_ad_widget.dart';
 import 'package:money_note/models/transaction_model.dart';
 import 'package:money_note/services/sqlite/transaction_service.dart';
 import 'package:money_note/screens/transactions/transaction_form_screen.dart';
@@ -25,7 +26,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
   DateTime? _from;
   DateTime? _to;
   DateFilterOption _selectedDateFilter = DateFilterOption.thisMonth;
-  String? _selectedDateLabel;
   final ScrollController _scrollController = ScrollController();
 
   String? _walletFilter;
@@ -107,7 +107,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
     if (!mounted) return;
     setState(() {
       _selectedDateFilter = option;
-      _selectedDateLabel = label;
       _from = from;
       _to = to;
     });
@@ -176,7 +175,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                   child: DateFilterDropdown(
                     selected: _selectedDateFilter,
                     onFilterApplied: _applyDateFilter,
-                    label: _selectedDateLabel,
+                    //label: _selectedDateLabel,
                   ),
                 ),
                 Expanded(
@@ -231,6 +230,9 @@ class _TransactionScreenState extends State<TransactionScreen> {
           ),
         ],
       ),
+
+      // ✅ Banner Ad stays fixed at bottom
+      bottomNavigationBar: const BannerAdWidget(),
       floatingActionButton: AddButton(
         onPressed: () {
           Navigator.push(

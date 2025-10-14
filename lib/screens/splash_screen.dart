@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'dart:async';
 import 'package:intl/date_symbol_data_local.dart';
 import '../services/sqlite/user_initializer.dart';
+import '../services/ad_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,6 +27,7 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _setupAnimations();
     _initializeApp();
+    _initAds();
   }
 
   void _setupAnimations() {
@@ -76,6 +79,11 @@ class _SplashScreenState extends State<SplashScreen>
     } catch (e) {
       // Optionally handle errors
     }
+  }
+
+  Future<void> _initAds() async {
+    await MobileAds.instance.initialize();
+    AdService.loadInterstitialAd();
   }
 
   @override

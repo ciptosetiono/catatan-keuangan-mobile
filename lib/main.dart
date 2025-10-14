@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:month_year_picker/month_year_picker.dart';
+
 import 'screens/home_screen.dart';
 import 'screens/transactions/transaction_screen.dart';
 import 'screens/budgets/budget_screen.dart';
@@ -8,8 +9,9 @@ import 'screens/reports/report_screen.dart';
 import 'screens/settings/setting_screen.dart';
 import 'screens/splash_screen.dart'; // import splash screen
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const MyApp());
 }
 

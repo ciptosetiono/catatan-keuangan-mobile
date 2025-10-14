@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:money_note/constants/date_filter_option.dart';
 
-class DateFilterDropdown extends StatelessWidget {
+class DateFilterDropdown extends StatefulWidget {
   final DateFilterOption selected;
-  final String? label; // <-- NEW: show custom or predefined label
   final void Function(
     DateFilterOption option, {
     DateTime? from,
@@ -17,13 +16,16 @@ class DateFilterDropdown extends StatelessWidget {
     super.key,
     required this.selected,
     required this.onFilterApplied,
-    this.label,
   });
 
-  Future<void> _handleChange(
-    BuildContext context,
-    DateFilterOption option,
-  ) async {
+  @override
+  State<DateFilterDropdown> createState() => _DateFilterDropdownState();
+}
+
+class _DateFilterDropdownState extends State<DateFilterDropdown> {
+  String? _customLabel;
+
+  Future<void> _handleChange(DateFilterOption option) async {
     final now = DateTime.now();
     DateTime? from;
     DateTime? to;
@@ -34,32 +36,38 @@ class DateFilterDropdown extends StatelessWidget {
         from = DateTime(now.year, now.month, now.day);
         to = from.add(const Duration(days: 1));
         label = 'Today';
+        _customLabel = null;
         break;
       case DateFilterOption.thisMonth:
         from = DateTime(now.year, now.month);
         to = DateTime(now.year, now.month + 1);
         label = 'This Month';
+        _customLabel = null;
         break;
       case DateFilterOption.lastMonth:
         final lastMonth = DateTime(now.year, now.month - 1);
         from = DateTime(lastMonth.year, lastMonth.month);
         to = DateTime(now.year, now.month);
         label = 'Last Month';
+        _customLabel = null;
         break;
       case DateFilterOption.last30Days:
         from = now.subtract(const Duration(days: 30));
         to = now.add(const Duration(days: 1));
         label = 'Last 30 Days';
+        _customLabel = null;
         break;
       case DateFilterOption.thisYear:
         from = DateTime(now.year);
         to = DateTime(now.year + 1);
         label = 'This Year';
+        _customLabel = null;
         break;
       case DateFilterOption.all:
         from = null;
         to = null;
         label = 'All Time';
+        _customLabel = null;
         break;
       case DateFilterOption.custom:
         final picked = await showDateRangePicker(
@@ -74,42 +82,44 @@ class DateFilterDropdown extends StatelessWidget {
         if (picked != null) {
           from = picked.start;
           to = picked.end.add(const Duration(days: 1));
-          label =
+          _customLabel =
               '${DateFormat('dd MMM').format(picked.start)} - ${DateFormat('dd MMM yyyy').format(picked.end)}';
+          label = _customLabel!;
         } else {
           return;
         }
         break;
     }
 
-    onFilterApplied(option, from: from, to: to, label: label);
+    setState(() {});
+    widget.onFilterApplied(option, from: from, to: to, label: label);
+  }
+
+  String getLabel(DateFilterOption option) {
+    if (option == DateFilterOption.custom && _customLabel != null) {
+      return _customLabel!;
+    }
+
+    switch (option) {
+      case DateFilterOption.today:
+        return 'Today';
+      case DateFilterOption.thisMonth:
+        return 'This Month';
+      case DateFilterOption.lastMonth:
+        return 'Last Month';
+      case DateFilterOption.last30Days:
+        return 'Last 30 Days';
+      case DateFilterOption.thisYear:
+        return 'This Year';
+      case DateFilterOption.all:
+        return 'All Time';
+      case DateFilterOption.custom:
+        return 'Custom...';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Map enum to display text, but allow custom label override
-    String getLabel(DateFilterOption option) {
-      if (option == DateFilterOption.custom && label != null) {
-        return label!; // show picked custom range
-      }
-      switch (option) {
-        case DateFilterOption.today:
-          return 'Today';
-        case DateFilterOption.thisMonth:
-          return 'This Month';
-        case DateFilterOption.lastMonth:
-          return 'Last Month';
-        case DateFilterOption.last30Days:
-          return 'Last 30 Days';
-        case DateFilterOption.thisYear:
-          return 'This Year';
-        case DateFilterOption.all:
-          return 'All Time';
-        case DateFilterOption.custom:
-          return 'Custom...';
-      }
-    }
-
     return Container(
       height: 40,
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
@@ -126,7 +136,7 @@ class DateFilterDropdown extends StatelessWidget {
           Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<DateFilterOption>(
-                value: selected,
+                value: widget.selected,
                 isExpanded: true,
                 dropdownColor: Colors.white,
                 style: const TextStyle(color: Colors.black87),
@@ -141,7 +151,7 @@ class DateFilterDropdown extends StatelessWidget {
                         )
                         .toList(),
                 onChanged: (option) {
-                  if (option != null) _handleChange(context, option);
+                  if (option != null) _handleChange(option);
                 },
               ),
             ),

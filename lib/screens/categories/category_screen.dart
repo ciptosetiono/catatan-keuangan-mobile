@@ -8,6 +8,7 @@ import 'package:money_note/components/categories/category_action_dialog.dart';
 import 'package:money_note/components/categories/category_delete_dialog.dart';
 import 'package:money_note/screens/categories/category_detail_screen.dart';
 import 'package:money_note/screens/categories/category_form_screen.dart';
+import 'package:money_note/components/ads/banner_ad_widget.dart';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
@@ -81,6 +82,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
         filterType: _filterType,
         onCategoryTap: _handleCategoryTap,
       ),
+      bottomNavigationBar: const BannerAdWidget(),
       floatingActionButton: AddButton(onPressed: _openCategoryForm),
     );
   }

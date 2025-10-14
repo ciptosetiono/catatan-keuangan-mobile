@@ -5,6 +5,7 @@ import 'package:money_note/components/reports/report_chart.dart';
 import 'package:money_note/components/reports/report_filter.dart';
 import 'package:money_note/components/transactions/transaction_summary_card.dart';
 import 'package:money_note/components/reports/report_list.dart';
+import 'package:money_note/components/ads/banner_ad_widget.dart';
 import 'package:money_note/services/sqlite/transaction_service.dart';
 import 'package:money_note/services/sqlite/wallet_service.dart';
 import 'package:money_note/services/sqlite/category_service.dart';
@@ -153,7 +154,7 @@ class _ReportScreenState extends State<ReportScreen> {
     _loadTransactions();
   }
 
-  void _export(String type) {
+  void _export(String type) async {
     final exportService = ReportExportService();
     if (type == "csv") exportService.exportToCsv(transactions: transactions);
     if (type == "pdf") exportService.exportToPdf(transactions: transactions);
@@ -200,6 +201,7 @@ class _ReportScreenState extends State<ReportScreen> {
               groupBy: groupBy,
             ),
           ),
+          const BannerAdWidget(),
         ],
       ),
       floatingActionButton: FloatingActionButton(

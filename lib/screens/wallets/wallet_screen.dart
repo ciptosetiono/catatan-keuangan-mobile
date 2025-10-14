@@ -7,7 +7,7 @@ import 'package:money_note/components/wallets/wallet_delete_dialog.dart';
 import 'package:money_note/models/wallet_model.dart';
 
 import 'package:money_note/services/sqlite/wallet_service.dart';
-
+import 'package:money_note/components/ads/banner_ad_widget.dart';
 import 'package:money_note/screens/wallets/wallet_form_screen.dart';
 import 'package:money_note/screens/wallets/wallet_detail_screen.dart';
 import 'package:money_note/screens/transfers/transfer_screen.dart';
@@ -133,6 +133,7 @@ class _WalletScreenState extends State<WalletScreen> {
           );
         },
       ),
+      bottomNavigationBar: const BannerAdWidget(),
       floatingActionButton: FloatingActionButton(
         heroTag: 'addWallet',
         onPressed: () => _navigateToForm(),

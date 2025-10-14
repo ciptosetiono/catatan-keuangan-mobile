@@ -14,6 +14,7 @@ import 'package:money_note/components/wallets/wallet_filter_dropdown.dart';
 import 'package:money_note/components/transfers/transfer_list.dart';
 
 import 'package:money_note/screens/transfers/transfer_form_screen.dart';
+import 'package:money_note/components/ads/banner_ad_widget.dart';
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -154,6 +155,8 @@ class _TransferScreenState extends State<TransferScreen> {
           );
         },
       ),
+      // ✅ Banner Ad stays fixed at bottom
+      bottomNavigationBar: const BannerAdWidget(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(

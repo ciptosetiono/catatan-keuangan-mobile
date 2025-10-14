@@ -32,7 +32,6 @@ class ReportFilter extends StatefulWidget implements PreferredSizeWidget {
 
 class _ReportFilterState extends State<ReportFilter> {
   DateFilterOption _selectedDateFilter = DateFilterOption.thisMonth;
-  String? _selectedLabel;
   late String _selectedGroupBy;
 
   void _applyDateFilter(
@@ -43,7 +42,6 @@ class _ReportFilterState extends State<ReportFilter> {
   }) {
     setState(() {
       _selectedDateFilter = option;
-      _selectedLabel = label;
     });
     widget.onDateRangePicked(option, from: from, to: to, label: label);
   }
@@ -86,7 +84,6 @@ class _ReportFilterState extends State<ReportFilter> {
                 alignment: Alignment.centerRight,
                 child: DateFilterDropdown(
                   selected: widget.selectedRange ?? _selectedDateFilter,
-                  label: _selectedLabel,
                   onFilterApplied: _applyDateFilter,
                 ),
               ),

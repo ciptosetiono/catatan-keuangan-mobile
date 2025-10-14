@@ -7,6 +7,9 @@ import 'package:money_note/services/sqlite/category_service.dart';
 import 'package:money_note/components/buttons/submit_button.dart';
 import 'package:money_note/components/transactions/transaction_type_selector.dart';
 
+import 'package:money_note/services/ad_service.dart';
+import 'package:money_note/components/ui/alerts/flash_message.dart';
+
 class CategoryFormScreen extends StatefulWidget {
   final Category? category;
 
@@ -49,7 +52,18 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       await _categoryService.addCategory(newCategory);
     }
 
-    if (mounted) Navigator.pop(context, true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      FlashMessage(color: Colors.green, message: 'Category saved successfully'),
+    );
+
+    Future.delayed(const Duration(seconds: 1), () {
+      AdService.showInterstitialAd();
+
+      // Add another short delay to ensure ad is visible before navigating
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) Navigator.pop(context, true);
+      });
+    });
   }
 
   @override
