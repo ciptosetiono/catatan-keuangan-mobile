@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/models/category_model.dart';
@@ -52,30 +51,35 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   @override
   void initState() {
     super.initState();
-    _loadMasterData();
-    _loadDefaultData();
+    _loadMasterDataAndDefaults();
   }
 
-  Future<void> _loadDefaultData() async {
+  /// Load master data first, then set default wallet/category
+  Future<void> _loadMasterDataAndDefaults() async {
     final prefs = SettingPreferencesService();
 
+    // Load wallets & categories via stream first value
+    _wallets = await WalletService().getWalletStream().first;
+    _categories = await CategoryService().getCategoryStream(type: _type).first;
+
+    // Jika mode edit, set existing data
     if (widget.existingData != null) {
       _initializeEditMode(widget.existingData!);
     } else {
-      await _initializeDefaultMode(prefs);
+      _initializeDefaultMode(prefs);
     }
+
+    if (!mounted) return;
+    setState(() {});
   }
 
   void _initializeEditMode(TransactionModel data) {
     _mode = 'edit';
     _titleController.text = data.title;
-
-    final formattedAmount = CurrencyFormatter().encode(data.amount);
-    _amountController.text = formattedAmount;
-
+    _amountController.text = CurrencyFormatter().encode(data.amount);
     _type = data.type;
-    _selectedCategoryId = data.categoryId;
     _selectedWalletId = data.walletId;
+    _selectedCategoryId = data.categoryId;
     _selectedDate = data.date;
   }
 
@@ -85,22 +89,48 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     final defaultCategoryId = await prefs.getDefaultCategory(type: _type);
 
     setState(() {
-      _selectedWalletId = defaultWalletId;
-      _selectedCategoryId = defaultCategoryId;
+      // Set default wallet
+      if (_wallets.any((w) => w.id == defaultWalletId)) {
+        _selectedWalletId = defaultWalletId;
+      } else if (_wallets.isNotEmpty) {
+        _selectedWalletId = _wallets.first.id;
+      }
+
+      // Set default category
+      if (_categories.any((c) => c.id == defaultCategoryId)) {
+        _selectedCategoryId = defaultCategoryId;
+      } else if (_categories.isNotEmpty) {
+        _selectedCategoryId = _categories.first.id;
+      }
+
       _selectedDate = DateTime.now();
     });
   }
 
-  Future<void> _loadMasterData() async {
-    CategoryService().getCategoryStream(type: _type).listen((list) {
-      if (!mounted) return;
-      setState(() => _categories = list);
+  void _onTypeChanged(String val) async {
+    if (_type == val) return; // tidak berubah
+    setState(() {
+      _type = val;
+      _selectedCategoryId = null; // reset category
     });
 
-    WalletService().getWalletStream().listen((list) {
-      if (!mounted) return;
-      setState(() => _wallets = list);
-    });
+    // Reload category master list
+    _categories = await CategoryService().getCategoryStream(type: _type).first;
+
+    // Set default category for new type
+    final prefs = SettingPreferencesService();
+    final defaultCategoryId = await prefs.getDefaultCategory(type: _type);
+
+    if (_categories.any((c) => c.id == defaultCategoryId)) {
+      _selectedCategoryId = defaultCategoryId;
+    } else if (_categories.isNotEmpty) {
+      _selectedCategoryId = _categories.first.id;
+    }
+
+    print('selected categoryId: $_selectedCategoryId');
+
+    if (!mounted) return;
+    setState(() {});
   }
 
   void _submit() async {
@@ -138,12 +168,11 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     try {
       TransactionModel? savedTransaction;
 
-      if (widget.transactionId != null) {
+      if (_mode == 'edit') {
         savedTransaction = await TransactionService().updateTransaction(
           widget.transactionId!,
           trx,
         );
-
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
@@ -152,10 +181,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         );
       } else {
         savedTransaction = await TransactionService().addTransaction(trx);
-
         _titleController.clear();
         _amountController.clear();
-
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
@@ -201,85 +228,71 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   Widget build(BuildContext context) {
     final isEdit = widget.transactionId != null;
 
+    print('default walletId: $_selectedWalletId');
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isEdit ? 'Edit Transaction' : 'Add Transaction'),
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
       ),
-      body:
-          _categories.isEmpty || _wallets.isEmpty
-              ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      TransactionTypeSelector(
-                        selected: _type,
-                        onChanged: (val) {
-                          setState(() {
-                            _type = val;
-                            _selectedCategoryId = null;
-                            _loadDefaultData();
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      WalletDropdown(
-                        value: _selectedWalletId,
-                        onChanged: (val) {
-                          print(' $val');
-                          setState(() => _selectedWalletId = val);
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      DatePickerField(
-                        selectedDate: _selectedDate,
-                        onDatePicked: (picked) {
-                          print('Selected Date: $picked');
-                          setState(() => _selectedDate = picked);
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      CategoryDropdown(
-                        value: _selectedCategoryId,
-                        type: _type,
-                        onChanged: (val) {
-                          print('Selected Category ID: $val');
-                          setState(() => _selectedCategoryId = val);
-                        },
-                      ),
-
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _titleController,
-                        decoration: const InputDecoration(
-                          labelText: 'Note',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-                      CurrencyTextField(
-                        controller: _amountController,
-                        label: 'Amount',
-                        validator: validateAmount,
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: SubmitButton(
-                          isSubmitting: _isSubmitting,
-                          onPressed: _submit,
-                          label: isEdit ? 'Update' : 'Save',
-                        ),
-                      ),
-                    ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TransactionTypeSelector(
+                selected: _type,
+                onChanged: _onTypeChanged,
+              ),
+              const SizedBox(height: 16),
+              WalletDropdown(
+                value: _selectedWalletId,
+                onChanged: (val) => setState(() => _selectedWalletId = val),
+              ),
+              const SizedBox(height: 16),
+              DatePickerField(
+                selectedDate: _selectedDate,
+                onDatePicked:
+                    (picked) => setState(() => _selectedDate = picked),
+              ),
+              const SizedBox(height: 16),
+              CategoryDropdown(
+                value: _selectedCategoryId,
+                type: _type,
+                onChanged: (val) => setState(() => _selectedCategoryId = val),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  labelText: 'Note',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade400!),
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              CurrencyTextField(
+                controller: _amountController,
+                label: 'Amount',
+                validator: validateAmount,
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: SubmitButton(
+                  isSubmitting: _isSubmitting,
+                  onPressed: _submit,
+                  label: isEdit ? 'Update' : 'Save',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -18,22 +18,34 @@ class WalletFilterDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      height: 40,
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      constraints: const BoxConstraints(minHeight: 48),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: isDark ? Colors.grey[800] : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       alignment: Alignment.centerLeft,
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.account_balance_wallet,
-            color: Color.fromARGB(255, 119, 119, 119),
+            color: isDark ? Colors.white70 : Colors.grey[700],
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Expanded(
             child: StreamBuilder<List<Wallet>>(
               stream: WalletService().getWalletStream(),
@@ -43,22 +55,38 @@ class WalletFilterDropdown extends StatelessWidget {
                   child: DropdownButton<String>(
                     value: value,
                     isExpanded: true,
-                    icon: const SizedBox.shrink(), // Hide default icon
-                    dropdownColor: Colors.white,
-                    style: const TextStyle(color: Colors.black),
-                    hint: const Text(
-                      'Wallet',
-                      style: TextStyle(color: Colors.black),
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Colors.black54,
+                    ),
+                    dropdownColor: isDark ? Colors.grey[900] : Colors.white,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontSize: 14,
+                    ),
+                    hint: Text(
+                      placeholder ?? 'All Wallets',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.black54,
+                      ),
                     ),
                     items: [
                       DropdownMenuItem<String>(
                         value: null,
-                        child: Text(placeholder ?? 'All Wallets'),
+                        child: Text(
+                          placeholder ?? 'All Wallets',
+                          softWrap: true,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       ...items.map(
                         (wallet) => DropdownMenuItem<String>(
                           value: wallet.id,
-                          child: Text(wallet.name),
+                          child: Text(
+                            wallet.name,
+                            softWrap: true,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                     ],

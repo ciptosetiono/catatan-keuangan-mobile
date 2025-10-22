@@ -121,35 +121,47 @@ class _DateFilterDropdownState extends State<DateFilterDropdown> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 40,
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      constraints: const BoxConstraints(minHeight: 48),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      alignment: Alignment.centerLeft,
       child: Row(
         children: [
           const Icon(Icons.date_range, color: Colors.black87),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<DateFilterOption>(
                 value: widget.selected,
                 isExpanded: true,
                 dropdownColor: Colors.white,
-                style: const TextStyle(color: Colors.black87),
-                icon: const SizedBox.shrink(),
+                style: const TextStyle(color: Colors.black87, fontSize: 14),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Colors.black54,
+                ),
                 items:
-                    DateFilterOption.values
-                        .map(
-                          (e) => DropdownMenuItem(
-                            value: e,
-                            child: Text(getLabel(e)),
-                          ),
-                        )
-                        .toList(),
+                    DateFilterOption.values.map((e) {
+                      return DropdownMenuItem(
+                        value: e,
+                        child: Text(
+                          getLabel(e),
+                          softWrap: true,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
                 onChanged: (option) {
                   if (option != null) _handleChange(option);
                 },

@@ -61,6 +61,7 @@ class DatePickerField extends StatelessWidget {
     return InkWell(
       onTap: () => _pickDate(context),
       borderRadius: BorderRadius.circular(12),
+
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: 'Date',
@@ -73,7 +74,7 @@ class DatePickerField extends StatelessWidget {
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[300]!),
+            borderSide: BorderSide(color: Colors.grey.shade400!),
           ),
           suffixIcon: const Icon(
             Icons.calendar_month,

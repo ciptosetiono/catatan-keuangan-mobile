@@ -64,7 +64,10 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
         labelText: widget.label,
-        border: const OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade400!),
+        ),
         //prefixText: 'Rp ',
       ),
       validator: widget.validator,

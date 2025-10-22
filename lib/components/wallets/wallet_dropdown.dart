@@ -59,11 +59,8 @@ class _WalletDropdownState extends State<WalletDropdown> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
-                  ),
+                  border: Border.all(color: Colors.grey.shade400),
                   borderRadius: BorderRadius.circular(12),
-                  color: isDark ? Colors.grey[800] : Colors.grey[100],
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
