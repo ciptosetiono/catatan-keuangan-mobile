@@ -42,7 +42,6 @@ class TransactionListItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.05),
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -51,7 +50,7 @@ class TransactionListItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // indikator income/expense
+            // income/expense indicator
             CircleAvatar(
               radius: 18,
               backgroundColor: isIncome ? Colors.green[100] : Colors.red[100],
@@ -63,7 +62,7 @@ class TransactionListItem extends StatelessWidget {
             ),
             const SizedBox(width: 12),
 
-            // judul & tanggal
+            // title, category, and date
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,6 +76,23 @@ class TransactionListItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
+
+                  // category name
+                  if (transaction.categoryName != null &&
+                      transaction.categoryName!.isNotEmpty)
+                    Text(
+                      transaction.categoryName!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.blueGrey[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                  const SizedBox(height: 2),
+
+                  // transaction date
                   Text(
                     DateFormat('dd MMM yyyy').format(date),
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
@@ -85,7 +101,7 @@ class TransactionListItem extends StatelessWidget {
               ),
             ),
 
-            // jumlah uang
+            // amount
             Text(
               CurrencyFormatter().encode(transaction.amount),
               style: TextStyle(
@@ -111,8 +127,6 @@ Future<void> handleTransactionTap({
   final action = await showTransactionActionDialog(context);
   if (action == 'detail') {
     final result = await Navigator.push(
-      // ignore: duplicate_ignore
-      // ignore: use_build_context_synchronously
       context,
       MaterialPageRoute(
         builder:

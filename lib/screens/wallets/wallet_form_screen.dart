@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+// ignore_for_file: use_build_context_synchronously
 
-//import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/wallet_model.dart';
 import '../../services/sqlite/wallet_service.dart';
@@ -12,8 +12,9 @@ import 'package:money_note/components/ui/alerts/flash_message.dart';
 
 class WalletFormScreen extends StatefulWidget {
   final Wallet? wallet;
+  final bool showAds; // 👈 tambahkan opsi ini agar bisa kontrol iklan dari luar
 
-  const WalletFormScreen({super.key, this.wallet});
+  const WalletFormScreen({super.key, this.wallet, this.showAds = true});
 
   @override
   State<WalletFormScreen> createState() => _WalletFormScreenState();
@@ -46,12 +47,10 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
 
   Future<void> _submit() async {
     if (_isSubmitting) return;
-
     if (!_formKey.currentState!.validate()) return;
 
     final name = _nameController.text.trim();
     final balance = _parseCurrency(_balanceController.text);
-    //final userId = FirebaseAuth.instance.currentUser!.uid;
     final userId = '1';
 
     int oldStartBalance = (widget.wallet?.startBalance ?? 0).toInt();
@@ -59,7 +58,6 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
     int currentBalance =
         isEdit ? oldCurrentBalance + (balance - oldStartBalance) : balance;
 
-    // ⚠️ Cek jika hasil currentBalance negatif
     if (currentBalance < 0) {
       await showDialog(
         context: context,
@@ -80,37 +78,52 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
       return;
     }
 
-    final wallet = Wallet(
-      id: widget.wallet?.id ?? '',
-      userId: userId,
-      name: name,
-      startBalance: balance.toDouble(),
-      currentBalance: currentBalance.toDouble(),
-      createdAt: widget.wallet?.createdAt ?? DateTime.now(),
-    );
-
-    setState(() => _isSubmitting = true);
+    Wallet? resultWallet;
 
     if (isEdit) {
-      await _walletService.updateWallet(wallet);
+      final updatedWallet = Wallet(
+        id: widget.wallet!.id,
+        userId: userId,
+        name: name,
+        startBalance: balance.toDouble(),
+        currentBalance: currentBalance.toDouble(),
+        createdAt: widget.wallet!.createdAt,
+      );
+      resultWallet = await _walletService.updateWallet(updatedWallet);
     } else {
-      await _walletService.addWallet(wallet);
+      // Add new wallet
+      resultWallet = await _walletService.addWallet(
+        Wallet(
+          id: '', // SQLite akan generate ID atau kita ambil terakhir
+          userId: userId,
+          name: name,
+          startBalance: balance.toDouble(),
+          currentBalance: currentBalance.toDouble(),
+          createdAt: DateTime.now(),
+        ),
+      );
     }
 
     setState(() => _isSubmitting = false);
+
+    if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       FlashMessage(color: Colors.green, message: 'Wallet saved successfully'),
     );
 
-    Future.delayed(const Duration(seconds: 1), () {
-      AdService.showInterstitialAd();
+    Navigator.pop(context, resultWallet); // ✅ kirim wallet ke dropdown
 
-      // Add another short delay to ensure ad is visible before navigating
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.pop(context, wallet);
-      });
+    // ✅ return wallet ke halaman sebelumnya (misalnya ke TransactionForm)
+    /*
+    Future.delayed(const Duration(milliseconds: 500), () async {
+      if (widget.showAds) {
+        AdService.showInterstitialAd();
+        await Future.delayed(const Duration(seconds: 2));
+      }
+      Navigator.pop(context, wallet);
     });
+    */
   }
 
   @override
@@ -125,7 +138,7 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Wallet Name',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.account_balance_wallet_rounded),
@@ -144,7 +157,7 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
                   FilteringTextInputFormatter.digitsOnly,
                   CurrencyInputFormatter(),
                 ],
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Start Balance',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.monetization_on),

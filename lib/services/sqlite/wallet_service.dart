@@ -132,7 +132,7 @@ class WalletService {
     return newWallet;
   }
 
-  Future<bool> updateWallet(Wallet wallet) async {
+  Future<Wallet?> updateWallet(Wallet wallet) async {
     final db = await DBHelper.database;
     final count = await db.update(
       'wallets',
@@ -145,9 +145,8 @@ class WalletService {
       _walletCache[wallet.id] = wallet;
       _notifyWalletsUpdate();
       _notifyWalletById(wallet.id, wallet);
-      return true;
+      return wallet;
     }
-    return false;
   }
 
   Future<bool> deleteWallet(String id) async {

@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
-
 import 'package:money_note/models/category_model.dart';
-
 import 'package:money_note/services/sqlite/category_service.dart';
-
 import 'package:money_note/components/buttons/submit_button.dart';
 import 'package:money_note/components/transactions/transaction_type_selector.dart';
-
 import 'package:money_note/services/ad_service.dart';
 import 'package:money_note/components/ui/alerts/flash_message.dart';
 
 class CategoryFormScreen extends StatefulWidget {
   final Category? category;
+  final String? defaultType;
+  final bool? showAds;
 
-  const CategoryFormScreen({super.key, this.category});
+  const CategoryFormScreen({
+    super.key,
+    this.category,
+    this.defaultType,
+    this.showAds = true,
+  });
 
   @override
   State<CategoryFormScreen> createState() => _CategoryFormScreenState();
@@ -28,6 +31,11 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
   @override
   void initState() {
     super.initState();
+
+    if (widget.defaultType != null) {
+      _type = widget.defaultType!;
+    }
+
     if (widget.category != null) {
       _nameController.text = widget.category!.name;
       _type = widget.category!.type;
@@ -40,30 +48,40 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
 
     setState(() => _isSubmitting = true);
 
-    final newCategory = Category(
-      id: widget.category?.id ?? '',
-      name: name,
-      type: _type,
-    );
+    Category? resultCategory;
 
     if (widget.category != null) {
-      await _categoryService.updateCategory(newCategory);
+      // Update existing category
+      final updatedCategory = Category(
+        id: widget.category!.id,
+        name: name,
+        type: _type,
+      );
+      resultCategory = await _categoryService.updateCategory(updatedCategory);
     } else {
-      await _categoryService.addCategory(newCategory);
+      resultCategory = await _categoryService.addCategory(
+        Category(id: '', name: name, type: _type),
+      );
     }
 
+    if (!mounted) return;
+
+    // ✅ Show success message
     ScaffoldMessenger.of(context).showSnackBar(
       FlashMessage(color: Colors.green, message: 'Category saved successfully'),
     );
 
-    Future.delayed(const Duration(seconds: 1), () {
-      AdService.showInterstitialAd();
+    // ✅ Return to dropdown with the created/updated category
+    Navigator.pop(context, resultCategory);
 
-      // Add another short delay to ensure ad is visible before navigating
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) Navigator.pop(context, true);
+    // ✅ Optional: show ad after returning
+    if (widget.showAds == true) {
+      Future.delayed(const Duration(seconds: 1), () {
+        AdService.showInterstitialAd();
       });
-    });
+    }
+
+    setState(() => _isSubmitting = false);
   }
 
   @override
@@ -93,7 +111,6 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
               ),
             ),
             const SizedBox(height: 24),
-
             SizedBox(
               width: double.infinity,
               child: SubmitButton(

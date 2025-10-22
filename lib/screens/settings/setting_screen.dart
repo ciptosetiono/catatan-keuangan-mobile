@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import '../categories/category_screen.dart';
 import '../wallets/wallet_screen.dart';
 import '../transfers/transfer_screen.dart';
+import 'default_settings_screen.dart';
 import '../../services/sqlite/backup_service.dart';
-import 'package:money_note/components/ui/alerts/flash_message.dart';
-import 'package:money_note/components/ads/banner_ad_widget.dart';
+import '../../components/ui/alerts/flash_message.dart';
+import '../../components/ads/banner_ad_widget.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -93,6 +94,22 @@ class SettingScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const CategoryScreen()),
+              );
+            },
+          ),
+          _buildMenuTile(
+            context: context,
+            icon: Icons.settings_suggest_rounded,
+            color: Colors.indigo,
+            title: 'Default Values',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (_) =>
+                          const DefaultSettingsScreen(), // 👈 your new screen
+                ),
               );
             },
           ),

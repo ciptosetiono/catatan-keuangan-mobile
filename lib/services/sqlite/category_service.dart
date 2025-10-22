@@ -43,6 +43,35 @@ class CategoryService {
     return _categoryByIdControllers[id]!.stream;
   }
 
+  Future<List<Category>> getCategories({String? type, String? query}) async {
+    final db = await DBHelper.database;
+
+    String where = "";
+    List<dynamic> whereArgs = [];
+
+    if (type != null && type.isNotEmpty && type != 'all') {
+      where += " AND type = ?";
+      whereArgs.add(type);
+    }
+
+    final maps = await db.query(
+      'categories',
+      where: where.isNotEmpty ? where.substring(5) : null,
+      whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
+      orderBy: 'name ASC',
+    );
+
+    var list =
+        maps.map((m) => Category.fromMap(m['id'].toString(), m)).toList();
+
+    if (query != null && query.trim().isNotEmpty) {
+      final q = query.toLowerCase();
+      list = list.where((cat) => cat.name.toLowerCase().contains(q)).toList();
+    }
+
+    return list;
+  }
+
   // ================= Load Categories =================
   Future<void> _loadCategories({String? type, String? query}) async {
     _currentType = type;
@@ -110,19 +139,22 @@ class CategoryService {
     return null;
   }
 
-  Future<void> addCategory(Category category) async {
+  Future<Category> addCategory(Category category) async {
     final db = await DBHelper.database;
-
-    await db.insert(
+    final id = await db.insert(
       'categories',
       category.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
+    // Reload stream
     await _reloadLastQuery();
+
+    // Kembalikan Category dengan ID baru
+    return category.copyWith(id: id.toString());
   }
 
-  Future<void> updateCategory(Category category) async {
+  Future<Category?> updateCategory(Category category) async {
     final db = await DBHelper.database;
     await db.update(
       'categories',
@@ -131,7 +163,11 @@ class CategoryService {
       whereArgs: [category.id],
     );
     await _reloadLastQuery();
+
     _notifyCategoryById(category.id, category);
+    // Fetch the nupdated category
+    final updatedCategory = await getCategoryById(category.id);
+    return updatedCategory;
   }
 
   Future<void> deleteCategory(String id) async {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:money_note/components/transactions/transaction_type_selector.dart';
 import 'package:money_note/components/wallets/wallet_dropdown.dart';
-import 'package:money_note/components/forms/category_dropdown.dart';
+import 'package:money_note/components/categories/category_dropdown.dart';
 
 class UnifiedFilterDialog extends StatefulWidget {
   final String? typeFilter;
