@@ -147,6 +147,7 @@ class WalletService {
       _notifyWalletById(wallet.id, wallet);
       return wallet;
     }
+    return null;
   }
 
   Future<bool> deleteWallet(String id) async {

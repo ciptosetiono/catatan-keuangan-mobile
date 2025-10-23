@@ -2,12 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../models/wallet_model.dart';
+// ignore: unused_import
+import 'package:money_note/services/ad_service.dart';
 import '../../services/sqlite/wallet_service.dart';
+import '../../models/wallet_model.dart';
+
 import '../../utils/currency_formatter.dart';
 import '../../utils/currency_input_formatter.dart';
 import '../../../components/buttons/submit_button.dart';
-import 'package:money_note/services/ad_service.dart';
 import 'package:money_note/components/ui/alerts/flash_message.dart';
 
 class WalletFormScreen extends StatefulWidget {
@@ -114,16 +116,12 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
 
     Navigator.pop(context, resultWallet); // ✅ kirim wallet ke dropdown
 
-    // ✅ return wallet ke halaman sebelumnya (misalnya ke TransactionForm)
-    /*
-    Future.delayed(const Duration(milliseconds: 500), () async {
-      if (widget.showAds) {
+    //display intertitials ads
+    if (widget.showAds == true) {
+      Future.delayed(const Duration(seconds: 1), () {
         AdService.showInterstitialAd();
-        await Future.delayed(const Duration(seconds: 2));
-      }
-      Navigator.pop(context, wallet);
-    });
-    */
+      });
+    }
   }
 
   @override

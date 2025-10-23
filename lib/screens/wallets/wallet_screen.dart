@@ -11,6 +11,7 @@ import 'package:money_note/components/ads/banner_ad_widget.dart';
 import 'package:money_note/screens/wallets/wallet_form_screen.dart';
 import 'package:money_note/screens/wallets/wallet_detail_screen.dart';
 import 'package:money_note/screens/transfers/transfer_screen.dart';
+import '../../utils/currency_formatter.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -21,6 +22,15 @@ class WalletScreen extends StatefulWidget {
 
 class _WalletScreenState extends State<WalletScreen> {
   final WalletService _walletService = WalletService();
+
+  Future<double> getTotalBalance() async {
+    List<Wallet> wallets = await WalletService().getWallets();
+    double total = wallets.fold(
+      0,
+      (sum, wallet) => sum + wallet.currentBalance,
+    );
+    return total;
+  }
 
   void _navigateToDetail({Wallet? wallet}) {
     if (wallet != null) {
@@ -82,6 +92,8 @@ class _WalletScreenState extends State<WalletScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Future<double> _totalBalance = getTotalBalance();
+
     Offset _tapPosition = Offset.zero;
 
     return Scaffold(
@@ -107,32 +119,78 @@ class _WalletScreenState extends State<WalletScreen> {
         ],
       ),
 
-      body: StreamBuilder<List<Wallet>>(
-        stream: _walletService.getWalletStream(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Column(
+        children: [
+          Card(
+            margin: const EdgeInsets.all(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Total Balance',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  FutureBuilder<double>(
+                    future: _totalBalance,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const SizedBox(
+                          width: 100,
+                          height: 20,
+                          child: Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        );
+                      }
+                      final total = snapshot.data ?? 0.0;
+                      return Text(
+                        CurrencyFormatter().encode(total),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<List<Wallet>>(
+              stream: _walletService.getWalletStream(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          final wallets = snapshot.data ?? [];
-          if (wallets.isEmpty) {
-            return const Center(child: Text('There are no wallets yet.'));
-          }
+                final wallets = snapshot.data ?? [];
+                if (wallets.isEmpty) {
+                  return const Center(child: Text('There are no wallets yet.'));
+                }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: wallets.length,
-            itemBuilder: (ctx, i) {
-              final wallet = wallets[i];
-              return WalletListItem(
-                wallet: wallet,
-                onTapDown: (details) => _tapPosition = details.globalPosition,
-                onTap: () => _showPopupMenu(wallet, _tapPosition),
-              );
-            },
-          );
-        },
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: wallets.length,
+                  itemBuilder: (ctx, i) {
+                    final wallet = wallets[i];
+                    return WalletListItem(
+                      wallet: wallet,
+                      onTapDown:
+                          (details) => _tapPosition = details.globalPosition,
+                      onTap: () => _showPopupMenu(wallet, _tapPosition),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
+
       bottomNavigationBar: const BannerAdWidget(),
       floatingActionButton: FloatingActionButton(
         heroTag: 'addWallet',

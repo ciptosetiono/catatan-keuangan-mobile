@@ -130,7 +130,7 @@ class _WalletDropdownState extends State<WalletDropdown> {
             Container(
               height: 48,
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: Colors.grey.shade400,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: IconButton(

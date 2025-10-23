@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 import 'package:flutter/material.dart';
 import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/models/category_model.dart';
@@ -14,7 +14,6 @@ import 'package:money_note/components/categories/category_dropdown.dart';
 import 'package:money_note/components/forms/date_picker_field.dart';
 import 'package:money_note/components/forms/currency_text_field.dart';
 import 'package:money_note/components/ui/alerts/flash_message.dart';
-import 'package:money_note/components/buttons/submit_button.dart';
 
 class TransactionFormScreen extends StatefulWidget {
   final String? transactionId;
@@ -270,7 +269,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                   labelText: 'Note',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade400!),
+                    borderSide: BorderSide(color: Colors.grey.shade400),
                   ),
                 ),
               ),
@@ -283,10 +282,34 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
-                child: SubmitButton(
-                  isSubmitting: _isSubmitting,
-                  onPressed: _submit,
-                  label: isEdit ? 'Update' : 'Save',
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 8,
+                    ),
+                    backgroundColor:
+                        _type == 'income' ? Colors.green : Colors.red,
+                    foregroundColor: Colors.white,
+                    textStyle: const TextStyle(fontSize: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child:
+                      _isSubmitting
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : Text(
+                            _type == 'income' ? 'Save Income' : 'Save Expense',
+                          ),
                 ),
               ),
             ],

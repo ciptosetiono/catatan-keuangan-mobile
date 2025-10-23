@@ -66,7 +66,7 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
         labelText: widget.label,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade400!),
+          borderSide: BorderSide(color: Colors.grey.shade400),
         ),
         //prefixText: 'Rp ',
       ),

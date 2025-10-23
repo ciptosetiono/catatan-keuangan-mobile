@@ -74,7 +74,7 @@ class DatePickerField extends StatelessWidget {
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade400!),
+            borderSide: BorderSide(color: Colors.grey.shade400),
           ),
           suffixIcon: const Icon(
             Icons.calendar_month,
