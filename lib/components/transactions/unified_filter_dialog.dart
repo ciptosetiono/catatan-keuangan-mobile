@@ -113,12 +113,14 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
             const SizedBox(height: 20),
             WalletDropdown(
               value: _wallet,
+              showAddButton: false,
               onChanged: (val) => setState(() => _wallet = val),
             ),
             const SizedBox(height: 20),
             CategoryDropdown(
               value: _category,
               type: _type,
+              showAddButton: false,
               onChanged: (val) => setState(() => _category = val),
             ),
 

@@ -7,6 +7,7 @@ import 'package:money_note/screens/categories/category_form_screen.dart';
 class CategoryDropdown extends StatefulWidget {
   final String? type;
   final String? value;
+  final bool? showAddButton;
   final void Function(String?) onChanged;
   final String label;
 
@@ -14,6 +15,7 @@ class CategoryDropdown extends StatefulWidget {
     super.key,
     this.type,
     required this.value,
+    this.showAddButton = true,
     required this.onChanged,
     this.label = 'Select Category',
   });
@@ -103,35 +105,37 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                // Add button
-                Container(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade400,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.add, color: Colors.white),
-                    onPressed: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (_) => CategoryFormScreen(
-                                defaultType: widget.type,
-                                showAds: false,
-                              ),
-                        ),
-                      );
+                if (widget.showAddButton == true) ...[
+                  const SizedBox(width: 8),
+                  // Add button
+                  Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (_) => CategoryFormScreen(
+                                  defaultType: widget.type,
+                                  showAds: false,
+                                ),
+                          ),
+                        );
 
-                      if (result is Category) {
-                        setState(() => _currentValue = result.id);
-                        widget.onChanged(result.id);
-                      }
-                    },
+                        if (result is Category) {
+                          setState(() => _currentValue = result.id);
+                          widget.onChanged(result.id);
+                        }
+                      },
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ],

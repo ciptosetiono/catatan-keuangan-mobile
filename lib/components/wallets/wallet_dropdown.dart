@@ -8,12 +8,14 @@ import 'package:money_note/utils/currency_formatter.dart';
 class WalletDropdown extends StatefulWidget {
   final String? value;
   final String label;
+  final bool? showAddButton;
   final Function(String?) onChanged;
 
   const WalletDropdown({
     super.key,
     required this.value,
     this.label = 'Select Wallet',
+    this.showAddButton = true,
     required this.onChanged,
   });
 
@@ -144,31 +146,34 @@ class _WalletDropdownState extends State<WalletDropdown> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                // Add wallet button
-                Container(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade400,
-                    borderRadius: BorderRadius.circular(12),
+
+                if (widget.showAddButton == true) ...[
+                  const SizedBox(width: 8),
+                  // Add wallet button
+                  Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      onPressed: () async {
+                        final newWallet = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (_) => const WalletFormScreen(showAds: false),
+                          ),
+                        );
+                        if (newWallet is Wallet) {
+                          setState(() => _currentValue = newWallet.id);
+                          widget.onChanged(newWallet.id);
+                        }
+                      },
+                    ),
                   ),
-                  child: IconButton(
-                    icon: const Icon(Icons.add, color: Colors.white),
-                    onPressed: () async {
-                      final newWallet = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (_) => const WalletFormScreen(showAds: false),
-                        ),
-                      );
-                      if (newWallet is Wallet) {
-                        setState(() => _currentValue = newWallet.id);
-                        widget.onChanged(newWallet.id);
-                      }
-                    },
-                  ),
-                ),
+                ],
               ],
             ),
           ],

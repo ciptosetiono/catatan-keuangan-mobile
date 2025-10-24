@@ -9,7 +9,6 @@ import 'package:money_note/services/sqlite/transfer_service.dart';
 import 'package:money_note/services/sqlite/wallet_service.dart';
 
 import 'package:money_note/components/forms/date_filter_dropdown.dart';
-import 'package:money_note/components/wallets/wallet_filter_dropdown.dart';
 
 import 'package:money_note/components/transfers/transfer_list.dart';
 

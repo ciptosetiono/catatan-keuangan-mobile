@@ -1,11 +1,9 @@
 // ignore_for_file: use_build_context_synchronously, prefer_final_fields
 
 import 'package:flutter/material.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:money_note/constants/date_filter_option.dart';
 import 'package:money_note/components/buttons/add_button.dart';
 import 'package:money_note/components/buttons/filter_button.dart';
-import 'package:money_note/components/wallets/wallet_filter_dropdown.dart';
 import 'package:money_note/components/forms/date_filter_dropdown.dart';
 import 'package:money_note/components/transactions/unified_filter_dialog.dart';
 import 'package:money_note/components/transactions/transaction_list.dart';

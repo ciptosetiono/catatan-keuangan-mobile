@@ -53,15 +53,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     _loadMasterDataAndDefaults();
   }
 
-  /// Load master data first, then set default wallet/category
   Future<void> _loadMasterDataAndDefaults() async {
     final prefs = SettingPreferencesService();
 
-    // Load wallets & categories via stream first value
     _wallets = await WalletService().getWalletStream().first;
     _categories = await CategoryService().getCategoryStream(type: _type).first;
 
-    // Jika mode edit, set existing data
     if (widget.existingData != null) {
       _initializeEditMode(widget.existingData!);
     } else {
@@ -88,14 +85,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     final defaultCategoryId = await prefs.getDefaultCategory(type: _type);
 
     setState(() {
-      // Set default wallet
       if (_wallets.any((w) => w.id == defaultWalletId)) {
         _selectedWalletId = defaultWalletId;
       } else if (_wallets.isNotEmpty) {
         _selectedWalletId = _wallets.first.id;
       }
 
-      // Set default category
       if (_categories.any((c) => c.id == defaultCategoryId)) {
         _selectedCategoryId = defaultCategoryId;
       } else if (_categories.isNotEmpty) {
@@ -107,16 +102,13 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   }
 
   void _onTypeChanged(String val) async {
-    if (_type == val) return; // tidak berubah
+    if (_type == val) return;
     setState(() {
       _type = val;
-      _selectedCategoryId = null; // reset category
+      _selectedCategoryId = null;
     });
 
-    // Reload category master list
     _categories = await CategoryService().getCategoryStream(type: _type).first;
-
-    // Set default category for new type
     final prefs = SettingPreferencesService();
     final defaultCategoryId = await prefs.getDefaultCategory(type: _type);
 
@@ -125,8 +117,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     } else if (_categories.isNotEmpty) {
       _selectedCategoryId = _categories.first.id;
     }
-
-    print('selected categoryId: $_selectedCategoryId');
 
     if (!mounted) return;
     setState(() {});
@@ -206,10 +196,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   }
 
   String? validateAmount(String? val) {
-    if (val == null || val.trim().isEmpty) {
-      return 'Amount is required';
-    }
-
+    if (val == null || val.trim().isEmpty) return 'Amount is required';
     final amount = CurrencyFormatter().decodeAmount(val);
     final wallet = _wallets.firstWhere((w) => w.id == _selectedWalletId);
     final availableBalance =
@@ -226,8 +213,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.transactionId != null;
-
-    print('default walletId: $_selectedWalletId');
 
     return Scaffold(
       appBar: AppBar(
@@ -276,7 +261,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                   ),
                   const SizedBox(height: 4),
                   SizedBox(
-                    height: 48, // sama seperti dropdown
+                    height: 48,
                     child: TextFormField(
                       controller: _titleController,
                       decoration: InputDecoration(
@@ -296,45 +281,65 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 16),
               CurrencyTextField(
                 controller: _amountController,
                 label: 'Amount',
                 validator: validateAmount,
               ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                      horizontal: 8,
-                    ),
-                    backgroundColor:
-                        _type == 'income' ? Colors.green : Colors.red,
-                    foregroundColor: Colors.white,
-                    textStyle: const TextStyle(fontSize: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+              const SizedBox(height: 24),
+
+              // === BUTTONS ROW (SAVE + CANCEL) ===
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed:
+                          _isSubmitting ? null : () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        foregroundColor: Colors.grey[800],
+                        side: BorderSide(color: Colors.grey.shade400),
+                        textStyle: const TextStyle(fontSize: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text('Cancel'),
                     ),
                   ),
-                  child:
-                      _isSubmitting
-                          ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                          : Text(
-                            _type == 'income' ? 'Save Income' : 'Save Expense',
-                          ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor:
+                            _type == 'income' ? Colors.green : Colors.red,
+                        foregroundColor: Colors.white,
+                        textStyle: const TextStyle(fontSize: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child:
+                          _isSubmitting
+                              ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : Text(
+                                _type == 'income'
+                                    ? 'Save Income'
+                                    : 'Save Expense',
+                              ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
