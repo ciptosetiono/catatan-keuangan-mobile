@@ -71,7 +71,7 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.blueAccent,
+                color: Colors.grey.shade400,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(10),
                   topRight: Radius.circular(10),
