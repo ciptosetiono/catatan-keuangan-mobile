@@ -8,26 +8,31 @@ class FilterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilledButton.icon(
-      style: FilledButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color.fromARGB(255, 15, 15, 15),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            8,
-          ), // nilai lebih kecil → radius lebih kecil
+    return SizedBox(
+      height: 48, // match date filter field height
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: const Color.fromARGB(255, 78, 78, 78),
+          side: BorderSide(color: Colors.grey.shade400),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
         ),
+        icon: const Icon(
+          Icons.filter_list,
+          size: 20,
+          color: Color.fromARGB(255, 78, 78, 78),
+        ),
+        label: Text(
+          label ?? '',
+          style: const TextStyle(
+            color: Color.fromARGB(255, 78, 78, 78),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        onPressed: onPressed,
       ),
-      icon: const Icon(
-        Icons.filter_list,
-        color: Color.fromARGB(255, 78, 78, 78),
-      ),
-      label: Text(
-        label ?? '',
-        style: TextStyle(color: Color.fromARGB(255, 78, 78, 78)),
-      ),
-      onPressed: onPressed,
     );
   }
 }

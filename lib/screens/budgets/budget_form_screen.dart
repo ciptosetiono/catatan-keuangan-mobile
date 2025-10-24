@@ -1,15 +1,11 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
 import 'package:flutter/material.dart';
-
 import 'package:money_note/utils/currency_formatter.dart';
-
 import 'package:money_note/models/budget_model.dart';
-import 'package:money_note/models/category_model.dart';
-
 import 'package:money_note/services/sqlite/budget_service.dart';
-import 'package:money_note/services/sqlite/category_service.dart';
 
+import 'package:money_note/components/categories/category_dropdown.dart';
 import 'package:money_note/components/forms/currency_text_field.dart';
 import 'package:money_note/components/forms/month_picker_field.dart';
 import 'package:money_note/components/buttons/submit_button.dart';
@@ -132,32 +128,12 @@ class _BudgetFormScreenState extends State<BudgetFormScreen> {
           key: _formKey,
           child: Column(
             children: [
-              // Dropdown kategori
-              StreamBuilder<List<Category>>(
-                stream: CategoryService().getCategoryStream(type: 'expense'),
-                builder: (context, snapshot) {
-                  final items = snapshot.data ?? [];
-                  return DropdownButtonFormField<String>(
-                    value: _selectedCategoryId,
-                    decoration: const InputDecoration(
-                      labelText: 'Category',
-                      isDense: true,
-                    ),
-                    items:
-                        items.map((c) {
-                          return DropdownMenuItem(
-                            value: c.id,
-                            child: Text(c.name),
-                          );
-                        }).toList(),
-                    validator: (val) => val == null ? 'Select Category' : null,
-                    onChanged:
-                        (val) => setState(() => _selectedCategoryId = val),
-                  );
-                },
+              CategoryDropdown(
+                value: _selectedCategoryId,
+                type: 'expense',
+                onChanged: (val) => setState(() => _selectedCategoryId = val),
               ),
               const SizedBox(height: 16),
-
               MonthPickerField(
                 selectedMonth: _selectedMonth,
                 onMonthPicked: (picked) {

@@ -7,9 +7,9 @@ import 'package:money_note/services/sqlite/category_service.dart';
 import 'package:money_note/components/ads/banner_ad_widget.dart';
 import 'package:money_note/components/buttons/add_button.dart';
 import 'package:money_note/components/budgets/budget_list.dart';
-import 'package:money_note/components/budgets/budget_month_dropdown.dart';
 import 'package:money_note/components/budgets/budget_category_name_filter.dart';
 import 'package:money_note/screens/budgets/budget_form_screen.dart';
+import 'package:money_note/components/forms/month_picker_field.dart';
 
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});
@@ -53,14 +53,14 @@ class _BudgetScreenState extends State<BudgetScreen> {
       appBar: AppBar(
         title: const Text('Budgets'),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(70),
+          preferredSize: const Size.fromHeight(56),
           child: Container(
-            color: Colors.lightBlue,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Row(
               children: [
-                Flexible(
-                  flex: 1,
+                // 🔹 Category name filter
+                Expanded(
+                  flex: 2,
                   child: BudgetCategoryNameField(
                     categoryName: _categoryName,
                     onChanged: (val) {
@@ -76,11 +76,16 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Flexible(
-                  flex: 1,
-                  child: BudgetMonthDropdown(
+
+                // 🔹 Month picker icon/button
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: MonthPickerField(
                     selectedMonth: _selectedMonth,
-                    onChanged: (val) => setState(() => _selectedMonth = val),
+                    onMonthPicked: (picked) {
+                      setState(() => _selectedMonth = picked);
+                    },
                   ),
                 ),
               ],

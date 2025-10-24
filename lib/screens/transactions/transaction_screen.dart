@@ -173,37 +173,29 @@ class _TransactionScreenState extends State<TransactionScreen> {
                   child: DateFilterDropdown(
                     selected: _selectedDateFilter,
                     onFilterApplied: _applyDateFilter,
-                    //label: _selectedDateLabel,
                   ),
                 ),
-                /*
-                Expanded(
-                  child: WalletFilterDropdown(
-                    value: _walletFilter,
-                    onChanged: (val) {
-                      if (!mounted) return;
-                      setState(() => _walletFilter = val);
-                      _loadTransactions(reset: true);
-                    },
-                  ),
-                ),
-                */
+                const SizedBox(width: 8),
                 SizedBox(
-                  height: 40,
-                  child: FilterButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder:
-                            (_) => UnifiedFilterDialog(
-                              typeFilter: _typeFilter,
-                              walletFilter: _walletFilter,
-                              categoryFilter: _categoryFilter,
-                              titleFilter: _titleFilter,
-                              onFilterApplied: _applyUnifiedFilter,
-                            ),
-                      );
-                    },
+                  height: 48, // ✅ samakan dengan dropdown
+                  child: AspectRatio(
+                    aspectRatio:
+                        2.5, // ✅ proporsional tombol, tidak terlalu lebar
+                    child: FilterButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder:
+                              (_) => UnifiedFilterDialog(
+                                typeFilter: _typeFilter,
+                                walletFilter: _walletFilter,
+                                categoryFilter: _categoryFilter,
+                                titleFilter: _titleFilter,
+                                onFilterApplied: _applyUnifiedFilter,
+                              ),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ],

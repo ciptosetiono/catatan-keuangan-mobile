@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:money_note/constants/date_filter_option.dart';
@@ -75,8 +76,32 @@ class _DateFilterDropdownState extends State<DateFilterDropdown> {
           firstDate: DateTime(2020),
           lastDate: now.add(const Duration(days: 365)),
           helpText: 'Select Date Range',
-          cancelText: 'Cancel',
-          confirmText: 'Apply',
+          builder: (context, child) {
+            return Localizations.override(
+              context: context,
+              delegates: [
+                _CustomLocalizationsDelegate(), // 👈 our custom text override
+                DefaultWidgetsLocalizations.delegate,
+              ],
+              locale: const Locale('en', 'US'),
+              child: Theme(
+                data: ThemeData.light().copyWith(
+                  colorScheme: const ColorScheme.light(
+                    primary: Colors.blueAccent,
+                    onPrimary: Colors.white,
+                    onSurface: Colors.black87,
+                  ),
+                  textButtonTheme: TextButtonThemeData(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.blueAccent,
+                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                child: child!,
+              ),
+            );
+          },
         );
 
         if (picked != null) {
@@ -139,7 +164,7 @@ class _DateFilterDropdownState extends State<DateFilterDropdown> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.date_range, color: Colors.black87),
+          const Icon(Icons.date_range, color: Color.fromARGB(255, 78, 78, 78)),
           const SizedBox(width: 12),
           Expanded(
             child: DropdownButtonHideUnderline(
@@ -173,4 +198,27 @@ class _DateFilterDropdownState extends State<DateFilterDropdown> {
       ),
     );
   }
+}
+
+class _CustomLocalizations extends DefaultMaterialLocalizations {
+  @override
+  String get okButtonLabel => 'Apply'; // ✅ replaces “Save”
+  @override
+  String get cancelButtonLabel => 'Cancel'; // ✅ consistent style
+}
+
+class _CustomLocalizationsDelegate
+    extends LocalizationsDelegate<MaterialLocalizations> {
+  const _CustomLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => true;
+
+  @override
+  Future<MaterialLocalizations> load(Locale locale) async {
+    return SynchronousFuture<MaterialLocalizations>(_CustomLocalizations());
+  }
+
+  @override
+  bool shouldReload(_CustomLocalizationsDelegate old) => false;
 }

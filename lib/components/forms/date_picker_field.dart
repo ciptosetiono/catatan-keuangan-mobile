@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -24,34 +25,49 @@ class DatePickerField extends StatelessWidget {
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
 
-        return Theme(
-          data: theme.copyWith(
-            dialogTheme: DialogThemeData(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
+        return Localizations.override(
+          context: context,
+          delegates: const [
+            _CustomLocalizationsDelegate(), // 👈 use our custom labels
+            DefaultWidgetsLocalizations.delegate,
+          ],
+          locale: const Locale('en', 'US'),
+          child: Theme(
+            data: theme.copyWith(
+              dialogTheme: DialogThemeData(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.blueAccent, // ✅ Apply button color
+                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              colorScheme:
+                  isDark
+                      ? const ColorScheme.dark(
+                        primary: Colors.blueAccent,
+                        onPrimary: Colors.white,
+                        surface: Color(0xFF121212),
+                        onSurface: Colors.white,
+                      )
+                      : const ColorScheme.light(
+                        primary: Colors.blueAccent,
+                        onPrimary: Colors.white,
+                        surface: Colors.white,
+                        onSurface: Colors.black87,
+                      ),
             ),
-            colorScheme:
-                isDark
-                    ? const ColorScheme.dark(
-                      primary: Colors.blueAccent,
-                      onPrimary: Colors.white,
-                      surface: Color(0xFF121212),
-                      onSurface: Colors.white,
-                    )
-                    : const ColorScheme.light(
-                      primary: Colors.blueAccent,
-                      onPrimary: Colors.white,
-                      surface: Colors.white,
-                      onSurface: Colors.black87,
-                    ),
+            child: child!,
           ),
-          child: child!,
         );
       },
     );
 
     if (picked != null) {
+      // handle the selected date
       onDatePicked(picked);
     }
   }
@@ -103,4 +119,27 @@ class DatePickerField extends StatelessWidget {
       ],
     );
   }
+}
+
+class _CustomLocalizations extends DefaultMaterialLocalizations {
+  @override
+  String get okButtonLabel => 'Apply'; // ✅ replaces “Save”
+  @override
+  String get cancelButtonLabel => 'Cancel'; // ✅ consistent style
+}
+
+class _CustomLocalizationsDelegate
+    extends LocalizationsDelegate<MaterialLocalizations> {
+  const _CustomLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => true;
+
+  @override
+  Future<MaterialLocalizations> load(Locale locale) async {
+    return SynchronousFuture<MaterialLocalizations>(_CustomLocalizations());
+  }
+
+  @override
+  bool shouldReload(_CustomLocalizationsDelegate old) => false;
 }

@@ -17,7 +17,7 @@ class MonthPickerField extends StatelessWidget {
     final formatted = DateFormat.yMMMM('en_US').format(selectedMonth);
 
     return SizedBox(
-      height: 48, // match the height of other filters
+      height: 50, // match the height of other filters
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () async {
@@ -31,7 +31,7 @@ class MonthPickerField extends StatelessWidget {
                 data: ThemeData.light().copyWith(
                   dialogTheme: const DialogThemeData(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(6)),
+                      borderRadius: BorderRadius.all(Radius.circular(12)),
                     ),
                   ),
                   colorScheme: const ColorScheme.light(
@@ -39,11 +39,51 @@ class MonthPickerField extends StatelessWidget {
                     onPrimary: Colors.white,
                     onSurface: Colors.black87,
                   ),
+                  textButtonTheme: TextButtonThemeData(
+                    style: ButtonStyle(
+                      textStyle: MaterialStateProperty.all(
+                        const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                      shape: MaterialStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                child: child!,
+                child: Builder(
+                  builder: (context) {
+                    // cari tombol OK dan Cancel di dalam dialog
+                    return Theme(
+                      data: Theme.of(context).copyWith(
+                        textButtonTheme: TextButtonThemeData(
+                          style: ButtonStyle(
+                            foregroundColor: MaterialStateProperty.resolveWith<
+                              Color
+                            >((states) {
+                              if (states.contains(MaterialState.disabled)) {
+                                return Colors.grey;
+                              }
+                              // Cancel button akan diwarnai abu-abu, OK tombol biru
+                              return states.contains(MaterialState.focused)
+                                  ? Colors.blueAccent
+                                  : Colors.blueAccent;
+                            }),
+                          ),
+                        ),
+                      ),
+                      child: child!,
+                    );
+                  },
+                ),
               );
             },
           );
+
           if (picked != null) onMonthPicked(picked);
         },
         child: InputDecorator(
@@ -60,9 +100,9 @@ class MonthPickerField extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
-            suffixIcon: const Icon(
+            prefixIcon: const Icon(
               Icons.calendar_month,
-              color: Colors.blueAccent,
+              color: Color.fromARGB(255, 112, 112, 112),
             ),
           ),
           isEmpty: false,
