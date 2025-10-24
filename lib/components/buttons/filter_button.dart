@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FilterButton extends StatelessWidget {
-  final String label;
+  final String? label;
   final VoidCallback? onPressed;
 
   const FilterButton({super.key, this.label = 'Filter', this.onPressed});
@@ -24,7 +24,7 @@ class FilterButton extends StatelessWidget {
         color: Color.fromARGB(255, 78, 78, 78),
       ),
       label: Text(
-        label,
+        label ?? '',
         style: TextStyle(color: Color.fromARGB(255, 78, 78, 78)),
       ),
       onPressed: onPressed,

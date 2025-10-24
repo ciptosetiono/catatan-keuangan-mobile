@@ -13,7 +13,7 @@ class DisplayOptionSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 40,
+      height: 50,
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
@@ -35,12 +35,13 @@ class DisplayOptionSelector extends StatelessWidget {
                 minWidth:
                     double.infinity, // force dropdown to match parent width
               ),
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: "day", child: Text("By Day")),
-                PopupMenuItem(value: "week", child: Text("By Week")),
-                PopupMenuItem(value: "month", child: Text("By Month")),
-                PopupMenuItem(value: "year", child: Text("By Year")),
-              ],
+              itemBuilder:
+                  (context) => const [
+                    PopupMenuItem(value: "day", child: Text("By Day")),
+                    PopupMenuItem(value: "week", child: Text("By Week")),
+                    PopupMenuItem(value: "month", child: Text("By Month")),
+                    PopupMenuItem(value: "year", child: Text("By Year")),
+                  ],
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [Text(groupBy), const Icon(Icons.arrow_drop_down)],

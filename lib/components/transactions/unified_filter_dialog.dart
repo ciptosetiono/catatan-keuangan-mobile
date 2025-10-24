@@ -10,7 +10,7 @@ class UnifiedFilterDialog extends StatefulWidget {
   final String? titleFilter;
   final void Function({
     String? type,
-    String wallet,
+    String? wallet,
     String? category,
     String? title,
   })
@@ -50,11 +50,10 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
     setState(() {
       _type = null;
       _category = null;
+      _wallet = null;
       _title = null;
       _titleController.clear();
     });
-    Navigator.pop(context);
-    widget.onFilterApplied(type: null, category: null, title: null);
   }
 
   @override
@@ -81,14 +80,16 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Filter Transactions',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                  Expanded(
+                    child: Text(
+                      'Filter Transactions',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, color: Colors.white),
@@ -109,18 +110,18 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
                 });
               },
             ),
-
+            const SizedBox(height: 20),
+            WalletDropdown(
+              value: _wallet,
+              onChanged: (val) => setState(() => _wallet = val),
+            ),
             const SizedBox(height: 20),
             CategoryDropdown(
               value: _category,
               type: _type,
               onChanged: (val) => setState(() => _category = val),
             ),
-            const SizedBox(height: 20),
-            WalletDropdown(
-              value: _wallet,
-              onChanged: (val) => setState(() => _wallet = val),
-            ),
+
             const SizedBox(height: 20),
             TextField(
               controller: _titleController,
@@ -141,14 +142,17 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
+                FilledButton(
                   onPressed: _resetFilters,
                   style: TextButton.styleFrom(
-                    foregroundColor: Colors.grey[700],
+                    backgroundColor: Colors.grey.shade400,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 12,
-                    ), // lebih besar
+                    ), // lebi
                     textStyle: const TextStyle(
                       fontSize: 16,
                     ), // ukuran font lebih besar
@@ -161,6 +165,7 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
                     Navigator.pop(context);
                     widget.onFilterApplied(
                       type: _type,
+                      wallet: _wallet,
                       category: _category,
                       title: _title,
                     );

@@ -96,6 +96,7 @@ class _TransferScreenState extends State<TransferScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
+                /*
                 Expanded(
                   child: WalletFilterDropdown(
                     value: _fromWalletId,
@@ -115,6 +116,7 @@ class _TransferScreenState extends State<TransferScreen> {
                     },
                   ),
                 ),
+                */
                 const SizedBox(width: 8),
                 Expanded(
                   child: DateFilterDropdown(
