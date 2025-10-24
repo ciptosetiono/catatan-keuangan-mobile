@@ -4,11 +4,13 @@ import 'package:intl/intl.dart';
 class DatePickerField extends StatelessWidget {
   final DateTime selectedDate;
   final void Function(DateTime) onDatePicked;
+  final String label;
 
   const DatePickerField({
     super.key,
     required this.selectedDate,
     required this.onDatePicked,
+    this.label = 'Select Date',
   });
 
   Future<void> _pickDate(BuildContext context) async {
@@ -56,41 +58,49 @@ class DatePickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final formattedDate = DateFormat('dd MMM yyyy').format(selectedDate);
 
-    return InkWell(
-      onTap: () => _pickDate(context),
-      borderRadius: BorderRadius.circular(12),
-
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: 'Date',
-          labelStyle: const TextStyle(fontSize: 14, color: Colors.black54),
-          filled: true,
-          fillColor: Colors.grey[100],
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 14,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade400),
-          ),
-          suffixIcon: const Icon(
-            Icons.calendar_month,
-            color: Colors.blueAccent,
-            size: 22,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: isDark ? Colors.grey[300] : Colors.grey[700],
           ),
         ),
-        child: Text(
-          formattedDate,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 15,
-            color: Colors.black87,
+        const SizedBox(height: 4),
+        InkWell(
+          onTap: () => _pickDate(context),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            height: 48, // keep same height as WalletDropdown
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade400),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.calendar_month, color: Colors.grey, size: 22),
+                const SizedBox(width: 12),
+                Text(
+                  formattedDate,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

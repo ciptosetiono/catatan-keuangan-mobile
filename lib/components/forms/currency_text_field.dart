@@ -21,11 +21,7 @@ class CurrencyTextField extends StatefulWidget {
 }
 
 class _CurrencyTextFieldState extends State<CurrencyTextField> {
-  final formatter = NumberFormat.currency(
-    //locale: 'id_ID',
-    symbol: '',
-    decimalDigits: 0,
-  );
+  final formatter = NumberFormat.currency(symbol: '', decimalDigits: 0);
   String lastValue = '';
 
   @override
@@ -36,7 +32,6 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
 
   void _formatCurrency() {
     final rawText = widget.controller.text.replaceAll(RegExp(r'[^0-9]'), '');
-
     if (rawText == lastValue) return;
 
     final number = int.tryParse(rawText);
@@ -59,18 +54,41 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.controller,
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(
-        labelText: widget.label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade400),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Label manual
+        Text(
+          widget.label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[700],
+          ),
         ),
-        //prefixText: 'Rp ',
-      ),
-      validator: widget.validator,
+        const SizedBox(height: 4),
+        SizedBox(
+          height: 48, // sama dengan dropdown
+          child: TextFormField(
+            controller: widget.controller,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              hintText: 'Enter amount',
+              filled: true,
+              fillColor: Colors.grey[100],
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade400),
+              ),
+            ),
+            validator: widget.validator,
+          ),
+        ),
+      ],
     );
   }
 }

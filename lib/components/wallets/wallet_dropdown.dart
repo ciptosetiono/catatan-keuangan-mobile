@@ -52,103 +52,124 @@ class _WalletDropdownState extends State<WalletDropdown> {
           _currentValue = null;
         }
 
-        return Row(
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Expanded dropdown
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade400),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _currentValue,
-                    isExpanded: true,
-                    hint: Text(
-                      widget.label,
-                      style: TextStyle(
-                        color: isDark ? Colors.grey[300] : Colors.grey[700],
+            // Label
+            Text(
+              widget.label,
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.grey[300] : Colors.grey[700],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                // Expanded dropdown
+                Expanded(
+                  child: Container(
+                    height: 48, // keep same height
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.grey[100],
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _currentValue,
+                        isExpanded: true,
+                        hint: Text(
+                          'Select Wallet',
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[300] : Colors.grey[700],
+                          ),
+                        ),
+                        icon: const Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Colors.black54,
+                        ),
+                        items:
+                            wallets.map((wallet) {
+                              final balanceText = CurrencyFormatter().encode(
+                                wallet.currentBalance,
+                              );
+                              return DropdownMenuItem<String>(
+                                value: wallet.id,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.account_balance_wallet_outlined,
+                                          size: 20,
+                                          color: Colors.grey,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          wallet.name,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            color:
+                                                isDark
+                                                    ? Colors.white
+                                                    : Colors.black87,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      balanceText,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color:
+                                            wallet.currentBalance >= 0
+                                                ? Colors.green[600]
+                                                : Colors.red[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                        onChanged: (val) {
+                          setState(() => _currentValue = val);
+                          widget.onChanged(val);
+                        },
                       ),
                     ),
-                    items: [
-                      ...wallets.map((wallet) {
-                        final balanceText = CurrencyFormatter().encode(
-                          wallet.currentBalance,
-                        );
-                        return DropdownMenuItem<String>(
-                          value: wallet.id,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.account_balance_wallet_outlined,
-                                    size: 20,
-                                    color: Colors.grey,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    wallet.name,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      color:
-                                          isDark
-                                              ? Colors.white
-                                              : Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                balanceText,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color:
-                                      wallet.currentBalance >= 0
-                                          ? Colors.green[600]
-                                          : Colors.red[600],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ],
-                    onChanged: (val) {
-                      setState(() => _currentValue = val);
-                      widget.onChanged(val);
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Add wallet button
+                Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.add, color: Colors.white),
+                    onPressed: () async {
+                      final newWallet = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => const WalletFormScreen(showAds: false),
+                        ),
+                      );
+                      if (newWallet is Wallet) {
+                        setState(() => _currentValue = newWallet.id);
+                        widget.onChanged(newWallet.id);
+                      }
                     },
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Add wallet button
-            Container(
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade400,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.add, color: Colors.white),
-                onPressed: () async {
-                  final newWallet = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const WalletFormScreen(showAds: false),
-                    ),
-                  );
-
-                  if (newWallet is Wallet) {
-                    setState(() => _currentValue = newWallet.id);
-                    widget.onChanged(newWallet.id);
-                  }
-                },
-              ),
+              ],
             ),
           ],
         );
