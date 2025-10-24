@@ -264,10 +264,9 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             SizedBox(
-              width: 150,
+              width: MediaQuery.of(context).size.width / 2,
               child: DateFilterDropdown(
                 selected: _selectedDateFilter,
-                //label: _selectedDateLabel,
                 onFilterApplied: _applyDateFilter,
               ),
             ),

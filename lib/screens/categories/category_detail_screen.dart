@@ -166,7 +166,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.end, // ratakan ke kanan
               children: [
                 SizedBox(
-                  width: 150,
+                  width: MediaQuery.of(context).size.width / 2,
                   child: DateFilterDropdown(
                     selected: _selectedDateFilter,
                     onFilterApplied: _applyDateFilter,
