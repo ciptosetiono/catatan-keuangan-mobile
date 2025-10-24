@@ -305,7 +305,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text('Cancel'),
+                      child: const Text('Close'),
                     ),
                   ),
                   const SizedBox(width: 12),
