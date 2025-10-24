@@ -1,9 +1,7 @@
-// lib/components/dashboard/recent_transactions_section.dart
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/models/transaction_model.dart';
 import 'package:money_note/services/sqlite/transaction_service.dart';
@@ -34,6 +32,7 @@ class RecentTransactionsSection extends StatelessWidget {
                 ),
               );
             }
+
             if (snapshot.hasError) {
               return Padding(
                 padding: const EdgeInsets.all(16),
@@ -48,7 +47,7 @@ class RecentTransactionsSection extends StatelessWidget {
             if (transactions.isEmpty) {
               return const Padding(
                 padding: EdgeInsets.all(16),
-                child: Text('There is no transaction.'),
+                child: Text('There are no transactions yet.'),
               );
             }
 
@@ -58,11 +57,19 @@ class RecentTransactionsSection extends StatelessWidget {
               children:
                   latest.map((trx) {
                     final isIncome = trx.type == 'income';
-                    final color = isIncome ? Colors.green : Colors.red;
+                    final color =
+                        isIncome ? Colors.green[600]! : Colors.red[600]!;
                     final icon =
                         isIncome ? Icons.arrow_downward : Icons.arrow_upward;
+                    final formattedAmount = CurrencyFormatter().encode(
+                      trx.amount,
+                    );
+                    final formattedDate = DateFormat(
+                      'dd MMM yyyy',
+                    ).format(trx.date);
 
                     return InkWell(
+                      borderRadius: BorderRadius.circular(12),
                       onTap: () => onTapItem?.call(trx),
                       child: Container(
                         margin: const EdgeInsets.symmetric(
@@ -78,54 +85,98 @@ class RecentTransactionsSection extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 4,
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 3,
                               offset: const Offset(0, 2),
                             ),
                           ],
                         ),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            CircleAvatar(
-                              radius: 18,
-                              backgroundColor: color.withOpacity(0.1),
-                              child: Icon(icon, color: color, size: 18),
+                            // icon indicator
+                            Container(
+                              height: 40,
+                              width: 40,
+                              decoration: BoxDecoration(
+                                color:
+                                    isIncome
+                                        ? Colors.green[50]
+                                        : Colors.red[50],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(icon, color: color, size: 20),
                             ),
                             const SizedBox(width: 12),
 
-                            // judul + tanggal
+                            // main info
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  // title
                                   Text(
-                                    trx.title,
+                                    trx.title.isNotEmpty
+                                        ? trx.title
+                                        : '(No note)',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 15,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    DateFormat('dd MMM yyyy').format(trx.date),
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 12,
-                                    ),
+                                  const SizedBox(height: 4),
+
+                                  // category + date
+                                  Row(
+                                    children: [
+                                      if (trx.categoryName != null &&
+                                          trx.categoryName!.isNotEmpty)
+                                        Flexible(
+                                          child: Text(
+                                            trx.categoryName!,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.blueGrey[700],
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      if (trx.categoryName != null &&
+                                          trx.categoryName!.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                          ),
+                                          child: Text(
+                                            '•',
+                                            style: TextStyle(
+                                              color: Colors.grey[500],
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      Text(
+                                        formattedDate,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
                             ),
 
-                            // jumlah
+                            // amount
                             Text(
-                              (isIncome ? '+ ' : '- ') +
-                                  CurrencyFormatter().encode(trx.amount),
+                              formattedAmount,
                               style: TextStyle(
                                 color: color,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                                fontSize: 15,
                               ),
                             ),
                           ],
