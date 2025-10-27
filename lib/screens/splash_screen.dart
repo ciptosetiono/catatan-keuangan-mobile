@@ -45,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen>
     // Text slide animation
     _textController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 600),
     );
     _textAnimation = Tween<Offset>(
       begin: const Offset(0, 1),
@@ -62,11 +62,11 @@ class _SplashScreenState extends State<SplashScreen>
       await initializeDateFormatting(locale, null);
 
       await initializeUserData();
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 400));
 
       // Simulate app loading progress
       for (int i = 1; i <= 3; i++) {
-        await Future.delayed(const Duration(milliseconds: 300));
+        await Future.delayed(const Duration(milliseconds: 200));
         setState(() {
           progress = i / 3;
         });

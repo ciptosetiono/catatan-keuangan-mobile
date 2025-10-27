@@ -67,11 +67,10 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header tanpa margin
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.grey.shade400,
+                color: Colors.grey.shade300,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(10),
                   topRight: Radius.circular(10),
@@ -86,13 +85,13 @@ class _UnifiedFilterDialogState extends State<UnifiedFilterDialog> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: const Icon(Icons.close, color: Colors.black),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],

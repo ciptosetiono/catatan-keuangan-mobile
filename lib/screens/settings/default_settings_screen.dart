@@ -105,6 +105,7 @@ class _DefaultSettingsScreenState extends State<DefaultSettingsScreen> {
     required String title,
     required Widget child,
     IconData? icon,
+    Color? iconColor,
   }) {
     return Card(
       elevation: 3,
@@ -118,7 +119,7 @@ class _DefaultSettingsScreenState extends State<DefaultSettingsScreen> {
             Row(
               children: [
                 if (icon != null)
-                  Icon(icon, color: Colors.teal.shade400, size: 22),
+                  Icon(icon, color: iconColor ?? Colors.lightBlue, size: 22),
                 if (icon != null) const SizedBox(width: 8),
                 Text(
                   title,
@@ -152,11 +153,12 @@ class _DefaultSettingsScreenState extends State<DefaultSettingsScreen> {
                     _buildSettingCard(
                       title: 'Default Wallet',
                       icon: Icons.account_balance_wallet_outlined,
+                      iconColor: Colors.lightBlue,
                       child: DropdownButtonFormField<String>(
                         value: selectedWalletId,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
-                          labelText: 'Choose Wallet',
+                          labelText: '', //disabked label
                         ),
                         items:
                             wallets.map((wallet) {
@@ -175,11 +177,12 @@ class _DefaultSettingsScreenState extends State<DefaultSettingsScreen> {
                     _buildSettingCard(
                       title: 'Default Income Category',
                       icon: Icons.arrow_downward_rounded,
+                      iconColor: Colors.green,
                       child: DropdownButtonFormField<String>(
                         value: selectedIncomeCategoryId,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
-                          labelText: 'Choose Income Category',
+                          labelText: '', //disabked label
                         ),
                         items:
                             incomeCategories.map((category) {
@@ -198,11 +201,12 @@ class _DefaultSettingsScreenState extends State<DefaultSettingsScreen> {
                     _buildSettingCard(
                       title: 'Default Expense Category',
                       icon: Icons.arrow_upward_rounded,
+                      iconColor: Colors.red,
                       child: DropdownButtonFormField<String>(
                         value: selectedExpenseCategoryId,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
-                          labelText: 'Choose Expense Category',
+                          labelText: '', //disabked label
                         ),
                         items:
                             expenseCategories.map((category) {

@@ -121,71 +121,112 @@ class _WalletScreenState extends State<WalletScreen> {
 
       body: Column(
         children: [
-          Card(
-            margin: const EdgeInsets.all(16),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Total Balance',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  FutureBuilder<double>(
-                    future: _totalBalance,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const SizedBox(
-                          width: 100,
-                          height: 20,
-                          child: Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        );
-                      }
-                      final total = snapshot.data ?? 0.0;
-                      return Text(
-                        CurrencyFormatter().encode(total),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            child: StreamBuilder<List<Wallet>>(
-              stream: _walletService.getWalletStream(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: FutureBuilder<double>(
+              future: _totalBalance,
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+                final isLoading =
+                    snapshot.connectionState == ConnectionState.waiting;
+                final total = snapshot.data ?? 0.0;
 
-                final wallets = snapshot.data ?? [];
-                if (wallets.isEmpty) {
-                  return const Center(child: Text('There are no wallets yet.'));
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: wallets.length,
-                  itemBuilder: (ctx, i) {
-                    final wallet = wallets[i];
-                    return WalletListItem(
-                      wallet: wallet,
-                      onTapDown:
-                          (details) => _tapPosition = details.globalPosition,
-                      onTap: () => _showPopupMenu(wallet, _tapPosition),
-                    );
-                  },
+                return Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.green.shade400, Colors.green.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.green.withOpacity(0.25),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 18,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'Total Balance',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                      isLoading
+                          ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : Text(
+                            CurrencyFormatter().encode(total),
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                    ],
+                  ),
                 );
               },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+              ),
+              child: StreamBuilder<List<Wallet>>(
+                stream: _walletService.getWalletStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final wallets = snapshot.data ?? [];
+                  if (wallets.isEmpty) {
+                    return const Center(
+                      child: Text('There are no wallets yet.'),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: wallets.length,
+                    itemBuilder: (ctx, i) {
+                      final wallet = wallets[i];
+                      return WalletListItem(
+                        wallet: wallet,
+                        onTapDown:
+                            (details) => _tapPosition = details.globalPosition,
+                        onTap: () => _showPopupMenu(wallet, _tapPosition),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ],

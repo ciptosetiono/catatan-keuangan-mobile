@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:month_year_picker/month_year_picker.dart';
 import 'month_picker.dart';
 
-class MonthPickerField extends StatelessWidget {
+class MonthPickerFilter extends StatelessWidget {
   final DateTime selectedMonth;
   final void Function(DateTime) onMonthPicked;
 
-  const MonthPickerField({
+  const MonthPickerFilter({
     super.key,
     required this.selectedMonth,
     required this.onMonthPicked,
@@ -15,10 +13,10 @@ class MonthPickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formatted = DateFormat.yMMMM('en_US').format(selectedMonth);
-
-    return SizedBox(
-      height: 50, // match the height of other filters
+    return Container(
+      constraints: const BoxConstraints(minHeight: 48),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: MonthPicker(
         selectedMonth: selectedMonth,
         onMonthPicked: onMonthPicked,

@@ -8,6 +8,7 @@ import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/models/category_model.dart';
 import 'package:money_note/services/sqlite/category_service.dart';
 import 'package:money_note/services/sqlite/transaction_service.dart';
+import 'package:money_note/screens/transactions/transaction_form_screen.dart';
 import 'package:money_note/screens/categories/category_detail_screen.dart';
 
 import 'section_title.dart';
@@ -96,9 +97,81 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
             }
             final data = snapshot.data ?? [];
             if (data.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Text('No spending by category this month.'),
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 12,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.receipt_long_rounded,
+                          color: Colors.grey[400],
+                          size: 48,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'No transactions recorded yet',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Start by adding your first transaction below.',
+                          style: TextStyle(fontSize: 13, color: Colors.black54),
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            elevation: 0,
+                          ),
+                          icon: const Icon(Icons.add_rounded),
+                          label: const Text(
+                            'Add Transaction',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => const TransactionFormScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               );
             }
 

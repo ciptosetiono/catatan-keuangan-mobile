@@ -6,6 +6,7 @@ import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/models/transaction_model.dart';
 import 'package:money_note/services/sqlite/transaction_service.dart';
 import 'package:money_note/components/dashboards/section_title.dart';
+import 'package:money_note/screens/transactions/transaction_form_screen.dart';
 
 class RecentTransactionsSection extends StatelessWidget {
   final TransactionService _transactionService = TransactionService();
@@ -45,9 +46,62 @@ class RecentTransactionsSection extends StatelessWidget {
 
             final transactions = snapshot.data ?? [];
             if (transactions.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text('There are no transactions yet.'),
+              return Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.receipt_long_rounded,
+                        size: 56,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No transactions yet',
+                        style: TextStyle(
+                          color: Colors.grey[800],
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Add your first transaction to get started.',
+                        style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const TransactionFormScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          elevation: 0,
+                        ),
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text(
+                          'Add Transaction',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               );
             }
 

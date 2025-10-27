@@ -256,7 +256,7 @@ class _WalletDetailScreenState extends State<WalletDetailScreen>
 
   Widget _buildFilterRow() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Align(
         alignment: Alignment.centerRight,
         child: Row(

@@ -4,7 +4,7 @@ class FilterButton extends StatelessWidget {
   final String? label;
   final VoidCallback? onPressed;
 
-  const FilterButton({super.key, this.label = 'Filter', this.onPressed});
+  const FilterButton({super.key, this.label, this.onPressed});
 
   @override
   Widget build(BuildContext context) {

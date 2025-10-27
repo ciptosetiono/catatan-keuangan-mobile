@@ -13,8 +13,8 @@ class BudgetCategoryNameField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 42, // Sedikit lebih kecil dari sebelumnya
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      constraints: const BoxConstraints(minHeight: 48),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white,

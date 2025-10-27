@@ -21,10 +21,7 @@ class TransactionDetailTile extends StatelessWidget {
       child: ListTile(
         leading: Icon(icon, color: Colors.blue),
         title: Text(label),
-        subtitle: Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        subtitle: Text(value),
       ),
     );
   }

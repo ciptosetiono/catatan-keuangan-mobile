@@ -9,7 +9,7 @@ import 'package:money_note/components/buttons/add_button.dart';
 import 'package:money_note/components/budgets/budget_list.dart';
 import 'package:money_note/components/budgets/budget_category_name_filter.dart';
 import 'package:money_note/screens/budgets/budget_form_screen.dart';
-import 'package:money_note/components/forms/month_picker_field.dart';
+import 'package:money_note/components/forms/month_picker_filter.dart';
 
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});
@@ -75,13 +75,9 @@ class _BudgetScreenState extends State<BudgetScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
-
-                // 🔹 Month picker icon/button
-                SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: MonthPickerField(
+                Expanded(
+                  flex: 2,
+                  child: MonthPickerFilter(
                     selectedMonth: _selectedMonth,
                     onMonthPicked: (picked) {
                       setState(() => _selectedMonth = picked);
