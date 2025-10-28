@@ -3,7 +3,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import '../google_drive_service.dart';
 import 'db_helper.dart';
+import '../google_drive_service.dart';
 import '../../config/database_config.dart';
 
 class BackupService {
@@ -73,6 +75,52 @@ class BackupService {
 
       return true;
     } catch (e) {
+      return false;
+    }
+  }
+
+  Future<void> backupToGoogleDrive() async {
+    final localBackupFile = await backupDatabase();
+    if (localBackupFile == null) return;
+
+    final driveService = GoogleDriveService();
+    final api =
+        await driveService
+            .signInAndGetDriveApi(); // will trigger Google login popup
+
+    if (api == null) {
+      throw Exception('Google sign-in failed');
+    }
+
+    await driveService.uploadBackup(localBackupFile);
+  }
+
+  /// Restore DB dari Google Drive (file terbaru)
+  Future<bool> restoreFromGoogleDrive() async {
+    try {
+      final driveService = GoogleDriveService();
+      final backupFile = await driveService.downloadLatestBackup();
+
+      if (backupFile == null) {
+        print('No backup file found on Drive');
+        return false;
+      }
+
+      // Path database lokal
+      final dbPath = await getDatabasesPath();
+      final dbFile = File(join(dbPath, dbConfig['name']));
+
+      await DBHelper.close();
+
+      // Replace existing DB with downloaded backup
+      await backupFile.copy(dbFile.path);
+
+      await DBHelper.reopen();
+
+      print('Database restored successfully from Google Drive');
+      return true;
+    } catch (e) {
+      print('Restore failed: $e');
       return false;
     }
   }

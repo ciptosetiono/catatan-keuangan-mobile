@@ -16,38 +16,42 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.1.11+11
+version: 1.1.12+12
 
 environment:
   sdk: ^3.7.0
 dependencies:
+  csv: ^6.0.0
+  cupertino_icons: ^1.0.8
+  file_picker: ^8.1.2
+  dropdown_button2: ^2.0.1
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  flutter_masked_text2: ^0.9.0
+  fl_chart: ^1.1.0
   firebase_core: ^4.1.0
   firebase_auth: ^6.0.2
   #cloud_firestore: ^6.0.1
   google_sign_in: ^6.2.1
+  googleapis: ^13.1.0
+  googleapis_auth: ^2.0.0
+  google_mobile_ads: ^6.0.0
+  in_app_review: ^2.0.8
   intl: ^0.20.2
   intl_translation: any
-  flutter_masked_text2: ^0.9.0
   month_year_picker: 0.5.0+1
-  fl_chart: ^1.1.0
-  rxdart: ^0.28.0
-  csv: ^6.0.0
+  path: ^1.9.0
   path_provider: ^2.1.3
-  share_plus: ^11.1.0
   pdf: ^3.11.0
   printing: ^5.13.2
-  cupertino_icons: ^1.0.8
+  rxdart: ^0.28.0
+  share_plus: ^11.1.0
   sqflite: ^2.3.0
   sqflite_common_ffi: ^2.2.1
   shared_preferences: ^2.3.2
-  file_picker: ^8.1.2
-  dropdown_button2: ^2.0.1
-  path: ^1.9.0
-  google_mobile_ads: ^6.0.0
+  
  # google_mobile_ads: ^5.1.0  
 dev_dependencies:
   flutter_test:
