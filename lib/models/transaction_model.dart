@@ -10,6 +10,8 @@ class TransactionModel {
   final String? toWalletId; //for type "transfer"
   final String? categoryId;
   final String? categoryName;
+  int? goalId; // optional goal link
+  bool isGoalTransfer;
   String? shoppingPlanItemId;
   final String? userId;
 
@@ -25,6 +27,8 @@ class TransactionModel {
     this.toWalletId,
     this.categoryId,
     this.categoryName,
+    this.goalId,
+    this.isGoalTransfer = false,
     this.shoppingPlanItemId,
     this.userId,
   });
@@ -59,6 +63,8 @@ class TransactionModel {
       type: data['type']?.toString() ?? '',
       categoryId: data['categoryId']?.toString() ?? '',
       categoryName: data['categoryName']?.toString() ?? '',
+      goalId: data['goalId'],
+      isGoalTransfer: data['isGoalTransfer'] == 1,
       shoppingPlanItemId: data['shoppingPlanItemId']?.toString() ?? '',
       title: data['title']?.toString() ?? '',
       date: parsedDate,
@@ -79,6 +85,8 @@ class TransactionModel {
       if (userId != null) 'userId': userId,
       if (categoryId != null) 'categoryId': categoryId,
       if (categoryName != null) 'categoryName': categoryName,
+      if (goalId != null) 'goalId': goalId,
+      'isGoalTransfer': isGoalTransfer ? 1 : 0,
       if (shoppingPlanItemId != null) 'shoppingPlanItemId': shoppingPlanItemId,
       if (fromWalletId != null) 'fromWalletId': fromWalletId,
       if (toWalletId != null) 'toWalletId': toWalletId,
@@ -92,7 +100,11 @@ class TransactionModel {
     String? type,
     DateTime? date,
     String? walletId,
+    String? walletName,
     String? categoryId,
+    String? categoryName,
+    int? goalId,
+    bool? isGoalTransfer,
     String? shoppingPlanItemId,
     String? userId,
     String? fromWalletId,
@@ -105,8 +117,12 @@ class TransactionModel {
       type: type ?? this.type,
       date: date ?? this.date,
       walletId: walletId ?? this.walletId,
+      walletName: walletName ?? this.walletName,
       categoryId: categoryId ?? this.categoryId,
-      shoppingPlanItemId: shoppingPlanItemId ?? shoppingPlanItemId,
+      categoryName: categoryName ?? this.categoryName,
+      goalId: goalId ?? this.goalId,
+      isGoalTransfer: isGoalTransfer ?? this.isGoalTransfer,
+      shoppingPlanItemId: shoppingPlanItemId ?? this.shoppingPlanItemId,
       userId: userId ?? this.userId,
       fromWalletId: fromWalletId ?? this.fromWalletId,
       toWalletId: toWalletId ?? this.toWalletId,

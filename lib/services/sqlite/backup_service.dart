@@ -5,7 +5,6 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../google_drive_service.dart';
 import 'db_helper.dart';
-import '../google_drive_service.dart';
 import '../../config/database_config.dart';
 
 class BackupService {
@@ -102,6 +101,7 @@ class BackupService {
       final backupFile = await driveService.downloadLatestBackup();
 
       if (backupFile == null) {
+        // ignore: avoid_print
         print('No backup file found on Drive');
         return false;
       }
@@ -117,9 +117,11 @@ class BackupService {
 
       await DBHelper.reopen();
 
+      // ignore: avoid_print
       print('Database restored successfully from Google Drive');
       return true;
     } catch (e) {
+      // ignore: avoid_print
       print('Restore failed: $e');
       return false;
     }

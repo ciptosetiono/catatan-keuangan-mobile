@@ -141,6 +141,8 @@ class DBHelper {
       type TEXT NOT NULL,
       date TEXT NOT NULL,
       title TEXT,
+      goalId INTEGER,
+      isGoalTransfer INTEGER DEFAULT 0,
       FOREIGN KEY (walletId) REFERENCES wallets(id) ON DELETE SET NULL,
       FOREIGN KEY (fromWalletId) REFERENCES wallets(id) ON DELETE SET NULL,
       FOREIGN KEY (toWalletId) REFERENCES wallets(id) ON DELETE SET NULL,
@@ -160,6 +162,36 @@ class DBHelper {
       month TEXT NOT NULL,
       FOREIGN KEY (categoryId) REFERENCES categories(id)
   )
+  ''');
+  }
+
+  static Future createGoalsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE goals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      targetAmount REAL NOT NULL,
+      currentAmount REAL DEFAULT 0,
+      startDate TEXT,
+      dueDate TEXT,
+      walletId INTEGER,
+      status TEXT DEFAULT 'active',
+      note TEXT
+    )
+  ''');
+  }
+
+  static Future createGoalTransactionsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE goal_transactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      goalId INTEGER NOT NULL,
+      transactionId INTEGER,
+      amount REAL NOT NULL,
+      type TEXT NOT NULL,
+      date TEXT,
+      notes TEXT
+    )
   ''');
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 import '../../models/transaction_model.dart';
 import 'wallet_service.dart';
+import 'goal_service.dart';
 import 'db_helper.dart';
 
 class TransferService {
@@ -104,6 +105,8 @@ class TransferService {
     await _walletService.decreaseBalance(tx.fromWalletId!, tx.amount.toInt());
     await _walletService.increaseBalance(tx.toWalletId!, tx.amount.toInt());
 
+    await GoalService().handleTransactionAdded(tx);
+
     await _loadTransfers();
     return tx;
   }
@@ -113,6 +116,8 @@ class TransferService {
     final oldTx = await getTransferById(id);
 
     if (oldTx == null) return false;
+
+    // ---------------- Rollback old balances ----------------
     await _walletService.increaseBalance(
       oldTx.fromWalletId!,
       oldTx.amount.toInt(),
@@ -121,6 +126,11 @@ class TransferService {
       oldTx.toWalletId!,
       oldTx.amount.toInt(),
     );
+
+    //Rollback old goal progress
+    if (oldTx.isGoalTransfer && oldTx.goalId != null) {
+      await GoalService().handleTransactionDeleted(oldTx);
+    }
 
     await db.update('transactions', newData, where: 'id = ?', whereArgs: [id]);
 
@@ -140,6 +150,7 @@ class TransferService {
       toWalletId: newData['toWalletId'] ?? oldTx.toWalletId,
     );
 
+    // ---------------- Apply new balances ----------------
     await _walletService.decreaseBalance(
       newTx.fromWalletId!,
       newTx.amount.toInt(),
@@ -148,6 +159,11 @@ class TransferService {
       newTx.toWalletId!,
       newTx.amount.toInt(),
     );
+
+    // ---------------- Apply new goal progress ----------------
+    if (newTx.isGoalTransfer && newTx.goalId != null) {
+      await GoalService().handleTransactionAdded(newTx);
+    }
 
     await _loadTransfers();
     return true;
@@ -171,7 +187,7 @@ class TransferService {
       // rollback saldo wallet
       await _walletService.increaseBalance(tx.fromWalletId!, tx.amount.toInt());
       await _walletService.decreaseBalance(tx.toWalletId!, tx.amount.toInt());
-
+      await GoalService().handleTransactionDeleted(tx);
       await _loadTransfers();
       return true;
     }

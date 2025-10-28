@@ -68,8 +68,6 @@ class GoogleDriveService {
       // Ambil file pertama (yang terbaru)
       final latestFile = fileList.files!.first;
 
-      print('Downloading latest backup: ${latestFile.name}');
-
       // Download file data
       final media =
           await api.files.get(
@@ -88,7 +86,6 @@ class GoogleDriveService {
 
       return localFile;
     } catch (e) {
-      print('Restore from Drive failed: $e');
       return null;
     }
   }

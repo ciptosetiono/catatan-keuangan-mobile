@@ -28,6 +28,7 @@ class SettingScreen extends StatelessWidget {
         );
       }
     } catch (_) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         FlashMessage(
           color: Colors.red,

@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-
+// ignore: depend_on_referenced_packages
+import 'package:collection/collection.dart';
 import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/utils/currency_input_formatter.dart';
 
 import 'package:money_note/models/transaction_model.dart';
 import 'package:money_note/models/wallet_model.dart';
+import 'package:money_note/models/goal_model.dart';
 
 import 'package:money_note/services/sqlite/transfer_service.dart';
 import 'package:money_note/services/sqlite/wallet_service.dart';
+import 'package:money_note/services/sqlite/goal_service.dart';
 
 import 'package:money_note/components/wallets/wallet_dropdown.dart';
 import 'package:money_note/components/forms/date_picker_field.dart';
@@ -30,11 +33,18 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
 
   final _walletService = WalletService();
   final _transferService = TransferService();
+  final _goalService = GoalService();
+
   StreamSubscription<List<Wallet>>? _walletSubscription;
+  StreamSubscription<List<GoalModel>>? _goalSubscription;
 
   Wallet? _fromWallet;
   Wallet? _toWallet;
   List<Wallet> _wallets = [];
+
+  GoalModel? _selectedGoal;
+  List<GoalModel> _goals = [];
+
   DateTime _selectedDate = DateTime.now();
   bool get isEdit => widget.transfer != null;
   bool _isSubmitting = false;
@@ -43,12 +53,14 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
   void initState() {
     super.initState();
     _loadWallets();
+    _loadGoals();
     if (isEdit) _initEditData();
   }
 
   @override
   void dispose() {
     _walletSubscription?.cancel();
+    _goalSubscription?.cancel();
     _amountController.dispose();
     super.dispose();
   }
@@ -66,6 +78,11 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
 
     _fromWallet = await _walletService.getWalletById(t.fromWalletId!);
     _toWallet = await _walletService.getWalletById(t.toWalletId!);
+
+    if (t.goalId != null) {
+      _selectedGoal = _goals.firstWhereOrNull((g) => g.id == t.goalId);
+    }
+
     if (mounted) {
       setState(() {});
     }
@@ -76,6 +93,12 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
       if (mounted) {
         setState(() => _wallets = list);
       }
+    });
+  }
+
+  void _loadGoals() async {
+    _goalSubscription = _goalService.getGoalStream().listen((list) {
+      if (mounted) setState(() => _goals = list);
     });
   }
 
@@ -129,6 +152,8 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
         'walletId': _fromWallet!.id, //set fromWalletId ad walletId
         'fromWalletId': _fromWallet!.id,
         'toWalletId': _toWallet!.id,
+        'goalId': _selectedGoal?.id,
+        'isGoalTransfer': _selectedGoal != null,
       };
 
       if (isEdit) {
@@ -230,6 +255,32 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
                         selectedDate: _selectedDate,
                         onDatePicked:
                             (picked) => setState(() => _selectedDate = picked),
+                      ),
+                      const SizedBox(height: 24),
+                      DropdownButtonFormField<int>(
+                        decoration: const InputDecoration(
+                          labelText: 'Goal (Optional)',
+                        ),
+                        // ignore: deprecated_member_use
+                        value: _selectedGoal?.id,
+                        items:
+                            _goals
+                                .map(
+                                  (g) => DropdownMenuItem(
+                                    value: g.id,
+                                    child: Text(
+                                      '${g.name} (${g.currentAmount.toStringAsFixed(0)}/${g.targetAmount.toStringAsFixed(0)})',
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedGoal = _goals.firstWhereOrNull(
+                              (g) => g.id == value,
+                            );
+                          });
+                        },
                       ),
                       const SizedBox(height: 24),
                       SizedBox(
