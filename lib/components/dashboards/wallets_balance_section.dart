@@ -38,7 +38,7 @@ class WalletsBalanceSection extends StatelessWidget {
             // Hitung total semua wallet
             final totalBalance = wallets.fold<double>(
               0.0,
-              (sum, w) => sum + (w.currentBalance ?? 0),
+              (sum, w) => sum + (w.currentBalance),
             );
 
             // Ambil maksimal 2 wallet untuk ditampilkan

@@ -93,8 +93,8 @@ class DatePickerField extends StatelessWidget {
           onTap: () => _pickDate(context),
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            height: 48, // keep same height as WalletDropdown
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            //height: 48, // keep same height as WalletDropdown
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
               color: Colors.grey[100],
               borderRadius: BorderRadius.circular(12),

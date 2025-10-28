@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:month_year_picker/month_year_picker.dart';
 import 'month_picker.dart';
 
 class MonthPickerField extends StatelessWidget {
@@ -15,8 +13,6 @@ class MonthPickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formatted = DateFormat.yMMMM('en_US').format(selectedMonth);
-
     return SizedBox(
       height: 50, // match the height of other filters
       child: MonthPicker(

@@ -178,24 +178,22 @@ class _TransactionScreenState extends State<TransactionScreen> {
                 const SizedBox(width: 8),
                 SizedBox(
                   height: 48, // ✅ samakan dengan dropdown
-                  child: AspectRatio(
-                    aspectRatio:
-                        2.5, // ✅ proporsional tombol, tidak terlalu lebar
-                    child: FilterButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder:
-                              (_) => UnifiedFilterDialog(
-                                typeFilter: _typeFilter,
-                                walletFilter: _walletFilter,
-                                categoryFilter: _categoryFilter,
-                                titleFilter: _titleFilter,
-                                onFilterApplied: _applyUnifiedFilter,
-                              ),
-                        );
-                      },
-                    ),
+                  width: 48,
+                  child: FilterButton(
+                    iconOnly: true,
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder:
+                            (_) => UnifiedFilterDialog(
+                              typeFilter: _typeFilter,
+                              walletFilter: _walletFilter,
+                              categoryFilter: _categoryFilter,
+                              titleFilter: _titleFilter,
+                              onFilterApplied: _applyUnifiedFilter,
+                            ),
+                      );
+                    },
                   ),
                 ),
               ],

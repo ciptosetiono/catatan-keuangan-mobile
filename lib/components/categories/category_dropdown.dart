@@ -73,8 +73,11 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
                 // Expanded dropdown
                 Expanded(
                   child: Container(
-                    height: 48,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    // height: 48,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.grey[100],
                       border: Border.all(color: Colors.grey.shade400),
@@ -109,7 +112,8 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
                   const SizedBox(width: 8),
                   // Add button
                   Container(
-                    height: 48,
+                    // height: 48,
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade400,
                       borderRadius: BorderRadius.circular(12),

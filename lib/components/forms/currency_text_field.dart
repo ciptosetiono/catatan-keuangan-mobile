@@ -67,26 +67,23 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
           ),
         ),
         const SizedBox(height: 4),
-        SizedBox(
-          height: 48, // sama dengan dropdown
-          child: TextFormField(
-            controller: widget.controller,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              hintText: 'Enter amount',
-              filled: true,
-              fillColor: Colors.grey[100],
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade400),
-              ),
+        TextFormField(
+          controller: widget.controller,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            hintText: 'Enter amount',
+            filled: true,
+            fillColor: Colors.grey[100],
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
             ),
-            validator: widget.validator,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade400),
+            ),
           ),
+          validator: widget.validator,
         ),
       ],
     );

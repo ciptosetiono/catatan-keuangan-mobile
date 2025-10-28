@@ -4,10 +4,12 @@ import 'package:money_note/components/dashboards/summary_section.dart';
 import 'package:money_note/components/dashboards/spending_chart_section.dart';
 import 'package:money_note/components/dashboards/recent_transactions_section.dart';
 import 'package:money_note/models/transaction_model.dart';
+import 'package:money_note/screens/settings/setting_screen.dart';
 import 'package:money_note/screens/wallets/wallet_screen.dart';
 import 'package:money_note/screens/categories/category_screen.dart';
 import 'package:money_note/screens/transactions/transaction_screen.dart';
 import 'package:money_note/screens/transactions/transaction_detail_screen.dart';
+
 import 'package:money_note/components/ads/banner_ad_widget.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -50,6 +52,17 @@ class HomeScreen extends StatelessWidget {
         title: const Text('Dashboard'),
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => SettingScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [

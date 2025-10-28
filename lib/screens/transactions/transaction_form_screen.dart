@@ -140,8 +140,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       return;
     }
 
-    final amount = CurrencyFormatter().decodeAmount(_amountController.text);
-    final title = _titleController.text.trim();
+    final _amount = CurrencyFormatter().decodeAmount(_amountController.text);
+    final _title = _titleController.text.trim();
 
     setState(() => _isSubmitting = true);
 
@@ -149,19 +149,22 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       'type': _type,
       'walletId': _selectedWalletId,
       'categoryId': _selectedCategoryId,
-      'amount': amount,
+      'amount': _amount,
       'date': _selectedDate.toIso8601String(),
-      'title': title,
+      'title': _title,
     };
 
     try {
       TransactionModel? savedTransaction;
 
       if (_mode == 'edit') {
+        //update transaction
         savedTransaction = await TransactionService().updateTransaction(
           widget.transactionId!,
           trx,
         );
+
+        //display success message
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
@@ -169,9 +172,14 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           ),
         );
       } else {
+        //add new transaction
         savedTransaction = await TransactionService().addTransaction(trx);
+
+        //clear the form
         _titleController.clear();
         _amountController.clear();
+
+        //display success message
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
@@ -180,10 +188,12 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         );
       }
 
+      //call onsaved method in parent
       if (widget.onSaved != null && savedTransaction != null) {
         widget.onSaved!(savedTransaction);
       }
     } catch (e) {
+      print('Transaction action failed $e');
       ScaffoldMessenger.of(context).showSnackBar(
         FlashMessage(
           color: Colors.red,
@@ -260,22 +270,20 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  SizedBox(
-                    height: 48,
-                    child: TextFormField(
-                      controller: _titleController,
-                      decoration: InputDecoration(
-                        hintText: 'Enter note',
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade400),
-                        ),
+
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter Note',
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade400),
                       ),
                     ),
                   ),

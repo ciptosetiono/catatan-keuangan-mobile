@@ -72,8 +72,11 @@ class _WalletDropdownState extends State<WalletDropdown> {
                 // Expanded dropdown
                 Expanded(
                   child: Container(
-                    height: 48, // keep same height
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    //height: 48, // keep same height
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey.shade400),
                       borderRadius: BorderRadius.circular(12),
@@ -151,7 +154,8 @@ class _WalletDropdownState extends State<WalletDropdown> {
                   const SizedBox(width: 8),
                   // Add wallet button
                   Container(
-                    height: 48,
+                    //height: 48,
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade400,
                       borderRadius: BorderRadius.circular(12),

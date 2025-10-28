@@ -26,7 +26,7 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
   final _categoryService = CategoryService();
   final _transactionService = TransactionService();
 
-  late final Future<List<_CategoryTotal>> _chartDataFuture;
+  Future<List<_CategoryTotal>>? _chartDataFuture;
   // ignore: prefer_final_fields
   DateTime _selectedMonth = DateTime.now();
 
@@ -163,7 +163,13 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
                               context,
                               MaterialPageRoute(
                                 builder:
-                                    (context) => const TransactionFormScreen(),
+                                    (context) => TransactionFormScreen(
+                                      onSaved: (savedTransaction) {
+                                        setState(() {
+                                          _chartDataFuture = _loadChartData();
+                                        });
+                                      },
+                                    ),
                               ),
                             );
                           },

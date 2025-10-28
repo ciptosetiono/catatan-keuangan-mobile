@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 import 'screens/transactions/transaction_screen.dart';
 import 'screens/budgets/budget_screen.dart';
 import 'screens/reports/report_screen.dart';
+import 'screens/wallets/wallet_screen.dart';
 import 'screens/settings/setting_screen.dart';
 import 'screens/splash_screen.dart'; // import splash screen
 
@@ -81,8 +82,8 @@ class _MainPageState extends State<MainPage> {
     HomeScreen(),
     TransactionScreen(),
     BudgetScreen(),
+    WalletScreen(),
     ReportScreen(),
-    SettingScreen(),
   ];
 
   final List<BottomNavigationBarItem> _items = const [
@@ -102,14 +103,14 @@ class _MainPageState extends State<MainPage> {
       label: 'Budgets',
     ),
     BottomNavigationBarItem(
+      icon: Icon(Icons.account_balance_wallet_outlined),
+      activeIcon: Icon(Icons.account_balance_wallet),
+      label: 'Wallet',
+    ),
+    BottomNavigationBarItem(
       icon: Icon(Icons.bar_chart_outlined),
       activeIcon: Icon(Icons.bar_chart),
       label: 'Report',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.more_horiz_outlined),
-      activeIcon: Icon(Icons.more_horiz),
-      label: 'More',
     ),
   ];
 

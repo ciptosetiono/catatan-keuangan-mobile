@@ -6,6 +6,8 @@ class SettingPreferencesService {
   static const String _defaultExpenseCategoryKey =
       'default_expense_category_id';
 
+  Future<void> setOnboardingSeen() async {}
+
   // Save default wallet
   Future<void> setDefaultWallet(String walletId) async {
     final prefs = await SharedPreferences.getInstance();
