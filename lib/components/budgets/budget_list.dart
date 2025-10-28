@@ -18,6 +18,8 @@ class BudgetList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currencyFormatter = CurrencyFormatter();
+
     return StreamBuilder<List<Budget>>(
       stream: BudgetService().getBudgetStream(month: selectedMonth),
       builder: (context, snapshot) {
@@ -97,30 +99,49 @@ class BudgetList extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Text(
-                            CurrencyFormatter().encode(totalBudget),
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+
+                          /// ✅ Async currency formatting
+                          FutureBuilder<String>(
+                            future: currencyFormatter.encode(totalBudget),
+                            builder: (context, snapshot) {
+                              return Text(
+                                snapshot.data ?? 'Loading...',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            },
                           ),
+
                           const SizedBox(height: 12),
+
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Total Expense: ${CurrencyFormatter().encode(totalUsed)}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey.shade700,
-                                ),
+                              FutureBuilder<String>(
+                                future: currencyFormatter.encode(totalUsed),
+                                builder: (context, snapshot) {
+                                  return Text(
+                                    'Total Expense: ${snapshot.data ?? '-'}',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  );
+                                },
                               ),
-                              Text(
-                                'Remaining: ${CurrencyFormatter().encode(remaining)}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey.shade700,
-                                ),
+                              FutureBuilder<String>(
+                                future: currencyFormatter.encode(remaining),
+                                builder: (context, snapshot) {
+                                  return Text(
+                                    'Remaining: ${snapshot.data ?? '-'}',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),

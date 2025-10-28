@@ -176,12 +176,21 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                       children: [
                         const Icon(Icons.monetization_on, color: Colors.green),
                         const SizedBox(width: 12),
-                        Text(
-                          CurrencyFormatter().encode(_localBudget?.amount ?? 0),
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                        FutureBuilder<String>(
+                          future: CurrencyFormatter().encode(
+                            _localBudget?.amount ?? 0,
                           ),
+                          builder: (context, snapshot) {
+                            final balanceText = snapshot.data ?? '...';
+                            return Text(
+                              balanceText,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                fontSize: 20,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -225,12 +234,19 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                             Text('Total Expense'),
                           ],
                         ),
-                        Text(
-                          CurrencyFormatter().encode(totalExpense),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.redAccent,
-                          ),
+                        FutureBuilder<String>(
+                          future: CurrencyFormatter().encode(totalExpense),
+                          builder: (context, snapshot) {
+                            final balanceText = snapshot.data ?? '...';
+                            return Text(
+                              balanceText,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.redAccent,
+                                fontSize: 20,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -246,15 +262,26 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
                             Text('Remaining'),
                           ],
                         ),
-                        Text(
-                          CurrencyFormatter().encode(remainingBudget),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color:
-                                remainingBudget < 0
-                                    ? Colors.redAccent
-                                    : const Color.fromARGB(255, 64, 98, 253),
-                          ),
+                        FutureBuilder<String>(
+                          future: CurrencyFormatter().encode(remainingBudget),
+                          builder: (context, snapshot) {
+                            final balanceText = snapshot.data ?? '...';
+                            return Text(
+                              balanceText,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    remainingBudget < 0
+                                        ? Colors.redAccent
+                                        : const Color.fromARGB(
+                                          255,
+                                          64,
+                                          98,
+                                          253,
+                                        ),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

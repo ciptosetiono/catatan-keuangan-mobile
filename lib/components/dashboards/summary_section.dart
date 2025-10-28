@@ -84,13 +84,19 @@ class _SummarySectionState extends State<SummarySection> {
             children: [
               const Text('Different', style: TextStyle(color: Colors.black54)),
               const SizedBox(height: 6),
-              Text(
-                CurrencyFormatter().encode(net),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: netColor,
-                ),
+              FutureBuilder<String>(
+                future: CurrencyFormatter().encode(net),
+                builder: (context, snapshot) {
+                  final netText = snapshot.data ?? '...';
+                  return Text(
+                    netText,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: netColor,
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -137,13 +143,20 @@ class _SummaryCard extends StatelessWidget {
               children: [
                 Text(label, style: const TextStyle(color: Colors.black54)),
                 const SizedBox(height: 4),
-                Text(
-                  CurrencyFormatter().encode(amount),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
+                // ✅ Async currency display
+                FutureBuilder<String>(
+                  future: CurrencyFormatter().encode(amount),
+                  builder: (context, snapshot) {
+                    final text = snapshot.data ?? '...';
+                    return Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

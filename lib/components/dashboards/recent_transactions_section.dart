@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:money_note/utils/currency_formatter.dart';
@@ -17,6 +15,8 @@ class RecentTransactionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currencyFormatter = CurrencyFormatter();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -115,127 +115,130 @@ class RecentTransactionsSection extends StatelessWidget {
                         isIncome ? Colors.green[600]! : Colors.red[600]!;
                     final icon =
                         isIncome ? Icons.arrow_downward : Icons.arrow_upward;
-                    final formattedAmount = CurrencyFormatter().encode(
-                      trx.amount,
-                    );
                     final formattedDate = DateFormat(
                       'dd MMM yyyy',
                     ).format(trx.date);
 
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: () => onTapItem?.call(trx),
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                          vertical: 4,
-                          horizontal: 4,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
+                    return FutureBuilder<String>(
+                      future: currencyFormatter.encode(trx.amount),
+                      builder: (context, amountSnapshot) {
+                        final formattedAmount = amountSnapshot.data ?? '...';
+
+                        return InkWell(
                           borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
-                              blurRadius: 3,
-                              offset: const Offset(0, 2),
+                          onTap: () => onTapItem?.call(trx),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                              vertical: 4,
+                              horizontal: 4,
                             ),
-                          ],
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // icon indicator
-                            Container(
-                              height: 40,
-                              width: 40,
-                              decoration: BoxDecoration(
-                                color:
-                                    isIncome
-                                        ? Colors.green[50]
-                                        : Colors.red[50],
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(icon, color: color, size: 20),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 10,
+                              horizontal: 12,
                             ),
-                            const SizedBox(width: 12),
-
-                            // main info
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // title
-                                  Text(
-                                    trx.title.isNotEmpty
-                                        ? trx.title
-                                        : '(No note)',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  // ignore: deprecated_member_use
+                                  color: Colors.black.withOpacity(0.03),
+                                  blurRadius: 3,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // icon indicator
+                                Container(
+                                  height: 40,
+                                  width: 40,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isIncome
+                                            ? Colors.green[50]
+                                            : Colors.red[50],
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                  const SizedBox(height: 4),
+                                  child: Icon(icon, color: color, size: 20),
+                                ),
+                                const SizedBox(width: 12),
 
-                                  // category + date
-                                  Row(
+                                // main info
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      if (trx.categoryName != null &&
-                                          trx.categoryName!.isNotEmpty)
-                                        Flexible(
-                                          child: Text(
-                                            trx.categoryName!,
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color: Colors.blueGrey[700],
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      if (trx.categoryName != null &&
-                                          trx.categoryName!.isNotEmpty)
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                          ),
-                                          child: Text(
-                                            '•',
-                                            style: TextStyle(
-                                              color: Colors.grey[500],
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ),
+                                      // title
                                       Text(
-                                        formattedDate,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
+                                        trx.title.isNotEmpty
+                                            ? trx.title
+                                            : '(No note)',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
                                         ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+
+                                      // category + date
+                                      Row(
+                                        children: [
+                                          if (trx.categoryName != null &&
+                                              trx.categoryName!.isNotEmpty)
+                                            Flexible(
+                                              child: Text(
+                                                trx.categoryName!,
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.blueGrey[700],
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          if (trx.categoryName != null &&
+                                              trx.categoryName!.isNotEmpty)
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 6,
+                                              ),
+                                              child: Text(
+                                                '•',
+                                                style: TextStyle(fontSize: 12),
+                                              ),
+                                            ),
+                                          Text(
+                                            formattedDate,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                            ),
+                                ),
 
-                            // amount
-                            Text(
-                              formattedAmount,
-                              style: TextStyle(
-                                color: color,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
+                                // amount
+                                Text(
+                                  formattedAmount,
+                                  style: TextStyle(
+                                    color: color,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     );
                   }).toList(),
             );

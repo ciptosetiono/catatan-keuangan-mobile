@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:money_note/utils/currency_formatter.dart';
@@ -23,7 +25,7 @@ class TransactionListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isIncome = transaction.type == 'income';
     final date = transaction.date;
-    final formattedAmount = CurrencyFormatter().encode(transaction.amount);
+    CurrencyFormatter().encode(transaction.amount);
     final formattedDate = DateFormat('dd MMM yyyy').format(date);
 
     return InkWell(
@@ -43,6 +45,7 @@ class TransactionListItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.03),
               blurRadius: 3,
               offset: const Offset(0, 2),
@@ -125,14 +128,21 @@ class TransactionListItem extends StatelessWidget {
             ),
 
             // Amount
-            Text(
-              formattedAmount,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isIncome ? Colors.green[600] : Colors.red[600],
-              ),
-              textAlign: TextAlign.right,
+            // Amount
+            FutureBuilder<String>(
+              future: CurrencyFormatter().encode(transaction.amount),
+              builder: (context, snapshot) {
+                final amountText = snapshot.data ?? '...';
+                return Text(
+                  amountText,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isIncome ? Colors.green[600] : Colors.red[600],
+                  ),
+                  textAlign: TextAlign.right,
+                );
+              },
             ),
           ],
         ),

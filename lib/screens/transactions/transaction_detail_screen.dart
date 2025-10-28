@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:money_note/utils/currency_formatter.dart';
 import 'package:money_note/models/transaction_model.dart';
 
 import 'package:money_note/components/transactions/transaction_bottomsheet_menu.dart';
@@ -33,7 +34,6 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final formatCurrency = NumberFormat.currency(decimalDigits: 0, symbol: '');
     final formatDate = DateFormat('EEEE, d MMMM yyyy');
 
     final isIncome = _transaction?.type == 'income';
@@ -66,14 +66,23 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        formatCurrency.format(_transaction?.amount),
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: isIncome ? Colors.green : Colors.red,
+                      FutureBuilder<String>(
+                        future: CurrencyFormatter().encode(
+                          _transaction?.amount as num,
                         ),
+                        builder: (context, snapshot) {
+                          final balanceText = snapshot.data ?? '...';
+                          return Text(
+                            balanceText,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: isIncome ? Colors.green : Colors.red,
+                            ),
+                          );
+                        },
                       ),
+
                       Text(
                         isIncome ? 'Income' : 'Expense',
                         style: TextStyle(color: Colors.grey[700]),

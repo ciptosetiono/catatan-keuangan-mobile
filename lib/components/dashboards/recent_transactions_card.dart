@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-
 import 'package:money_note/utils/currency_formatter.dart';
-
 import 'package:money_note/models/transaction_model.dart';
-
 import 'package:money_note/services/sqlite/transaction_service.dart';
 
 class RecentTransactionsSection extends StatelessWidget {
@@ -11,12 +8,20 @@ class RecentTransactionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currencyFormatter = CurrencyFormatter();
+
     return StreamBuilder<List<TransactionModel>>(
       stream: TransactionService().getTransactionsStream(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('There are no recent transactions.'));
+        }
+
         final data = snapshot.data!;
-        if (data.isEmpty) return const Text('there is not any transaction.');
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,27 +31,41 @@ class RecentTransactionsSection extends StatelessWidget {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
+
+            /// ✅ show only 5 latest transactions
             ...data.take(5).map((trx) {
+              final isIncome = trx.type == 'income';
+              final iconColor = isIncome ? Colors.green : Colors.red;
+
               return ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(
-                  trx.type == 'income'
-                      ? Icons.arrow_downward
-                      : Icons.arrow_upward,
-                  color: trx.type == 'income' ? Colors.green : Colors.red,
+                  isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+                  color: iconColor,
                 ),
                 title: Text(trx.title),
                 subtitle: Text(
                   '${trx.date.day}/${trx.date.month}/${trx.date.year}',
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                 ),
-                trailing: Text(
-                  CurrencyFormatter().encode(trx.amount),
-                  style: TextStyle(
-                    color: trx.type == 'income' ? Colors.green : Colors.red,
-                  ),
+
+                /// ✅ Use FutureBuilder for async currency display
+                trailing: FutureBuilder<String>(
+                  future: currencyFormatter.encode(trx.amount),
+                  builder: (context, snapshot) {
+                    final amountText = snapshot.data ?? '...';
+                    return Text(
+                      amountText,
+                      style: TextStyle(
+                        color: iconColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    );
+                  },
                 ),
               );
             }),
+
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(

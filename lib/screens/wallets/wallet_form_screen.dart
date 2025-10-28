@@ -1,14 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 // ignore: unused_import
 import 'package:money_note/services/ad_service.dart';
 import '../../services/sqlite/wallet_service.dart';
 import '../../models/wallet_model.dart';
-
+import 'package:money_note/components/forms/currency_text_field.dart';
 import '../../utils/currency_formatter.dart';
-import '../../utils/currency_input_formatter.dart';
 import '../../../components/buttons/submit_button.dart';
 import 'package:money_note/components/ui/alerts/flash_message.dart';
 
@@ -34,17 +32,15 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
   void initState() {
     super.initState();
     if (isEdit) {
-      _nameController.text = widget.wallet!.name;
-      _balanceController.text = CurrencyFormatter().encode(
-        widget.wallet!.startBalance,
-      );
+      _initAmountInput();
     }
   }
 
-  /// Parse currency string to int
-  int _parseCurrency(String value) {
-    final numericString = value.replaceAll(RegExp(r'[^0-9]'), '');
-    return int.tryParse(numericString) ?? 0;
+  Future<void> _initAmountInput() async {
+    _nameController.text = widget.wallet!.name;
+    _balanceController.text = await CurrencyFormatter().encode(
+      widget.wallet!.startBalance,
+    );
   }
 
   Future<void> _submit() async {
@@ -52,12 +48,16 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final name = _nameController.text.trim();
-    final balance = _parseCurrency(_balanceController.text);
+    // ignore: await_only_futures
+    final balance = await CurrencyFormatter().decodeAmount(
+      _balanceController.text,
+    );
+
     final userId = '1';
 
-    int oldStartBalance = (widget.wallet?.startBalance ?? 0).toInt();
-    int oldCurrentBalance = (widget.wallet?.currentBalance ?? 0).toInt();
-    int currentBalance =
+    final double oldStartBalance = widget.wallet?.startBalance ?? 0;
+    final double oldCurrentBalance = widget.wallet?.currentBalance ?? 0;
+    final double currentBalance =
         isEdit ? oldCurrentBalance + (balance - oldStartBalance) : balance;
 
     if (currentBalance < 0) {
@@ -134,38 +134,62 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
           key: _formKey,
           child: Column(
             children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Wallet Name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.account_balance_wallet_rounded),
-                ),
-                validator:
-                    (value) =>
-                        value == null || value.trim().isEmpty
-                            ? 'Required'
-                            : null,
-              ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _balanceController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  CurrencyInputFormatter(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Wallet Name',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter wallet name',
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade400),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade400),
+                      ),
+
+                      prefixIcon: const Icon(
+                        Icons.account_balance_wallet_rounded,
+                      ),
+                    ),
+                    validator:
+                        (value) =>
+                            value == null || value.trim().isEmpty
+                                ? 'Required'
+                                : null,
+                  ),
                 ],
-                decoration: const InputDecoration(
-                  labelText: 'Start Balance',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.monetization_on),
-                ),
+              ),
+
+              const SizedBox(height: 20),
+              CurrencyTextField(
+                controller: _balanceController,
+                label: 'Start Balance',
+                placeholder: 'Enter Start Balance',
                 validator:
                     (value) =>
                         value == null || value.trim().isEmpty
                             ? 'Required'
                             : null,
               ),
+
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,

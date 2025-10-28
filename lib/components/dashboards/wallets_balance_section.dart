@@ -78,13 +78,19 @@ class WalletsBalanceSection extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Text(
-                        CurrencyFormatter().encode(totalBalance),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blueAccent,
-                        ),
+                      FutureBuilder<String>(
+                        future: CurrencyFormatter().encode(totalBalance),
+                        builder: (context, snapshot) {
+                          final totalText = snapshot.data ?? '...';
+                          return Text(
+                            totalText,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blueAccent,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -150,15 +156,27 @@ class _WalletCard extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment:
+                MainAxisAlignment.spaceBetween, // ✅ replaces Spacer()
             children: [
-              Text(wallet.name, style: const TextStyle(color: Colors.black54)),
-              const Spacer(),
               Text(
-                CurrencyFormatter().encode(wallet.currentBalance),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                wallet.name,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.black54),
+              ),
+
+              FutureBuilder<String>(
+                future: CurrencyFormatter().encode(wallet.currentBalance),
+                builder: (context, snapshot) {
+                  final amountText = snapshot.data ?? '...';
+                  return Text(
+                    amountText,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  );
+                },
               ),
             ],
           ),

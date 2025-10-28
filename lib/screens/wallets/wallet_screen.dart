@@ -1,4 +1,4 @@
-// ignore_for_file: no_leading_underscores_for_local_identifiers
+// ignore_for_file: no_leading_underscores_for_local_identifiers, deprecated_member_use
 
 import 'package:flutter/material.dart';
 
@@ -175,13 +175,19 @@ class _WalletScreenState extends State<WalletScreen> {
                               color: Colors.white,
                             ),
                           )
-                          : Text(
-                            CurrencyFormatter().encode(total),
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          : FutureBuilder<String>(
+                            future: CurrencyFormatter().encode(total),
+                            builder: (context, snapshot) {
+                              final balanceText = snapshot.data ?? '...';
+                              return Text(
+                                balanceText,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              );
+                            },
                           ),
                     ],
                   ),

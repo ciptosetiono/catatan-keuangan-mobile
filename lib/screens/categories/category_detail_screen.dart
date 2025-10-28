@@ -94,14 +94,21 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            CurrencyFormatter().encode(totalAmount),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
+                          FutureBuilder<String>(
+                            future: CurrencyFormatter().encode(totalAmount),
+                            builder: (context, snapshot) {
+                              final balanceText = snapshot.data ?? '...';
+                              return Text(
+                                balanceText,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              );
+                            },
                           ),
+
                           Text(
                             "${transactions.length} items",
                             style: const TextStyle(

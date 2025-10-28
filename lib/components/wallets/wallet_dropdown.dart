@@ -98,6 +98,7 @@ class _WalletDropdownState extends State<WalletDropdown> {
                         ),
                         items:
                             wallets.map((wallet) {
+                              // ignore: unused_local_variable
                               final balanceText = CurrencyFormatter().encode(
                                 wallet.currentBalance,
                               );
@@ -127,15 +128,26 @@ class _WalletDropdownState extends State<WalletDropdown> {
                                         ),
                                       ],
                                     ),
-                                    Text(
-                                      balanceText,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color:
-                                            wallet.currentBalance >= 0
-                                                ? Colors.green[600]
-                                                : Colors.red[600],
+
+                                    // Balance (FutureBuilder)
+                                    FutureBuilder<String>(
+                                      future: CurrencyFormatter().encode(
+                                        wallet.currentBalance,
                                       ),
+                                      builder: (context, snapshot) {
+                                        final balanceText =
+                                            snapshot.data ?? '...';
+                                        return Text(
+                                          balanceText,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color:
+                                                wallet.currentBalance >= 0
+                                                    ? Colors.green[600]
+                                                    : Colors.red[600],
+                                          ),
+                                        );
+                                      },
                                     ),
                                   ],
                                 ),

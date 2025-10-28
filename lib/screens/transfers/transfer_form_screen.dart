@@ -56,7 +56,7 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
   void _initEditData() async {
     final t = widget.transfer!;
 
-    final formattedAmount = CurrencyFormatter().encode(t.amount);
+    final formattedAmount = await CurrencyFormatter().encode(t.amount);
     _amountController.value = TextEditingValue(
       text: formattedAmount,
       selection: TextSelection.collapsed(offset: formattedAmount.length),

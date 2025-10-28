@@ -50,13 +50,18 @@ class WalletInfoCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  CurrencyFormatter().encode(wallet.currentBalance),
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+                FutureBuilder<String>(
+                  future: CurrencyFormatter().encode(wallet.currentBalance),
+                  builder: (context, snapshot) {
+                    final balanceText = snapshot.data ?? '...';
+                    return Text(
+                      balanceText,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

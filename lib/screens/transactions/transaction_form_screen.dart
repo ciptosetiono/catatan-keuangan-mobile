@@ -69,10 +69,10 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     setState(() {});
   }
 
-  void _initializeEditMode(TransactionModel data) {
+  Future<void> _initializeEditMode(TransactionModel data) async {
     _mode = 'edit';
     _titleController.text = data.title;
-    _amountController.text = CurrencyFormatter().encode(data.amount);
+    _amountController.text = await CurrencyFormatter().encode(data.amount);
     _type = data.type;
     _selectedWalletId = data.walletId;
     _selectedCategoryId = data.categoryId;
@@ -140,8 +140,8 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       return;
     }
 
-    final _amount = CurrencyFormatter().decodeAmount(_amountController.text);
-    final _title = _titleController.text.trim();
+    final amount = CurrencyFormatter().decodeAmount(_amountController.text);
+    final title = _titleController.text.trim();
 
     setState(() => _isSubmitting = true);
 
@@ -149,22 +149,20 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       'type': _type,
       'walletId': _selectedWalletId,
       'categoryId': _selectedCategoryId,
-      'amount': _amount,
+      'amount': amount,
       'date': _selectedDate.toIso8601String(),
-      'title': _title,
+      'title': title,
     };
 
     try {
       TransactionModel? savedTransaction;
 
       if (_mode == 'edit') {
-        //update transaction
         savedTransaction = await TransactionService().updateTransaction(
           widget.transactionId!,
           trx,
         );
 
-        //display success message
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
@@ -172,14 +170,10 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
           ),
         );
       } else {
-        //add new transaction
         savedTransaction = await TransactionService().addTransaction(trx);
-
-        //clear the form
         _titleController.clear();
         _amountController.clear();
 
-        //display success message
         ScaffoldMessenger.of(context).showSnackBar(
           FlashMessage(
             color: Colors.green,
@@ -188,7 +182,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
         );
       }
 
-      //call onsaved method in parent
       if (widget.onSaved != null && savedTransaction != null) {
         widget.onSaved!(savedTransaction);
       }
@@ -207,16 +200,29 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
 
   String? validateAmount(String? val) {
     if (val == null || val.trim().isEmpty) return 'Amount is required';
+
     final amount = CurrencyFormatter().decodeAmount(val);
-    final wallet = _wallets.firstWhere((w) => w.id == _selectedWalletId);
+    final wallet = _wallets.firstWhere(
+      (w) => w.id == _selectedWalletId,
+      orElse:
+          () => Wallet(
+            id: '',
+            name: '',
+            startBalance: 0,
+            currentBalance: 0,
+            createdAt: DateTime.now(),
+          ),
+    );
+
     final availableBalance =
         _type == 'expense' && _mode == 'edit'
-            ? wallet.currentBalance + widget.existingData!.amount
+            ? wallet.currentBalance + (widget.existingData?.amount ?? 0)
             : wallet.currentBalance;
 
     if (_type == 'expense' && amount > availableBalance) {
       return 'Amount exceeds wallet balance';
     }
+
     return null;
   }
 
@@ -270,7 +276,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-
                   TextFormField(
                     controller: _titleController,
                     decoration: InputDecoration(
@@ -296,8 +301,6 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
                 validator: validateAmount,
               ),
               const SizedBox(height: 24),
-
-              // === BUTTONS ROW (SAVE + CANCEL) ===
               Row(
                 children: [
                   Expanded(

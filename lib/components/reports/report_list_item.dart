@@ -39,12 +39,19 @@ class ReportListItem extends StatelessWidget {
               return ListTile(
                 title: Text(tx["title"] ?? "-"),
                 subtitle: Text(DateFormat('dd MMM yyyy').format(date)),
-                trailing: Text(
-                  currencyFormatter.encode(tx["amount"] as num),
-                  style: TextStyle(
-                    color: tx["type"] == "income" ? Colors.green : Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
+                trailing: FutureBuilder<String>(
+                  future: currencyFormatter.encode(tx["amount"] as num),
+                  builder: (context, snapshot) {
+                    final amountText = snapshot.data ?? '...';
+                    return Text(
+                      amountText,
+                      style: TextStyle(
+                        color:
+                            tx["type"] == "income" ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  },
                 ),
               );
             }).toList(),

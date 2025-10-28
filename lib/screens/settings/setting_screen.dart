@@ -5,6 +5,7 @@ import '../categories/category_screen.dart';
 import '../wallets/wallet_screen.dart';
 import '../transfers/transfer_screen.dart';
 import 'default_settings_screen.dart';
+import 'currency_setting_screen.dart';
 import '../../services/sqlite/backup_service.dart';
 import '../../components/ui/alerts/flash_message.dart';
 import '../../components/ads/banner_ad_widget.dart';
@@ -109,6 +110,20 @@ class SettingScreen extends StatelessWidget {
                   builder:
                       (_) =>
                           const DefaultSettingsScreen(), // 👈 your new screen
+                ),
+              );
+            },
+          ),
+          _buildMenuTile(
+            context: context,
+            icon: Icons.currency_exchange_rounded,
+            color: Colors.cyan,
+            title: 'Currency Setting',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SettingCurrencyScreen(),
                 ),
               );
             },

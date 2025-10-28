@@ -87,13 +87,20 @@ class TransferListItem extends StatelessWidget {
                 ),
               ),
               // amount
-              Text(
-                CurrencyFormatter().encode(transfer.amount),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal,
-                  fontSize: 16,
-                ),
+              FutureBuilder<String>(
+                future: CurrencyFormatter().encode(transfer.amount),
+                builder: (context, snapshot) {
+                  final amountText = snapshot.data ?? '...';
+                  return Text(
+                    amountText,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
+                    ),
+                    textAlign: TextAlign.right,
+                  );
+                },
               ),
             ],
           ),

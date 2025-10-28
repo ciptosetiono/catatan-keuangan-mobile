@@ -257,12 +257,21 @@ class _SpendingChartSectionState extends State<SpendingChartSection> {
                                     ),
                                   ),
                                 ),
-                                Text(
-                                  CurrencyFormatter().encode(entry.amount),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                                // ✅ Async currency display
+                                FutureBuilder<String>(
+                                  future: CurrencyFormatter().encode(
+                                    entry.amount,
                                   ),
+                                  builder: (context, snapshot) {
+                                    final amountText = snapshot.data ?? '...';
+                                    return Text(
+                                      amountText,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                             ),

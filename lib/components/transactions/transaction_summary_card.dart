@@ -63,13 +63,21 @@ class TransactionSummaryCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        Text(
-          CurrencyFormatter().encode(value),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
+        // Amount
+        FutureBuilder<String>(
+          future: CurrencyFormatter().encode(value),
+          builder: (context, snapshot) {
+            final amountText = snapshot.data ?? '...';
+            return Text(
+              amountText,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+              textAlign: TextAlign.right,
+            );
+          },
         ),
       ],
     );
