@@ -25,20 +25,28 @@ class TransactionSummaryCard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildSummaryItem(
-              label: 'Income',
-              value: income,
-              color: Colors.green.shade700,
+            Flexible(
+              child: _buildSummaryItem(
+                label: 'Income',
+                value: income,
+                color: Colors.green.shade700,
+              ),
             ),
-            _buildSummaryItem(
-              label: 'Expense',
-              value: expense,
-              color: Colors.red.shade700,
+            const SizedBox(width: 8),
+            Flexible(
+              child: _buildSummaryItem(
+                label: 'Expense',
+                value: expense,
+                color: Colors.red.shade700,
+              ),
             ),
-            _buildSummaryItem(
-              label: 'Balance',
-              value: balance,
-              color: Colors.blue.shade700,
+            const SizedBox(width: 8),
+            Flexible(
+              child: _buildSummaryItem(
+                label: 'Balance',
+                value: balance,
+                color: Colors.blue.shade700,
+              ),
             ),
           ],
         ),
@@ -63,13 +71,14 @@ class TransactionSummaryCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        // Amount
         FutureBuilder<String>(
           future: CurrencyFormatter().encode(value),
           builder: (context, snapshot) {
             final amountText = snapshot.data ?? '...';
             return Text(
               amountText,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

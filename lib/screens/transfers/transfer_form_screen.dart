@@ -3,7 +3,6 @@ import 'dart:async';
 // ignore: depend_on_referenced_packages
 import 'package:collection/collection.dart';
 import 'package:money_note/utils/currency_formatter.dart';
-import 'package:money_note/utils/currency_input_formatter.dart';
 
 import 'package:money_note/models/transaction_model.dart';
 import 'package:money_note/models/wallet_model.dart';
@@ -15,6 +14,7 @@ import 'package:money_note/services/sqlite/goal_service.dart';
 
 import 'package:money_note/components/wallets/wallet_dropdown.dart';
 import 'package:money_note/components/forms/date_picker_field.dart';
+import 'package:money_note/components/forms/currency_text_field.dart';
 import 'package:money_note/components/ui/alerts/flash_message.dart';
 import 'package:money_note/components/buttons/submit_button.dart';
 
@@ -102,10 +102,6 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
     });
   }
 
-  int _parseAmount(String val) {
-    return int.tryParse(val.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-  }
-
   Future<void> _submit() async {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
@@ -130,7 +126,7 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
         return;
       }
 
-      final amount = _parseAmount(_amountController.text);
+      final amount = CurrencyFormatter().decodeAmount(_amountController.text);
       if (amount <= 0) {
         _showAlert('Amount is required');
         return;
@@ -239,23 +235,24 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
                         },
                       ),
                       const SizedBox(height: 12),
-                      TextFormField(
+                      CurrencyTextField(
                         controller: _amountController,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [CurrencyInputFormatter()],
-                        decoration: const InputDecoration(labelText: 'Amount'),
+                        label: 'Amount',
                         validator:
                             (val) =>
                                 (val == null || val.trim().isEmpty)
                                     ? 'Required'
                                     : null,
                       ),
+
                       const SizedBox(height: 12),
                       DatePickerField(
                         selectedDate: _selectedDate,
                         onDatePicked:
                             (picked) => setState(() => _selectedDate = picked),
                       ),
+                      /*
+
                       const SizedBox(height: 24),
                       DropdownButtonFormField<int>(
                         decoration: const InputDecoration(
@@ -282,6 +279,7 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
                           });
                         },
                       ),
+                      */
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,

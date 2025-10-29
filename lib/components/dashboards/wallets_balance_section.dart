@@ -171,8 +171,9 @@ class _WalletCard extends StatelessWidget {
                   final amountText = snapshot.data ?? '...';
                   return Text(
                     amountText,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   );

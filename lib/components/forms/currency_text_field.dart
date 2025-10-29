@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../utils/currency_formatter.dart';
-import '../../models/currency_setting_model.dart';
+import '../../utils/currency_input_formatter.dart';
 import '../../services/setting_preferences_service.dart';
-import 'package:intl/intl.dart';
+import '../../models/currency_setting_model.dart';
 
 class CurrencyTextField extends StatefulWidget {
   final TextEditingController controller;
@@ -23,62 +22,35 @@ class CurrencyTextField extends StatefulWidget {
 }
 
 class _CurrencyTextFieldState extends State<CurrencyTextField> {
-  final SettingPreferencesService _prefs = SettingPreferencesService();
-  // ignore: unused_field
-  late CurrencyFormatter _currencyFormatter;
   CurrencySetting? _currencySetting;
-
-  String lastValue = '';
 
   @override
   void initState() {
     super.initState();
-    _currencyFormatter = CurrencyFormatter();
     _loadCurrencySetting();
-    widget.controller.addListener(_formatCurrency);
   }
 
-  Future<void> _loadCurrencySetting() async {
-    final setting = await _prefs.getCurrencySetting();
-    setState(() {
-      _currencySetting = setting;
-    });
+  /// Load saved currency setting asynchronously
+  void _loadCurrencySetting() async {
+    final setting = await SettingPreferencesService().getCurrencySetting();
+    // ignore: unnecessary_null_comparison
+    if (setting != null) {
+      setState(() {
+        _currencySetting = setting;
+      });
+    }
   }
 
-  void _formatCurrency() async {
-    final rawText = widget.controller.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (rawText == lastValue || rawText.isEmpty) return;
-
-    final number = int.tryParse(rawText);
-    if (number == null) return;
-
-    // use loaded setting or default
-    final setting =
-        _currencySetting ??
-        CurrencySetting(currencyCode: '', symbol: '\$', locale: 'en_US');
-    // Tentukan jumlah digit desimal
-    final bool showSymbol = setting.showSymbol ?? true;
-    final bool showDecimals = setting.showDecimal ?? true;
-
-    final formatted = NumberFormat.currency(
-      locale: setting.locale,
-      symbol: showSymbol ? '${setting.symbol} ' : '',
-      decimalDigits: showDecimals ? 2 : 0,
-    ).format(number);
-
-    lastValue = rawText;
-
-    widget.controller.value = TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-  }
-
-  @override
-  void dispose() {
-    widget.controller.removeListener(_formatCurrency);
-    super.dispose();
-  }
+  /// Provide default currency setting immediately
+  CurrencySetting get _effectiveSetting =>
+      _currencySetting ??
+      CurrencySetting(
+        currencyCode: 'USD',
+        symbol: '\$',
+        locale: 'en_US',
+        showDecimal: true,
+        showSymbol: true,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -97,8 +69,8 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
         TextFormField(
           controller: widget.controller,
           keyboardType: TextInputType.number,
+          inputFormatters: [CurrencyInputFormatter(setting: _effectiveSetting)],
           decoration: InputDecoration(
-            //prefixText: '$currencySymbol ',
             hintText: widget.placeholder ?? 'Enter amount',
             filled: true,
             fillColor: Colors.grey[100],

@@ -4,6 +4,7 @@ import 'package:month_year_picker/month_year_picker.dart';
 
 import 'screens/home_screen.dart';
 import 'screens/transactions/transaction_screen.dart';
+import 'screens/transfers/transfer_screen.dart';
 import 'screens/budgets/budget_screen.dart';
 import 'screens/reports/report_screen.dart';
 import 'screens/wallets/wallet_screen.dart';
@@ -80,8 +81,8 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> _screens = const [
     HomeScreen(),
     TransactionScreen(),
+    TransferScreen(),
     BudgetScreen(),
-    WalletScreen(),
     ReportScreen(),
   ];
 
@@ -97,15 +98,16 @@ class _MainPageState extends State<MainPage> {
       label: 'Transactions',
     ),
     BottomNavigationBarItem(
+      icon: Icon(Icons.swap_horiz_outlined),
+      activeIcon: Icon(Icons.swap_horiz),
+      label: 'Transfers',
+    ),
+    BottomNavigationBarItem(
       icon: Icon(Icons.pie_chart_outline),
       activeIcon: Icon(Icons.pie_chart),
       label: 'Budgets',
     ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.account_balance_wallet_outlined),
-      activeIcon: Icon(Icons.account_balance_wallet),
-      label: 'Wallet',
-    ),
+
     BottomNavigationBarItem(
       icon: Icon(Icons.bar_chart_outlined),
       activeIcon: Icon(Icons.bar_chart),
