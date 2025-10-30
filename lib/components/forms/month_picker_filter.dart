@@ -14,9 +14,14 @@ class MonthPickerFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 48),
+      height: 48, // fixed height
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300), // single border
+      ),
       child: MonthPicker(
         selectedMonth: selectedMonth,
         onMonthPicked: onMonthPicked,

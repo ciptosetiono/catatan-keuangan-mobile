@@ -7,7 +7,6 @@ import 'screens/transactions/transaction_screen.dart';
 import 'screens/transfers/transfer_screen.dart';
 import 'screens/budgets/budget_screen.dart';
 import 'screens/reports/report_screen.dart';
-import 'screens/wallets/wallet_screen.dart';
 import 'screens/splash_screen.dart'; // import splash screen
 
 void main() async {

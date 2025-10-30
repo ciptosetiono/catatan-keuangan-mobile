@@ -67,17 +67,34 @@ class WalletListItem extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    'Start: ${CurrencyFormatter().encode(wallet.startBalance)}',
-                    style: const TextStyle(fontSize: 13, color: Colors.black54),
+                  FutureBuilder<String>(
+                    future: CurrencyFormatter().encode(wallet.startBalance),
+                    builder: (context, snapshot) {
+                      final startBalanceText = snapshot.data ?? '...';
+                      return Text(
+                        'Start: $startBalanceText',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.black54,
+                        ),
+                      );
+                    },
                   ),
-                  Text(
-                    'Current: ${CurrencyFormatter().encode(wallet.currentBalance)}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: isPositive ? Colors.green : Colors.red,
-                    ),
+                  FutureBuilder<String>(
+                    future: CurrencyFormatter().encode(wallet.currentBalance),
+                    builder: (context, snapshot) {
+                      final currentBalanceText = snapshot.data ?? '...';
+                      return Text(
+                        'Current: $currentBalanceText',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isPositive ? Colors.green : Colors.red,
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

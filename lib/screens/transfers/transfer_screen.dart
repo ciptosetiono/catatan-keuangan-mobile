@@ -14,6 +14,7 @@ import 'package:money_note/components/transfers/transfer_list.dart';
 
 import 'package:money_note/screens/transfers/transfer_form_screen.dart';
 import 'package:money_note/components/ads/banner_ad_widget.dart';
+import 'package:money_note/components/transfers/empty_transfer_alert.dart';
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -147,7 +148,17 @@ class _TransferScreenState extends State<TransferScreen> {
           final transfers = snapshot.data ?? [];
 
           if (transfers.isEmpty) {
-            return const Center(child: Text('There are no transfers yet.'));
+            return EmptyTransferAlert(
+              onPress: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const TransferFormScreen()),
+                ).then((_) {
+                  // Refresh the transfers list after adding a new transfer
+                  setState(() {});
+                });
+              },
+            );
           }
 
           return TransferList(

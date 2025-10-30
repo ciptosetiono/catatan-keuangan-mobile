@@ -145,7 +145,7 @@ class _TransferFormScreenState extends State<TransferFormScreen> {
         'type': 'transfer',
         'date': _selectedDate.toIso8601String(),
         'categoryId': null,
-        'walletId': _fromWallet!.id, //set fromWalletId ad walletId
+        'walletId': _fromWallet!.id, //set fromWalletId
         'fromWalletId': _fromWallet!.id,
         'toWalletId': _toWallet!.id,
         'goalId': _selectedGoal?.id,
