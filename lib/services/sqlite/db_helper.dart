@@ -57,6 +57,18 @@ class DBHelper {
     await db.execute('PRAGMA foreign_keys = ON;');
   }
 
+  /*
+  //hanlde database chang schema
+  static Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+
+    }
+    if (oldVersion < 3) {
+     
+    }
+  }
+  */
+
   static Future createUsersTable(Database db) async {
     await db.execute('''
     CREATE TABLE users (

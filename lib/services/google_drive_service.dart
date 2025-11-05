@@ -37,15 +37,35 @@ class GoogleDriveService {
     final api = await signInAndGetDriveApi();
     if (api == null) throw Exception('Google Drive API not available');
 
+    final fileName = backupFile.uri.pathSegments.last;
+
+    // Remove existing file if same name exists
+    final existing = await api.files.list(
+      spaces: 'appDataFolder',
+      q: "name='$fileName'",
+    );
+    if (existing.files?.isNotEmpty ?? false) {
+      await api.files.delete(existing.files!.first.id!);
+    }
+
     final driveFile =
         drive.File()
-          ..name = backupFile.uri.pathSegments.last
-          ..parents = ['appDataFolder']; // private folder for app
+          ..name = fileName
+          ..parents = ['appDataFolder'];
 
-    await api.files.create(
-      driveFile,
-      uploadMedia: drive.Media(backupFile.openRead(), backupFile.lengthSync()),
-    );
+    try {
+      final result = await api.files.create(
+        driveFile,
+        uploadMedia: drive.Media(
+          backupFile.openRead(),
+          backupFile.lengthSync(),
+        ),
+      );
+      print('✅ Backup uploaded successfully: ${result.id}');
+    } catch (e) {
+      print('❌ Upload failed: $e');
+      rethrow;
+    }
   }
 
   /// Download and restore the latest backup from Google Drive
@@ -54,38 +74,43 @@ class GoogleDriveService {
     if (api == null) throw Exception('Google Drive not connected');
 
     try {
-      // List files in appDataFolder sorted by modifiedTime desc
+      // Get files sorted by modifiedTime desc (newest first)
       final fileList = await api.files.list(
         spaces: 'appDataFolder',
         orderBy: 'modifiedTime desc',
         $fields: 'files(id, name, modifiedTime)',
       );
 
-      if (fileList.files == null || fileList.files!.isEmpty) {
-        throw Exception('No backup files found on Google Drive');
+      final files = fileList.files;
+      if (files == null || files.isEmpty) {
+        print('⚠️ No backup files found on Google Drive');
+        return null;
       }
 
-      // Ambil file pertama (yang terbaru)
-      final latestFile = fileList.files!.first;
+      final latestFile = files.first;
+      print('⬇️ Downloading backup: ${latestFile.name}');
 
-      // Download file data
-      final media =
-          await api.files.get(
-                latestFile.id!,
-                downloadOptions: drive.DownloadOptions.fullMedia,
-              )
-              as drive.Media;
+      // Download file content
+      final response = await api.files.get(
+        latestFile.id!,
+        downloadOptions: drive.DownloadOptions.fullMedia,
+      );
 
-      // Simpan ke folder lokal sementara
+      if (response is! drive.Media) {
+        throw Exception('Unexpected response type from Drive API');
+      }
+
+      // Save to temporary local file
       final dir = await Directory.systemTemp.createTemp('moneyger_restore_');
       final localFile = File('${dir.path}/${latestFile.name}');
       final outputStream = localFile.openWrite();
-
-      await media.stream.pipe(outputStream);
+      await response.stream.pipe(outputStream);
       await outputStream.close();
 
+      print('✅ Backup downloaded: ${localFile.path}');
       return localFile;
-    } catch (e) {
+    } catch (e, st) {
+      print('❌ Error downloading backup: $e\n$st');
       return null;
     }
   }
