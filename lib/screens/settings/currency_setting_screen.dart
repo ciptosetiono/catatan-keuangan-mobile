@@ -60,7 +60,6 @@ class _SettingCurrencyScreenState extends State<SettingCurrencyScreen> {
 
   Future<void> _saveCurrencySetting() async {
     final selected = _currencies.firstWhere((c) => c['code'] == _selectedCode);
-
     final setting = CurrencySetting(
       currencyCode: selected['code']!,
       symbol: selected['symbol']!,
@@ -106,158 +105,184 @@ class _SettingCurrencyScreenState extends State<SettingCurrencyScreen> {
         backgroundColor: Colors.lightBlue,
         foregroundColor: Colors.white,
       ),
+      resizeToAvoidBottomInset: true,
       body:
           _currentSetting == null
               ? const Center(child: CircularProgressIndicator())
-              : Column(
-                children: [
-                  // === REAL-TIME PREVIEW ===
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 24,
-                      horizontal: 16,
-                    ),
-                    color: Colors.lightBlue.shade50,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Preview',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          _formatExample(
-                            selected['locale']!,
-                            selected['symbol']!,
-                          ),
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              : SafeArea(
+                child: Column(
+                  children: [
+                    // Konten utama scrollable
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // === PREVIEW ===
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 24,
+                                horizontal: 16,
+                              ),
+                              color: Colors.lightBlue.shade50,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'Preview',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    _formatExample(
+                                      selected['locale']!,
+                                      selected['symbol']!,
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
 
-                  // === CURRENCY LIST ===
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _currencies.length,
-                      padding: const EdgeInsets.all(8),
-                      itemBuilder: (context, index) {
-                        final c = _currencies[index];
-                        final isSelected = c['code'] == selectedCode;
-                        final exampleText = _formatExample(
-                          c['locale']!,
-                          c['symbol']!,
-                        );
+                            // === CURRENCY LIST ===
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: _currencies.length,
+                              padding: const EdgeInsets.all(8),
+                              itemBuilder: (context, index) {
+                                final c = _currencies[index];
+                                final isSelected = c['code'] == selectedCode;
+                                final exampleText = _formatExample(
+                                  c['locale']!,
+                                  c['symbol']!,
+                                );
+                                return Card(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(
+                                      color:
+                                          isSelected
+                                              ? Colors.lightBlue
+                                              : Colors.grey.shade300,
+                                    ),
+                                  ),
+                                  child: ListTile(
+                                    title: Text(
+                                      '${c['symbol']}  ${c['name']}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      '${c['code']}  •  Example: $exampleText',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    trailing: Icon(
+                                      isSelected
+                                          ? Icons.check_circle
+                                          : Icons.circle_outlined,
+                                      color:
+                                          isSelected
+                                              ? Colors.lightBlue
+                                              : Colors.grey,
+                                    ),
+                                    onTap:
+                                        () => setState(
+                                          () => _selectedCode = c['code'],
+                                        ),
+                                  ),
+                                );
+                              },
+                            ),
 
-                        return Card(
+                            // === OPTIONS ===
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              color: Colors.grey.shade100,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Display Options',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  SwitchListTile(
+                                    title: const Text('Show Currency Symbol'),
+                                    value: _showSymbol,
+                                    onChanged:
+                                        (val) =>
+                                            setState(() => _showSymbol = val),
+                                    dense: true,
+                                  ),
+                                  SwitchListTile(
+                                    title: const Text('Show Decimal Digits'),
+                                    value: _showDecimal,
+                                    onChanged:
+                                        (val) =>
+                                            setState(() => _showDecimal = val),
+                                    dense: true,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // === FIXED SAVE BUTTON ===
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          top: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 4,
+                            offset: const Offset(0, -1),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.lightBlue,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size.fromHeight(48),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(
-                              color:
-                                  isSelected
-                                      ? Colors.lightBlue
-                                      : Colors.grey.shade300,
-                            ),
                           ),
-                          child: ListTile(
-                            title: Text(
-                              '${c['symbol']}  ${c['name']}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '${c['code']}  •  Example: $exampleText',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            trailing: Icon(
-                              isSelected
-                                  ? Icons.check_circle
-                                  : Icons.circle_outlined,
-                              color:
-                                  isSelected ? Colors.lightBlue : Colors.grey,
-                            ),
-                            onTap:
-                                () => setState(() => _selectedCode = c['code']),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // === OPTIONS SECTION ===
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      border: Border(
-                        top: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        onPressed:
+                            _selectedCode == null ? null : _saveCurrencySetting,
+                        label: const Text('Save'),
                       ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Display Options',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        SwitchListTile(
-                          title: const Text('Show Currency Symbol'),
-                          value: _showSymbol,
-                          onChanged: (val) => setState(() => _showSymbol = val),
-                          dense: true,
-                        ),
-                        SwitchListTile(
-                          title: const Text('Show Decimal Digits'),
-                          value: _showDecimal,
-                          onChanged:
-                              (val) => setState(() => _showDecimal = val),
-                          dense: true,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // === SAVE BUTTON ===
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.lightBlue,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed:
-                          _selectedCode == null ? null : _saveCurrencySetting,
-                      //icon: const Icon(Icons.save),
-                      label: const Text('Save'),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
     );
   }

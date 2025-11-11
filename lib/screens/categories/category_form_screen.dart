@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:money_note/models/category_model.dart';
 import 'package:money_note/services/sqlite/category_service.dart';
 import 'package:money_note/components/buttons/submit_button.dart';
@@ -76,9 +77,13 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
 
     // ✅ Optional: show ad after returning
     if (widget.showAds == true) {
-      Future.delayed(const Duration(seconds: 1), () {
-        AdService.showInterstitialAd();
-      });
+      final random = Random();
+      // ~33% chance to show ad
+      if (random.nextInt(3) == 0) {
+        Future.delayed(const Duration(seconds: 1), () {
+          AdService.showInterstitialAd();
+        });
+      }
     }
 
     setState(() => _isSubmitting = false);

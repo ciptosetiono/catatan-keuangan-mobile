@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
+import 'dart:math';
 // ignore: unused_import
 import 'package:money_note/services/ad_service.dart';
 import '../../services/sqlite/wallet_service.dart';
@@ -118,9 +118,13 @@ class _WalletFormScreenState extends State<WalletFormScreen> {
 
     //display intertitials ads
     if (widget.showAds == true) {
-      Future.delayed(const Duration(seconds: 1), () {
-        AdService.showInterstitialAd();
-      });
+      final random = Random();
+      // ~33% chance to show ad
+      if (random.nextInt(3) == 0) {
+        Future.delayed(const Duration(seconds: 1), () {
+          AdService.showInterstitialAd();
+        });
+      }
     }
   }
 

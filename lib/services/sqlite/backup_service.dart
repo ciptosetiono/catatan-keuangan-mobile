@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -8,7 +10,7 @@ import 'db_helper.dart';
 import '../../config/database_config.dart';
 
 class BackupService {
-  /// Backup DB ke Downloads/Documents
+  /// 📦 Backup DB ke folder Downloads (Android) atau Documents (iOS)
   static Future<File?> backupDatabase() async {
     try {
       final dbPath = await getDatabasesPath();
@@ -18,111 +20,96 @@ class BackupService {
         throw Exception("Database file not found");
       }
 
-      // Get Downloads folder
-      Directory? downloadsDir;
+      Directory targetDir;
+
       if (Platform.isAndroid) {
-        downloadsDir = Directory(
-          '/storage/emulated/0/Download',
-        ); // Android Downloads
-      } else if (Platform.isIOS) {
-        downloadsDir = await getApplicationDocumentsDirectory(); // iOS fallback
+        // ⚠️ Hanya bekerja jika user beri izin akses Storage
+        targetDir = Directory('/storage/emulated/0/Download');
       } else {
-        downloadsDir =
-            await getApplicationDocumentsDirectory(); // fallback lain
+        targetDir = await getApplicationDocumentsDirectory();
       }
 
-      if (!downloadsDir.existsSync()) {
-        downloadsDir.createSync(recursive: true);
+      if (!targetDir.existsSync()) {
+        targetDir.createSync(recursive: true);
       }
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final backupFile = File(
-        join(downloadsDir.path, 'moneyger_backup_$timestamp.db'),
+        join(targetDir.path, 'moneyger_backup_$timestamp.db'),
       );
 
       await dbFile.copy(backupFile.path);
 
+      print('✅ Local backup created at: ${backupFile.path}');
       return backupFile;
-    } catch (e) {
+    } catch (e, st) {
+      print('❌ Backup failed: $e\n$st');
       return null;
     }
   }
 
-  /// Restore DB dari file picker
+  /// 📂 Restore DB dari file picker (user memilih file .db)
   static Future<bool> restoreDatabaseWithPicker() async {
     try {
       final result = await FilePicker.platform.pickFiles(type: FileType.any);
-
-      if (result == null ||
-          result.files.isEmpty ||
-          result.files.single.path == null) {
+      if (result == null || result.files.single.path == null) {
+        print('⚠️ Restore cancelled or invalid file.');
         return false;
       }
 
-      final backupFilePath = result.files.single.path!;
-
-      final backupFile = File(backupFilePath);
-
+      final backupFile = File(result.files.single.path!);
       final dbPath = await getDatabasesPath();
       final dbFile = File(join(dbPath, dbConfig['name']));
 
       await DBHelper.close();
-
       await backupFile.copy(dbFile.path);
-
       await DBHelper.reopen();
 
+      print('✅ Database restored successfully from file picker');
       return true;
-    } catch (e) {
+    } catch (e, st) {
+      print('❌ Restore failed: $e\n$st');
       return false;
     }
   }
 
+  /// ☁️ Backup ke Google Drive (ke folder "Moneyger Backups")
   Future<void> backupToGoogleDrive() async {
-    final localBackupFile = await backupDatabase();
-    if (localBackupFile == null) return;
+    try {
+      final localBackupFile = await backupDatabase();
+      if (localBackupFile == null) throw Exception('Local backup failed');
 
-    final driveService = GoogleDriveService();
-    final api =
-        await driveService
-            .signInAndGetDriveApi(); // will trigger Google login popup
+      final driveService = GoogleDriveService();
+      await driveService.uploadBackup(localBackupFile);
 
-    if (api == null) {
-      throw Exception('Google sign-in failed');
+      print('✅ Backup uploaded to Google Drive successfully');
+    } catch (e, st) {
+      print('❌ Google Drive backup failed: $e\n$st');
     }
-
-    await driveService.uploadBackup(localBackupFile);
   }
 
-  /// Restore DB dari Google Drive (file terbaru)
+  /// 🔄 Restore DB dari Google Drive (ambil file terbaru)
   Future<bool> restoreFromGoogleDrive() async {
     try {
       final driveService = GoogleDriveService();
       final backupFile = await driveService.downloadLatestBackup();
 
       if (backupFile == null) {
-        // ignore: avoid_print
-        print('No backup file found on Drive');
+        print('⚠️ No backup file found on Google Drive');
         return false;
       }
 
-      // Path database lokal
       final dbPath = await getDatabasesPath();
       final dbFile = File(join(dbPath, dbConfig['name']));
 
       await DBHelper.close();
-
-      // Replace existing DB with downloaded backup
       await backupFile.copy(dbFile.path);
-
       await DBHelper.reopen();
 
-      // ignore: avoid_print
-      print('Database restored successfully from Google Drive');
+      print('✅ Database restored successfully from Google Drive');
       return true;
-    } catch (e) {
-      // ignore: avoid_print
-      print('Restore failed: $e');
+    } catch (e, st) {
+      print('❌ Restore failed: $e\n$st');
       return false;
     }
   }
