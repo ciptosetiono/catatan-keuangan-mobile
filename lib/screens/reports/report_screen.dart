@@ -103,6 +103,7 @@ class _ReportScreenState extends State<ReportScreen> {
         // assume it's a timestamp in milliseconds
         date = DateTime.fromMillisecondsSinceEpoch(rawDate);
       } else {
+        // ignore: avoid_print
         print(
           "⚠️ Unknown date type in transaction: $rawDate (${rawDate.runtimeType})",
         );

@@ -38,8 +38,9 @@ class ReportList extends StatelessWidget {
             .fold<double>(0.0, (sum, tx) {
               final amount = tx["amount"];
               if (amount is num) return sum + amount.toDouble();
-              if (amount is String)
+              if (amount is String) {
                 return sum + (double.tryParse(amount) ?? 0.0);
+              }
               return sum;
             });
 
@@ -48,8 +49,9 @@ class ReportList extends StatelessWidget {
             .fold<double>(0.0, (sum, tx) {
               final amount = tx["amount"];
               if (amount is num) return sum + amount.toDouble();
-              if (amount is String)
+              if (amount is String) {
                 return sum + (double.tryParse(amount) ?? 0.0);
+              }
               return sum;
             });
 

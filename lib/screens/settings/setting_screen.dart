@@ -8,8 +8,8 @@ import '../transfers/transfer_screen.dart';
 import 'default_settings_screen.dart';
 import 'currency_setting_screen.dart';
 import '../../components/settings/setting_menu_tile.dart';
-import '../../components/settings/backup_menu_screen.dart';
-import '../../components/settings/restore_menu_screen.dart';
+import 'backup_menu_screen.dart';
+import 'restore_menu_screen.dart';
 import '../../components/ui/alerts/flash_message.dart';
 import '../../components/ads/banner_ad_widget.dart';
 

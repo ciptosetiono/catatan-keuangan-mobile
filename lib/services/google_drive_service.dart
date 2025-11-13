@@ -113,7 +113,6 @@ class GoogleDriveService {
       }
 
       final latestFile = files.first;
-      print('⬇️ Downloading backup: ${latestFile.name}');
 
       final response = await api.files.get(
         latestFile.id!,

@@ -31,7 +31,9 @@ class TransferListItem extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      // ignore: deprecated_member_use
       color: Colors.white.withOpacity(0.95), // 💡 slightly whiter card
+      // ignore: deprecated_member_use
       shadowColor: Colors.grey.withOpacity(0.3), // soft shadow
       elevation: 2,
       child: InkWell(
