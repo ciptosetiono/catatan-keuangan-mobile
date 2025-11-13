@@ -41,25 +41,21 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   void initState() {
     super.initState();
-    _loadMasterData();
-    _loadTransactions();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    await _loadMasterData();
+    await _loadTransactions();
   }
 
   Future<void> _loadMasterData() async {
-    _categoryService.getCategoryStream().listen((catList) {
-      if (!mounted) return;
-      setState(() {
-        categoryMap = {for (var cat in catList) cat.id: cat.name};
-      });
-      _loadTransactions(); // refresh transactions with new names
-    });
+    final catList = await _categoryService.getCategories();
+    final walletList = await _walletService.getWallets();
 
-    _walletService.getWalletStream().listen((walletList) {
-      if (!mounted) return;
-      setState(() {
-        walletMap = {for (var wallet in walletList) wallet.id: wallet.name};
-      });
-      _loadTransactions(); // refresh transactions with new names
+    setState(() {
+      categoryMap = {for (var cat in catList) cat.id: cat.name};
+      walletMap = {for (var wallet in walletList) wallet.id: wallet.name};
     });
   }
 
@@ -72,9 +68,6 @@ class _ReportScreenState extends State<ReportScreen> {
             transactions =
                 txList.map((tx) {
                   final txMap = tx.toMap();
-                  txMap['categoryName'] =
-                      categoryMap[tx.categoryId] ?? 'Unknown';
-                  txMap['walletName'] = walletMap[tx.walletId] ?? 'Unknown';
                   return txMap;
                 }).toList();
             _calculateSummary();
@@ -100,15 +93,22 @@ class _ReportScreenState extends State<ReportScreen> {
 
     for (var tx in transactions) {
       final rawDate = tx["date"];
+      DateTime date;
 
-      late DateTime date;
       if (rawDate is DateTime) {
         date = rawDate;
       } else if (rawDate is String) {
         date = DateTime.tryParse(rawDate) ?? DateTime.now();
+      } else if (rawDate is int) {
+        // assume it's a timestamp in milliseconds
+        date = DateTime.fromMillisecondsSinceEpoch(rawDate);
       } else {
-        throw Exception("Unknown date type: $rawDate");
+        print(
+          "⚠️ Unknown date type in transaction: $rawDate (${rawDate.runtimeType})",
+        );
+        continue; // skip this transaction instead of throwing
       }
+
       String key;
       switch (groupBy) {
         case "day":
@@ -131,10 +131,10 @@ class _ReportScreenState extends State<ReportScreen> {
       if (tx["amount"] is String) {
         tx["amount"] = double.tryParse(tx["amount"]) ?? 0.0;
       }
+
       grouped.putIfAbsent(key, () => []);
       grouped[key]!.add(tx);
     }
-
     return grouped;
   }
 
@@ -164,7 +164,7 @@ class _ReportScreenState extends State<ReportScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Report"),
+        title: const Text("Report Page"),
         bottom: ReportFilter(
           groupBy: groupBy,
           selectedRange: DateFilterOption.thisMonth,

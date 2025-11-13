@@ -31,6 +31,8 @@ class TransferListItem extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.white.withOpacity(0.95), // 💡 slightly whiter card
+      shadowColor: Colors.grey.withOpacity(0.3), // soft shadow
       elevation: 2,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -49,7 +51,7 @@ class TransferListItem extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.teal.shade50,
+                  color: const Color.fromARGB(255, 160, 230, 223),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.swap_horiz, color: Colors.teal),
