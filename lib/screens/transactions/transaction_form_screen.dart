@@ -57,11 +57,17 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     final prefs = SettingPreferencesService();
 
     _wallets = await WalletService().getWalletStream().first;
-    _categories = await CategoryService().getCategoryStream(type: _type).first;
 
     if (widget.existingData != null) {
+      _categories =
+          await CategoryService()
+              .getCategoryStream(type: widget.existingData?.type)
+              .first;
+
       _initializeEditMode(widget.existingData!);
     } else {
+      _categories =
+          await CategoryService().getCategoryStream(type: _type).first;
       _initializeDefaultMode(prefs);
     }
 
@@ -84,21 +90,19 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     final defaultWalletId = await prefs.getDefaultWallet();
     final defaultCategoryId = await prefs.getDefaultCategory(type: _type);
 
-    setState(() {
-      if (_wallets.any((w) => w.id == defaultWalletId)) {
-        _selectedWalletId = defaultWalletId;
-      } else if (_wallets.isNotEmpty) {
-        _selectedWalletId = _wallets.first.id;
-      }
+    if (_wallets.any((w) => w.id == defaultWalletId)) {
+      _selectedWalletId = defaultWalletId;
+    } else if (_wallets.isNotEmpty) {
+      _selectedWalletId = _wallets.first.id;
+    }
 
-      if (_categories.any((c) => c.id == defaultCategoryId)) {
-        _selectedCategoryId = defaultCategoryId;
-      } else if (_categories.isNotEmpty) {
-        _selectedCategoryId = _categories.first.id;
-      }
+    if (_categories.any((c) => c.id == defaultCategoryId)) {
+      _selectedCategoryId = defaultCategoryId;
+    } else if (_categories.isNotEmpty) {
+      _selectedCategoryId = _categories.first.id;
+    }
 
-      _selectedDate = DateTime.now();
-    });
+    _selectedDate = DateTime.now();
   }
 
   void _onTypeChanged(String val) async {
