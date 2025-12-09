@@ -51,7 +51,9 @@ class _WalletDropdownState extends State<WalletDropdown> {
 
         if (_currentValue != null &&
             !wallets.any((w) => w.id == _currentValue)) {
-          _currentValue = null;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) setState(() => _currentValue = null);
+          });
         }
 
         return Column(
@@ -84,7 +86,7 @@ class _WalletDropdownState extends State<WalletDropdown> {
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
-                        value: _currentValue,
+                        value: widget.value,
                         isExpanded: true,
                         hint: Text(
                           'Select Wallet',
@@ -98,10 +100,6 @@ class _WalletDropdownState extends State<WalletDropdown> {
                         ),
                         items:
                             wallets.map((wallet) {
-                              // ignore: unused_local_variable
-                              final balanceText = CurrencyFormatter().encode(
-                                wallet.currentBalance,
-                              );
                               return DropdownMenuItem<String>(
                                 value: wallet.id,
                                 child: Row(
@@ -129,25 +127,17 @@ class _WalletDropdownState extends State<WalletDropdown> {
                                       ],
                                     ),
 
-                                    // Balance (FutureBuilder)
-                                    FutureBuilder<String>(
-                                      future: CurrencyFormatter().encode(
+                                    Text(
+                                      CurrencyFormatter().quickEncode(
                                         wallet.currentBalance,
                                       ),
-                                      builder: (context, snapshot) {
-                                        final balanceText =
-                                            snapshot.data ?? '...';
-                                        return Text(
-                                          balanceText,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color:
-                                                wallet.currentBalance >= 0
-                                                    ? Colors.green[600]
-                                                    : Colors.red[600],
-                                          ),
-                                        );
-                                      },
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color:
+                                            wallet.currentBalance >= 0
+                                                ? Colors.green[600]
+                                                : Colors.red[600],
+                                      ),
                                     ),
                                   ],
                                 ),

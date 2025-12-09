@@ -10,7 +10,6 @@ import 'currency_setting_screen.dart';
 import '../../components/settings/setting_menu_tile.dart';
 import 'backup_menu_screen.dart';
 import 'restore_menu_screen.dart';
-import '../../components/ui/alerts/flash_message.dart';
 import '../../components/ads/banner_ad_widget.dart';
 
 class SettingScreen extends StatelessWidget {
@@ -18,23 +17,29 @@ class SettingScreen extends StatelessWidget {
 
   Future<void> _rateApp(BuildContext context) async {
     final inAppReview = InAppReview.instance;
+
     try {
-      if (await inAppReview.isAvailable()) {
-        await inAppReview.requestReview();
-      } else {
-        await inAppReview.openStoreListing(
-          appStoreId: 'your.app.id.if.ios',
-          microsoftStoreId: null,
-        );
+      // 1. Try launching in-app review
+      final available = await inAppReview.isAvailable();
+      if (!available) {
+        // Not available -> open store directly
+        await inAppReview.openStoreListing();
+        return;
       }
-    } catch (_) {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        FlashMessage(
-          color: Colors.red,
-          message: 'Unable to open store for rating. Please try again later.',
-        ),
-      );
+
+      // 2. Request review
+      await inAppReview.requestReview();
+
+      // 3. Wait 1 second to see if dialog appears.
+      // If dialog doesn't show, Google ignores it -> fallback.
+      Future.delayed(const Duration(seconds: 1), () async {
+        // If the dialog did not appear, we fallback to Play Store.
+        // Note: There's no official "didShow" event.
+        await inAppReview.openStoreListing();
+      });
+    } catch (e) {
+      // If something actually crashed, fallback too
+      await inAppReview.openStoreListing();
     }
   }
 
